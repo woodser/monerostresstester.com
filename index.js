@@ -7,9 +7,9 @@
 "use strict"
 
 // import what you want to use
-const MoneroDaemonRpc = require("./node_modules/monero-javascript/src/main/daemon/MoneroDaemonRpc");
-const MoneroWalletRpc = require("./node_modules/monero-javascript/src/main/wallet/MoneroWalletRpc");
-const MoneroWalletLocal = require("./node_modules/monero-javascript/src/main/wallet/MoneroWalletLocal");
+const MoneroDaemonRpc = require("monero-javascript").MoneroDaemonRpc;
+const MoneroWalletRpc = require("monero-javascript").MoneroWalletRpc;
+const MoneroWalletLocal = require("monero-javascript").MoneroWalletLocal;
 
 // start the application
 startApp();
@@ -22,6 +22,7 @@ async function startApp() {
   
   // connect to monero-wallet-rpc
   let walletRpc = new MoneroWalletRpc({uri: "http://localhost:38083", user: "rpc_user", pass: "abc123"});
+  await walletRpc.openWallet("test_wallet_1", "supersecretpassword123");
   console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
   console.log("Wallet rpc balance: " + await walletRpc.getBalance());
   
