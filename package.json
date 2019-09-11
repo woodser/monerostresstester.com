@@ -1,0 +1,29 @@
+{
+  "name": "xmr-sample-app",
+  "version": "0.0.1",
+  "description": "Sample web application using the monero-javascript library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woodser/xmr-sample-app.git"
+  },
+  "keywords": [
+    "xmr",
+    "monero",
+    "web",
+    "javascript",
+    "js"
+  ],
+  "author": "woodser",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/woodser/xmr-sample-app/issues"
+  },
+  "homepage": "https://github.com/woodser/xmr-sample-app#readme",
+  "dependencies": {
+    "monero-javascript": "^0.1.1"
+  }
+}
