@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 
-bin/_build_browser_dev; 
+bin/_build_browser_dev;
+mkdir -p browser_build/submodules/mymonero-core-js/monero_utils;
+cp node_modules/monero-javascript/external/mymonero-core-js/monero_utils/MyMoneroCoreCpp_ASMJS.asm.js browser_build/submodules/mymonero-core-js/monero_utils;
+cp node_modules/monero-javascript/external/mymonero-core-js/monero_utils/MyMoneroCoreCpp_ASMJS.js browser_build/submodules/mymonero-core-js/monero_utils;
+cp node_modules/monero-javascript/external/mymonero-core-js/monero_utils/MyMoneroCoreCpp_WASM.js browser_build/submodules/mymonero-core-js/monero_utils;
+cp node_modules/monero-javascript/external/mymonero-core-js/monero_utils/MyMoneroCoreCpp_WASM.wasm browser_build/submodules/mymonero-core-js/monero_utils;
 cd browser_build && python -m SimpleHTTPServer 9100;
