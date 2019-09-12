@@ -6,7 +6,7 @@ module.exports =
 {
 	devtool: "source-map",
 	context: __dirname,
-	entry: "./index.js",
+	entry: "./src/index.js",
 	output: {
 		path: path.resolve(__dirname, "browser_build"),
 		filename: "xmr-sample-app.js"
