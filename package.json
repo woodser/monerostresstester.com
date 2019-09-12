@@ -1,6 +1,6 @@
 {
   "name": "xmr-sample-app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Sample web application using the monero-javascript library",
   "main": "src/index.js",
   "scripts": {
