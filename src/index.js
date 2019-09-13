@@ -27,18 +27,23 @@ async function startApp() {
   // wallet to open or create
   let name = "test_wallet_1";
   let password = "supersecretpassword123";
+  let mnemonic = "hefty value later extra artistic firm radar yodel talent future fungal nutshell because sanity awesome nail unjustly rage unafraid cedar delayed thumbs comb custom sanity";
+  let primaryAddress = "528qdm2pXnYYesCy5VdmBneWeaSZutEijFVAKjpVHeVd4unsCSM55CjgViQsK9WFNHK1eZgcCuZ3fRqYpzKDokqSKp4yp38";  // just for reference
+  let restoreHeight = 383338;
   
   // open or create wallet
   try {
+    console.log("Attempting to open " + name);
     await walletRpc.openWallet(name, password);
   } catch (e) {
-    console.log(e);
-    
+        
     // -1 returned when the wallet does not exist or it's open by another application
     if (e.getCode() === -1) {
+      console.log("Wallet with name '" + name + "' not found, restoring from mnemonic");
       
       // create wallet
-      await walletRpc.createWalletRandom(name, password);
+      await walletRpc.createWalletFromMnemonic(name, password, mnemonic, restoreHeight);
+      await walletRpc.sync();
     } else {
       throw e;
     }
@@ -49,8 +54,6 @@ async function startApp() {
   console.log("Wallet rpc balance: " + await walletRpc.getBalance());
   
   // create a wallet from mnemonic using local wasm bindings
-  let mnemonic = "nagged giddy virtual bias spying arsenic fowls hexagon oars frying lava dialect copy gasp utensils muffin tattoo ritual exotic inmate kisses either sprig sunken sprig";
-  let primaryAddress = "59aZULsUF3YNSKGiHz4JPMfjGYkm1S4TB3sPsTr3j85HhXb9crZqGa7jJ8cA87U48kT5wzi2VzGZnN2PKojEwoyaHqtpeZh";  // just for reference
   let walletLocal = new MoneroWalletLocal({daemon: daemon, mnemonic: mnemonic});
   console.log("Local wallet address: " + await walletLocal.getPrimaryAddress());
   console.log("Local wallet height: " + await walletLocal.getHeight());
