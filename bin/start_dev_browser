@@ -2,4 +2,5 @@
 
 bin/_build_browser_dev;
 cp node_modules/monero-javascript/build/monero_cpp_library_WASM.wasm browser_build/monero_cpp_library_WASM.wasm
+cp -a src/ browser_build/
 cd browser_build && python ../bin/run_server.py
