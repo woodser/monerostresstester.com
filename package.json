@@ -1,7 +1,7 @@
 {
   "name": "xmr-sample-app",
   "version": "0.0.2",
-  "description": "Sample web application using the monero-javascript library",
+  "description": "Sample web app using the monero-javascript library",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,7 +24,8 @@
   },
   "homepage": "https://github.com/woodser/xmr-sample-app#readme",
   "dependencies": {
-    "monero-javascript": "^0.1.2"
+    "monero-javascript": "^0.1.2",
+    "serialize-javascript": ">=2.1.1"
   },
   "devDependencies": {
     "babel-core": "6.26.3",
