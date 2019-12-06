@@ -100,5 +100,5 @@ async function startApp() {
 //  });
 //  console.log("Done syncing?");
   
-  console.log("Done");
+  console.log("DONE");
 }
