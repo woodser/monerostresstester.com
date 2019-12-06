@@ -11,5 +11,3 @@ This project is a sample web application using the [monero-javascript](https://g
 6. `npm install`
 7. `./bin/start_dev_browser`
 8. Access web app at http://localhost:9100
-
-Note: The server used in these steps, SimpleHTTPServer, incorrectly serves WASM files with content-type "octet-stream" which fails in Firefox.  This issue can be resolved by using a different HTTP server or browser.
