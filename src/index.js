@@ -16,23 +16,45 @@ startApp();
 async function startApp() {
   console.log("Starting app...");
   
+  // demonstrate c++ utilities which use monero-project via webassembly
+  const MoneroCppUtils = await MoneroJS.MoneroCppUtilsPromise();
+  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
+  let binary = MoneroCppUtils.jsonToBinary(json);
+  assert(binary);
+  let json2 = MoneroCppUtils.binaryToJson(binary);
+  assert.deepEqual(json2, json);
+  console.log("C++ utils to serialize to/from Monero\'s portable storage format working");
+  
+  // create a random keys-only wallet
+  const MoneroWalletKeys = await MoneroJS.MoneroWalletKeysPromise();
+  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
+  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
+
+  // create a keys-only wallet from mnemonic
+  let mnemonic = "megabyte ghetto syllabus opposite firm january velvet kennel often bugs luggage nucleus volcano fainted ripped biology firm sushi putty swagger dove obedient unnoticed washing swagger";
+  let primaryAddress = "58De3pTCy1CFkh2xwTDCPwiTzkby13CZfJ262vak9nmuSUAbayvYnXaJY7WNGJMJCMBdFn4opqYCrVP3rP3irUZyDMht94C";  // just for reference
+  walletKeys = await MoneroWalletKeys.createWalletFromMnemonic(MoneroNetworkType.STAGENET, mnemonic);
+  assert.equal(await walletKeys.getMnemonic(), mnemonic);
+  assert.equal(await walletKeys.getPrimaryAddress(), primaryAddress);
+  console.log("Keys-only wallet imported mnemonic: " + await walletKeys.getMnemonic());
+  console.log("Keys-only wallet imported address: " + await walletKeys.getPrimaryAddress());
+  
   // connect to monero-daemon-rpc
+  console.log("Connecting to monero-daemon-rpc...");
   let daemon = new MoneroDaemonRpc({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});
   console.log("Daemon height: " + await daemon.getHeight());
   
   // connect to monero-wallet-rpc
   let walletRpc = new MoneroWalletRpc({uri: "http://localhost:38083", user: "rpc_user", pass: "abc123"});
   
-  // configure wallet to open or create
+  // configure the rpc wallet to open or create
   let name = "test_wallet_1";
   let password = "supersecretpassword123";
-  let mnemonic = "megabyte ghetto syllabus opposite firm january velvet kennel often bugs luggage nucleus volcano fainted ripped biology firm sushi putty swagger dove obedient unnoticed washing swagger";
-  let primaryAddress = "58De3pTCy1CFkh2xwTDCPwiTzkby13CZfJ262vak9nmuSUAbayvYnXaJY7WNGJMJCMBdFn4opqYCrVP3rP3irUZyDMht94C";  // just for reference
   let restoreHeight = 453289;
   
-  // open or create wallet
+  // open or create rpc wallet
   try {
-    console.log("Attempting to open " + name);
+    console.log("Attempting to open wallet " + name + "...");
     await walletRpc.openWallet(name, password);
   } catch (e) {
         
@@ -48,26 +70,9 @@ async function startApp() {
     }
   }
   
-  // print rpc wallet balance to the console
+  // print rpc wallet balance
   console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
   console.log("Wallet rpc balance: " + await walletRpc.getBalance());
-  
-  // demonstrate c++ utilities which use monero-project via webassembly
-  const MoneroCppUtils = await MoneroJS.MoneroCppUtilsPromise();
-  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
-  let binary = MoneroCppUtils.jsonToBinary(json);
-  assert(binary);
-  let json2 = MoneroCppUtils.binaryToJson(binary);
-  assert.deepEqual(json2, json);
-  console.log("C++ utils to serialize to/from Monero\'s portable storage format working");
-  
-  // demonstrate keys-only wallet
-  const MoneroWalletKeys = await MoneroJS.MoneroWalletKeysPromise();
-  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
-  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
-  walletKeys = await MoneroWalletKeys.createWalletFromMnemonic(MoneroNetworkType.STAGENET, mnemonic);
-  console.log("Keys-only wallet imported mnemonic: " + await walletKeys.getMnemonic());
-  console.log("Keys-only wallet imported address: " + await walletKeys.getPrimaryAddress());
   
 //  // import wasm wallet which exports a promise in order to load the WebAssembly module
 //  const MoneroWalletWasm = await require("../src/main/js/wallet/MoneroWalletWasm")();
@@ -94,5 +99,6 @@ async function startApp() {
 //    console.log(progress.percent);
 //  });
 //  console.log("Done syncing?");
+  
   console.log("Done");
 }
