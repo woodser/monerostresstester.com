@@ -17,7 +17,7 @@ async function startApp() {
   console.log("Starting app...");
   
   // demonstrate c++ utilities which use monero-project via webassembly
-  const MoneroCppUtils = await MoneroJS.MoneroCppUtilsPromise();
+  const MoneroCppUtils = await MoneroJS.getMoneroUtilsWasm();
   let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
   let binary = MoneroCppUtils.jsonToBinary(json);
   assert(binary);
@@ -26,7 +26,7 @@ async function startApp() {
   console.log("C++ utils to serialize to/from Monero\'s portable storage format working");
   
   // create a random keys-only wallet
-  const MoneroWalletKeys = await MoneroJS.MoneroWalletKeysPromise();
+  const MoneroWalletKeys = await MoneroJS.getMoneroWalletKeys();
   let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
   console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
 
