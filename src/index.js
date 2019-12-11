@@ -57,6 +57,7 @@ async function startApp() {
     console.log("Attempting to open wallet " + name + "...");
     await walletRpc.openWallet(name, password);
   } catch (e) {
+    console.log(e);
         
     // -1 returned when the wallet does not exist or it's open by another application
     if (e.getCode() === -1) {
