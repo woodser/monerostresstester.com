@@ -24,8 +24,7 @@
   },
   "homepage": "https://github.com/woodser/xmr-sample-app#readme",
   "dependencies": {
-    "monero-javascript": "^0.1.2",
-    "serialize-javascript": ">=2.1.1"
+    "monero-javascript": "^0.2.1"
   },
   "devDependencies": {
     "babel-core": "6.26.3",
@@ -33,7 +32,7 @@
     "babel-minify": "0.4.3",
     "electron": "3.0.3",
     "eslint": "5.6.0",
-    "webpack": "4.19.1",
+    "webpack": "^4.41.3",
     "webpack-cli": "3.1.0",
     "webpack-merge": "4.1.4",
     "worker-loader": "2.0.0"
