@@ -75,6 +75,19 @@ async function startApp() {
   console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
   console.log("Wallet rpc balance: " + await walletRpc.getBalance());
   
+  // create a random core wallet
+  let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
+  const MoneroWalletCore = await MoneroJS.getMoneroWalletCore();
+  let walletCore = await MoneroWalletCore.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
+  console.log("Core wallet random mnemonic: " + await walletCore.getMnemonic());
+
+  // create a core wallet from mnemonic
+  walletCore = await MoneroWalletCore.createWalletFromMnemonic("", "supersecretpassword123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
+  assert.equal(await walletCore.getMnemonic(), mnemonic);
+  assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
+  console.log("Core wallet imported mnemonic: " + await walletKeys.getMnemonic());
+  console.log("Core wallet imported address: " + await walletKeys.getPrimaryAddress());
+    
 //  // import wasm wallet which exports a promise in order to load the WebAssembly module
 //  const MoneroWalletWasm = await require("../src/main/js/wallet/MoneroWalletWasm")();
 //  
