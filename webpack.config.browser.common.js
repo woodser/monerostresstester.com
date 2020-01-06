@@ -1,6 +1,7 @@
 "use strict"
 
-const path = require('path')
+const webpack = require("webpack");
+const path = require("path");
 
 module.exports = 
 {
@@ -21,23 +22,64 @@ module.exports =
 			'node_modules'
 		]
 	},
-	module: {
-		rules: [
-			{
-				test: /\.js$/,
-				exclude: path.join(__dirname, 'node_modules'),
-				use: [
-					{
-						loader: 'babel-loader',
-						options: {
-							cacheDirectory: false
-							// ,
-							// presets: [ "es2015" ],
-							// plugins: ["transform-runtime"]
-						}
-					}
-				]
-			}
-		]
-	}
+  target: 'web',
+  module: {
+//    defaultRules: [
+//      {
+//        type: "javascript/auto",
+//        resolve: {}
+//      }
+//    ],
+//    rules: [
+//      {
+//        test: /fibonacci\.js$/,
+//        loader: "exports-loader"
+//      },
+//      {
+//        test: /fibonacci\.wasm$/,
+//        loader: "file-loader",
+//        options: {
+//          publicPath: "dist/"
+//        }
+//      }
+//    ],
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: path.join(__dirname, 'node_modules'),
+        type: "javascript/auto",
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: false
+              // ,
+              // presets: [ "es2015" ],
+              // plugins: ["transform-runtime"]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  // This is necessary due to the fact that emscripten puts both Node and
+  // web code into one file. The node part uses Node’s `fs` module to load
+  // the wasm file.
+  // Issue: https://github.com/kripken/emscripten/issues/6542.
+  plugins: [new webpack.IgnorePlugin(/(worker_threads)/), new webpack.IgnorePlugin(/(ws)/), new webpack.IgnorePlugin(/(perf_hooks)/)]
+  
+//	module: {
+//		rules: [
+//			{
+//				test: /\.js$/,
+//				type: "javascript/auto",
+//				exclude: path.join(__dirname, 'node_modules'),
+//				loader: "file-loader",
+//        options: {
+//          publicPath: "dist/",
+//          cacheDirectory: false
+//        }
+//			}
+//		]
+//	}
 }
