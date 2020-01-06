@@ -2,6 +2,8 @@
 
 const webpack = require("webpack");
 const path = require("path");
+//const nodeExternals = require("webpack-node-externals");
+//nodeExternals();
 
 module.exports = 
 {
@@ -66,7 +68,9 @@ module.exports =
   // web code into one file. The node part uses Node’s `fs` module to load
   // the wasm file.
   // Issue: https://github.com/kripken/emscripten/issues/6542.
-  plugins: [new webpack.IgnorePlugin(/(worker_threads)/), new webpack.IgnorePlugin(/(ws)/), new webpack.IgnorePlugin(/(perf_hooks)/)]
+  //plugins: [new webpack.IgnorePlugin(/(worker_threads|ws|perf_hooks)/)]
+  externals: ['worker_threads','ws','perf_hooks']
+//  externals : [ nodeExternals() ]
   
 //	module: {
 //		rules: [
