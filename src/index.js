@@ -96,32 +96,10 @@ async function runMain() {
   assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
   console.log("Core wallet imported mnemonic: " + await walletKeys.getMnemonic());
   console.log("Core wallet imported address: " + await walletKeys.getPrimaryAddress());
-
-////  // import wasm wallet which exports a promise in order to load the WebAssembly module
-////  const MoneroWalletWasm = await require("../src/main/js/wallet/MoneroWalletWasm")();
-////  
-////  let firstReceiveHeight = 453289;
-////  
-////  // demonstrate wasm wallet
-////  let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
-////  let walletWasm = await MoneroWalletWasm.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
-////  console.log("Created random wallet!");
-////  walletWasm = await MoneroWalletWasm.createWalletFromMnemonic("", "supersecretpassword123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, firstReceiveHeight);
-////  console.log("Restored wallet from seed!");
-////  let result = await walletWasm.sync();
-////  console.log("index.js received sync result");
-////  console.log(result);
-////  let height = await walletWasm.getHeight();
-////  console.log("index.js received height result");
-////  console.log(result);
-////  console.log("WASM wallet created");
-////  walletWasm.dummyMethod();
-//  
-//  // sync the wallet
-////  await wallet.sync(undefined, function(progress) {
-////    console.log(progress.percent);
-////  });
-////  console.log("Done syncing?");
+  console.log("Synchronizing core wallet...");
+  await walletCore.sync();
+  console.log("Core wallet balance: " + await walletCore.getBalance());
+  console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
   
   console.log("EXIT MAIN");
 }
