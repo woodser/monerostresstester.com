@@ -9,7 +9,7 @@
 // detect if called from worker
 let isWorker = self.document? false : true;
 if (isWorker) {
-  self.importScripts('monero-javascript.js');
+//  self.importScripts('monero-javascript.js');
   runWorker();
 }
 else runMain();
