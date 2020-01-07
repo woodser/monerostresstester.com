@@ -4,19 +4,28 @@
  * bindings.
  */
 
-"use strict"
+//"use strict"
 
-const assert = require("assert");
-const MoneroJS = require("monero-javascript");
-const MoneroDaemonRpc = MoneroJS.MoneroDaemonRpc;
-const MoneroWalletRpc = MoneroJS.MoneroWalletRpc;
-const MoneroWalletKeys = MoneroJS.MoneroWalletKeys;
-const MoneroWalletCore = MoneroJS.MoneroWalletCore;
+// detect if called from worker
+let isWorker = self.document? false : true;
+if (isWorker) {
+  self.importScripts('monero-javascript.js');
+  runWorker();
+}
+else runMain();
 
-// start the application
-startApp();
-async function startApp() {
-  console.log("Starting app...");
+/**
+ * Main thread.
+ */
+async function runMain() {
+  console.log("RUN MAIN");
+  
+  const assert = require("assert");
+  const MoneroJS = require("monero-javascript");
+  const MoneroDaemonRpc = MoneroJS.MoneroDaemonRpc;
+  const MoneroWalletRpc = MoneroJS.MoneroWalletRpc;
+  const MoneroWalletKeys = MoneroJS.MoneroWalletKeys;
+  const MoneroWalletCore = MoneroJS.MoneroWalletCore;
   
   // demonstrate c++ utilities which use monero-project via webassembly
   const MoneroCppUtils = await MoneroJS.getMoneroUtilsWasm();
@@ -76,43 +85,52 @@ async function startApp() {
   console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
   console.log("Wallet rpc balance: " + await walletRpc.getBalance());
   
-//  // create a random core wallet
-//  let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
-//  let walletCore = await MoneroWalletCore.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
-//  console.log("Core wallet random mnemonic: " + await walletCore.getMnemonic());
-//
-//  // create a core wallet from mnemonic
-//  walletCore = await MoneroWalletCore.createWalletFromMnemonic("", "supersecretpassword123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
-//  assert.equal(await walletCore.getMnemonic(), mnemonic);
-//  assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
-//  console.log("Core wallet imported mnemonic: " + await walletKeys.getMnemonic());
-//  console.log("Core wallet imported address: " + await walletKeys.getPrimaryAddress());
-    
-//  // import wasm wallet which exports a promise in order to load the WebAssembly module
-//  const MoneroWalletWasm = await require("../src/main/js/wallet/MoneroWalletWasm")();
+  // create a random core wallet
+  let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
+  let walletCore = await MoneroWalletCore.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
+  console.log("Core wallet random mnemonic: " + await walletCore.getMnemonic());
+
+  // create a core wallet from mnemonic
+  walletCore = await MoneroWalletCore.createWalletFromMnemonic("", "supersecretpassword123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
+  assert.equal(await walletCore.getMnemonic(), mnemonic);
+  assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
+  console.log("Core wallet imported mnemonic: " + await walletKeys.getMnemonic());
+  console.log("Core wallet imported address: " + await walletKeys.getPrimaryAddress());
+
+////  // import wasm wallet which exports a promise in order to load the WebAssembly module
+////  const MoneroWalletWasm = await require("../src/main/js/wallet/MoneroWalletWasm")();
+////  
+////  let firstReceiveHeight = 453289;
+////  
+////  // demonstrate wasm wallet
+////  let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
+////  let walletWasm = await MoneroWalletWasm.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
+////  console.log("Created random wallet!");
+////  walletWasm = await MoneroWalletWasm.createWalletFromMnemonic("", "supersecretpassword123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, firstReceiveHeight);
+////  console.log("Restored wallet from seed!");
+////  let result = await walletWasm.sync();
+////  console.log("index.js received sync result");
+////  console.log(result);
+////  let height = await walletWasm.getHeight();
+////  console.log("index.js received height result");
+////  console.log(result);
+////  console.log("WASM wallet created");
+////  walletWasm.dummyMethod();
 //  
-//  let firstReceiveHeight = 453289;
-//  
-//  // demonstrate wasm wallet
-//  let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
-//  let walletWasm = await MoneroWalletWasm.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
-//  console.log("Created random wallet!");
-//  walletWasm = await MoneroWalletWasm.createWalletFromMnemonic("", "supersecretpassword123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, firstReceiveHeight);
-//  console.log("Restored wallet from seed!");
-//  let result = await walletWasm.sync();
-//  console.log("index.js received sync result");
-//  console.log(result);
-//  let height = await walletWasm.getHeight();
-//  console.log("index.js received height result");
-//  console.log(result);
-//  console.log("WASM wallet created");
-//  walletWasm.dummyMethod();
+//  // sync the wallet
+////  await wallet.sync(undefined, function(progress) {
+////    console.log(progress.percent);
+////  });
+////  console.log("Done syncing?");
   
-  // sync the wallet
-//  await wallet.sync(undefined, function(progress) {
-//    console.log(progress.percent);
-//  });
-//  console.log("Done syncing?");
+  console.log("EXIT MAIN");
+}
+
+/**
+ * Worker thread.
+ */
+async function runWorker() {
+  console.log("RUN WORKER");
   
-  console.log("DONE");
+  console.log("EXIT WORKER");
 }
