@@ -35,13 +35,16 @@ onmessage = function(e) {
     console.log("Keys-only wallet imported mnemonic: " + await walletKeys.getMnemonic());
     console.log("Keys-only wallet imported address: " + await walletKeys.getPrimaryAddress());
     
+    //const domain = "localhost";
+    const domain = "127.0.0.1";
+    
     // connect to monero-daemon-rpc
     console.log("Connecting to monero-daemon-rpc...");
-    let daemon = new MoneroDaemonRpc({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});
+    let daemon = new MoneroDaemonRpc({uri: "http://" + domain + ":38081", user: "superuser", pass: "abctesting123"});
     console.log("Daemon height: " + await daemon.getHeight());
     
     // connect to monero-wallet-rpc
-    let walletRpc = new MoneroWalletRpc({uri: "http://localhost:38083", user: "rpc_user", pass: "abc123"});
+    let walletRpc = new MoneroWalletRpc({uri: "http://" + domain + ":38083", user: "rpc_user", pass: "abc123"});
     
     // configure the rpc wallet to open or create
     let name = "test_wallet_1";
@@ -72,7 +75,7 @@ onmessage = function(e) {
     console.log("Wallet rpc balance: " + await walletRpc.getBalance());
     
     // create a random core wallet
-    let daemonConnection = new MoneroRpcConnection({uri: "http://localhost:38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
+    let daemonConnection = new MoneroRpcConnection({uri: "http://" + domain + ":38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 
     let walletCore = await MoneroWalletCore.createWalletRandom("", "supersecretpassword123", MoneroNetworkType.STAGENET, daemonConnection, "English");
     console.log("Core wallet random mnemonic: " + await walletCore.getMnemonic());
     
