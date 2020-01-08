@@ -35,8 +35,8 @@ onmessage = function(e) {
     console.log("Keys-only wallet imported mnemonic: " + await walletKeys.getMnemonic());
     console.log("Keys-only wallet imported address: " + await walletKeys.getPrimaryAddress());
     
-    //const domain = "localhost";
-    const domain = "127.0.0.1";
+    const domain = "localhost";
+    //const domain = "127.0.0.1";
     
     // connect to monero-daemon-rpc
     console.log("Connecting to monero-daemon-rpc...");
