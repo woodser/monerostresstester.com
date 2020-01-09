@@ -91,6 +91,12 @@ onmessage = function(e) {
     console.log("Core wallet balance: " + await walletCore.getBalance());
     console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
     
+    // send transaction to self
+    console.log("Sending transaction");
+    let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
+    console.log("Transaction sent successfully");
+    console.log(txSet.getTxs()[0].toJson());
+    
     console.log("EXIT WORKER");
     postMessage("run_demo_done");
   }
