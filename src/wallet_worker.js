@@ -10,17 +10,16 @@ onmessage = function(e) {
   
   async function runWallet() {
     console.log("WORKER loading module");
-    await MoneroUtils.getWasmModule();
+    await MoneroUtils.loadWasmModule();
     console.log("done loading module");
     
     // demonstrate c++ utilities which use monero-project via webassembly
-    const MoneroCppUtils = await getMoneroUtilsWasm();
     let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
-    let binary = MoneroCppUtils.jsonToBinary(json);
+    let binary = MoneroUtils.jsonToBinary(json);
     assert(binary);
-    let json2 = MoneroCppUtils.binaryToJson(binary);
+    let json2 = MoneroUtils.binaryToJson(binary);
     assert.deepEqual(json2, json);
-    console.log("C++ utils to serialize to/from Monero\'s portable storage format working");
+    console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
     
     // create a random keys-only wallet
     let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
