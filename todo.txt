@@ -1,2 +1,5 @@
+do not load wasm file more than once
+
+WEB APPS
 build wallet web app pictured in src/mockups/wallet/all.png
 build "stress testor" web app which transacts until it runs out of balance with wallet to deposit/withdraw funds
