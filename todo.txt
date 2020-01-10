@@ -1,2 +1,2 @@
-monerod not returning cors header "Access-Control-Allow-Origin" when started with non-localhost
-pre-compress wasm file so server is not compressing when requested: https://emscripten.org/docs/compiling/WebAssembly.html?highlight=wasm
+build wallet web app pictured in src/mockups/wallet/all.png
+build "stress testor" web app which transacts until it runs out of balance with wallet to deposit/withdraw funds
