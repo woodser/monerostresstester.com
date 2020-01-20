@@ -86,7 +86,7 @@ onmessage = function(e) {
     console.log("Core wallet imported mnemonic: " + await walletKeys.getMnemonic());
     console.log("Core wallet imported address: " + await walletKeys.getPrimaryAddress());
     console.log("Synchronizing core wallet...");
-    await walletCore.sync();
+    await walletCore.sync(new WalletSyncPrinter());
     console.log("Core wallet balance: " + await walletCore.getBalance());
     console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
     
@@ -98,6 +98,23 @@ onmessage = function(e) {
     
     console.log("EXIT WORKER");
     postMessage("run_demo_done");
+  }
+  
+  /**
+   * Print sync progress every X blocks.
+   */
+  class WalletSyncPrinter extends MoneroSyncListener {
+    
+    constructor(blockResolution) {
+      super();
+      this.blockResolution = blockResolution ? blockResolution : 2500;
+    }
+    
+    onSyncProgress(height, startHeight, endHeight, percentDone, message) {
+      if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
+        console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
+      }
+    }
   }
   
   //  
