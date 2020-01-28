@@ -26,8 +26,8 @@ onmessage = function(e) {
     console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
 
     // create a keys-only wallet from mnemonic
-    let mnemonic = "megabyte ghetto syllabus opposite firm january velvet kennel often bugs luggage nucleus volcano fainted ripped biology firm sushi putty swagger dove obedient unnoticed washing swagger";
-    let primaryAddress = "58De3pTCy1CFkh2xwTDCPwiTzkby13CZfJ262vak9nmuSUAbayvYnXaJY7WNGJMJCMBdFn4opqYCrVP3rP3irUZyDMht94C";  // just for reference
+    let mnemonic = "petals frown aerial leisure ruined needed pruned object misery items sober agile lopped galaxy mouth glide business sieve dizzy imitate ritual nucleus chlorine cottage ruined";
+    let primaryAddress = "54tjXUgQVYNXQCJM4CatRQZMacZ2Awq4NboKiUYtUJrhgYZjiDhMz4ccuYRcMTno6V9mzKFXzfY8pbPnGmu2ukfWABV75k4";  // just for reference
     walletKeys = await MoneroWalletKeys.createWalletFromMnemonic(MoneroNetworkType.STAGENET, mnemonic);
     assert.equal(await walletKeys.getMnemonic(), mnemonic);
     assert.equal(await walletKeys.getPrimaryAddress(), primaryAddress);
@@ -49,7 +49,7 @@ onmessage = function(e) {
     // configure the rpc wallet to open or create
     let name = "test_wallet_1";
     let password = "supersecretpassword123";
-    let restoreHeight = 453289;
+    let restoreHeight = 501788;
     
     // open or create rpc wallet
     try {
