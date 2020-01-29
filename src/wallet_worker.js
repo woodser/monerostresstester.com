@@ -88,9 +88,9 @@ onmessage = function(e) {
     
     // synchronize core wallet, start background syncing with listener
     console.log("Synchronizing core wallet...");
-    await walletCore.sync();
-    await walletCore.addListener(new WalletSyncPrinter());
-    await walletCore.startSyncing();
+    await walletCore.sync(new WalletSyncPrinter());               // synchronize and print progress
+    await walletCore.addListener(new WalletSendReceivePrinter()); // listen for and print send/receive notifications
+    await walletCore.startSyncing();                              // synchronize in background
     
     // print balance and number of transactions
     console.log("Core wallet balance: " + await walletCore.getBalance());
@@ -121,15 +121,27 @@ onmessage = function(e) {
         console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
       }
     }
-
-    onNewBlock(height) { }
+  }
+  
+  
+  /**
+   * Print sync progress every X blocks.
+   */
+  class WalletSendReceivePrinter extends MoneroWalletListener {
+    
+    constructor(blockResolution) {
+      super();
+    }
 
     onOutputReceived(output) {
       console.log("Wallet received output!");
       console.log(output.toJson());
     }
     
-    onOutputSpent(output) { }
+    onOutputSpent(output) {
+      console.log("Wallet spent output!");
+      console.log(output.toJson());
+    }
   }
   
   //  
