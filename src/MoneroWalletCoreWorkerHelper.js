@@ -7,14 +7,14 @@ onmessage = function(e) {
   this[e.data[0]].apply(null, e.data.slice(1));
 }
 
-this.create_wallet_random = function() {
-  console.log("wallet worker create_wallet_random");
-  postMessage(["on_create_wallet_random"]);
+this.createWalletRandom = function() {
+  console.log("wallet worker createWalletRandom");
+  postMessage(["onCreateWalletRandom"]);
 }
 
-this.get_mnemonic = function() {
-  console.log("wallet worker get_mnemonic");
-  postMessage(["on_get_mnemonic", "my mnemonic!"]);
+this.getMnemonic = function() {
+  console.log("wallet worker getMnemonic");
+  postMessage(["onGetMnemonic", "my mnemonic!"]);
 }
 
 async function loadScripts() {

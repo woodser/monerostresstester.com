@@ -45,11 +45,11 @@ class MoneroWalletCoreWorker extends MoneroWallet {
     console.log("MoneroWalletCoreWorker.getMnemonic()");
     let that = this;
     return new Promise(function(resolve, reject) {
-      that.callbacks["on_get_mnemonic"] = function(mnemonic) {
+      that.callbacks["onGetMnemonic"] = function(mnemonic) {
         console.log("resolving with mnemonic: " + mnemonic);
         resolve(mnemonic);
       }
-      that.worker.postMessage(["get_mnemonic"]);
+      that.worker.postMessage(["getMnemonic"]);
     });
   }
 }
