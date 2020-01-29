@@ -1,13 +1,13 @@
 /**
- * Web worker to interact with a core wallet using messages.
+ * Web worker run a core wallet using messages.
  */
 onmessage = function(e) {
   console.log("MoneroWalletCoreWorkerHelper.onmessage()!");
   console.log(e);
-  this[e.data[0]].apply(null, e.data.slice(1));
+  self[e.data[0]].apply(null, e.data.slice(1));
 }
 
-this.createWalletRandom = async function() {
+self.createWalletRandom = async function(path, password, networkType, daemonUriOrConfig, language) {
   console.log("wallet worker createWalletRandom");
   
   // load scripts // TODO: load once
@@ -17,18 +17,17 @@ this.createWalletRandom = async function() {
   await MoneroUtils.loadWasmModule();
   console.log("done loading scripts and module");
   
-  // demonstrate c++ utilities which use monero-project via webassembly
-  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
-  let binary = MoneroUtils.jsonToBinary(json);
-  let json2 = MoneroUtils.binaryToJson(binary);
-  console.log(json);
-  console.log(json2);
-  console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
+  console.log("Creating wallet with password: " + password);
   
+  // create the wallet
+  let daemonUriOrConnection = new MoneroRpcConnection(daemonUriOrConfig);
+  self.wallet = await MoneroWalletCore.createWalletRandom(path, password, networkType, daemonUriOrConnection, language);
+  
+  // notify wallet creation
   postMessage(["onCreateWalletRandom"]);
 }
 
-this.getMnemonic = async function() {
+self.getMnemonic = async function() {
   console.log("wallet worker getMnemonic");
-  postMessage(["onGetMnemonic", "my mnemonic!"]);
+  postMessage(["onGetMnemonic", await self.wallet.getMnemonic()]);
 }

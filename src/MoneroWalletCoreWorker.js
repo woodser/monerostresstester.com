@@ -1,25 +1,26 @@
 /**
- * Implements a MoneroWallet by wrapping a web worker to interact with a core wallet using messages.
+ * Implements a MoneroWallet by messaging a web worker which runs a core wallet.
  * 
  * TODO: extends MoneroWallet
  */
 class MoneroWalletCoreWorker extends MoneroWallet {
   
   static async createWalletRandom(path, password, networkType, daemonUriOrConnection, language) {
+    
+    // create a wallet worker
+    let worker = new Worker("MoneroWalletCoreWorkerHelper.js");
+    
+    // return promise which resolves when worker creates wallet
     return new Promise(function(resolve, reject) {
-
-      // create a wallet worker
-      let worker = new Worker("MoneroWalletCoreWorkerHelper.js");
       
-      // receive messages from worker
+      // listen worker to create wallet
       worker.onmessage = function(e) {
-        if (e.data[0] === "onCreateWalletRandom") {
-          resolve(new MoneroWalletCoreWorker(worker));
-        }
+        if (e.data[0] === "onCreateWalletRandom") resolve(new MoneroWalletCoreWorker(worker));
       }
       
       // create wallet in worker
-      worker.postMessage(["createWalletRandom"]);
+      let daemonUriOrConfig = daemonUriOrConnection instanceof MoneroRpcConnection ? daemonUriOrConnection.config : daemonUriOrConnection;
+      worker.postMessage(["createWalletRandom"].concat([path, password, networkType, daemonUriOrConfig, language]));
     });
   }
   
