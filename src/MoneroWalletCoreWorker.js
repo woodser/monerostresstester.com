@@ -50,6 +50,23 @@ class MoneroWalletCoreWorker extends MoneroWallet {
       that.worker.postMessage(["getMnemonic"]);
     });
   }
+  
+  async sync(listenerOrStartHeight, startHeight) {
+    console.log("MoneroWalletCoreWorker.sync(...)");
+    
+//    // normalize params
+//    startHeight = listenerOrStartHeight instanceof MoneroSyncListener ? startHeight : listenerOrStartHeight;
+//    let listener = listenerOrStartHeight instanceof MoneroSyncListener ? listenerOrStartHeight : undefined;
+//    if (startHeight === undefined) startHeight = Math.max(await this.getHeight(), await this.getRestoreHeight());
+//    if (listener !== undefined) throw new Error("Listener in web worker wrapper not supported");
+    
+    // sync the wallet in worker
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onSync"] = function(result) { resolve(result); }
+      that.worker.postMessage(["sync"]);
+    });
+  }
 }
 
 module.exports = MoneroWalletCoreWorker;

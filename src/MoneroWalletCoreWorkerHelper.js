@@ -1,5 +1,5 @@
 /**
- * Web worker run a core wallet using messages.
+ * Web worker to run a core wallet using messages.
  */
 onmessage = function(e) {
   console.log("MoneroWalletCoreWorkerHelper.onmessage()!");
@@ -10,7 +10,7 @@ onmessage = function(e) {
 self.createWalletRandom = async function(path, password, networkType, daemonUriOrConfig, language) {
   console.log("wallet worker createWalletRandom");
   
-  // load scripts // TODO: load once
+  // load scripts // TODO: load once, in a different place
   console.log("WORKER loading scripts and and module");
   self.importScripts('monero-javascript-wasm.js');
   self.importScripts('worker_imports.js');
@@ -28,6 +28,11 @@ self.createWalletRandom = async function(path, password, networkType, daemonUriO
 }
 
 self.getMnemonic = async function() {
-  console.log("wallet worker getMnemonic");
+  console.log("wallet worker getMnemonic()");
   postMessage(["onGetMnemonic", await self.wallet.getMnemonic()]);
+}
+
+self.sync = async function() {
+  console.log("wallet worker sync()");
+  postMessage(["onSync", await self.wallet.sync()]);
 }
