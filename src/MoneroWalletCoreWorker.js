@@ -3,7 +3,7 @@
  * 
  * TODO: extends MoneroWallet
  */
-class MoneroWalletCoreWorker {
+class MoneroWalletCoreWorker extends MoneroWallet {
   
   static async createWalletRandom(path, password, networkType, daemonUriOrConnection, language) {
     return new Promise(function(resolve, reject) {
@@ -32,6 +32,7 @@ class MoneroWalletCoreWorker {
    * @param {Worker} worker is a web worker to communicate with via messages
    */
   constructor(worker) {
+    super();
     this.worker = worker;
     this.worker.onmessage = this._onWorkerPostMessage;
   }
