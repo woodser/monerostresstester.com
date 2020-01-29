@@ -13,13 +13,13 @@ class MoneroWalletCoreWorker extends MoneroWallet {
       
       // receive messages from worker
       worker.onmessage = function(e) {
-        if (e.data[0] === "on_create_wallet_random") {
+        if (e.data[0] === "onCreateWalletRandom") {
           resolve(new MoneroWalletCoreWorker(worker));
         }
       }
       
       // create wallet in worker
-      worker.postMessage(["create_wallet_random"]);
+      worker.postMessage(["createWalletRandom"]);
     });
   }
   
