@@ -13,13 +13,13 @@ class MoneroWalletCoreWorker extends MoneroWallet {
       
       // receive messages from worker
       worker.onmessage = function(e) {
-        if (e.data === "on_create_wallet_random") {
+        if (e.data[0] === "on_create_wallet_random") {
           resolve(new MoneroWalletCoreWorker(worker));
         }
       }
       
       // create wallet in worker
-      worker.postMessage("create_wallet_random");
+      worker.postMessage(["create_wallet_random"]);
     });
   }
   
@@ -34,18 +34,23 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   constructor(worker) {
     super();
     this.worker = worker;
-    this.worker.onmessage = this._onWorkerPostMessage;
+    this.callbacks = {};
+    let that = this;
+    this.worker.onmessage = function(e) {
+      that.callbacks[e.data[0]].apply(null, e.data.slice(1));
+    }
   }
   
   async getMnemonic() {
     console.log("MoneroWalletCoreWorker.getMnemonic()");
-    this.worker.postMessage("get_mnemonic");
-    throw new Error("Not implemented");
-  }
-  
-  _onWorkerPostMessage(e) {
-    console.log("MoneroWalletCoreWorker received message!");
-    console.log(e);
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["on_get_mnemonic"] = function(mnemonic) {
+        console.log("resolving with mnemonic: " + mnemonic);
+        resolve(mnemonic);
+      }
+      that.worker.postMessage(["get_mnemonic"]);
+    });
   }
 }
 

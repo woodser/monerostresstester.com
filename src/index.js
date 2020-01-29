@@ -32,8 +32,8 @@ async function runMain() {
   //let domain = "127.0.0.1";
   let daemonConnection = new MoneroRpcConnection({uri: protocol + "://" + domain + ":38081", user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password"
   let walletCoreWorker = await MoneroWalletCoreWorker.createWalletRandom("", "abctesting123", MoneroNetworkType.STAGNET, daemonConnection);
-  //let mnemonic = await walletCoreWorker.getMnemonic();
-  //console.log("Got mnemonic from wallet worker: " + mnemonic);
+  let mnemonic = await walletCoreWorker.getMnemonic();
+  console.log("Got mnemonic from wallet worker: " + mnemonic);
   
   // start old worker
   var worker = new Worker('wallet_worker.js');
