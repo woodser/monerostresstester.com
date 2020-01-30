@@ -1,9 +1,12 @@
 /**
  * Web worker to run a core wallet using messages.
  */
-onmessage = function(e) {
+onmessage = async function(e) {
   console.log("MoneroWalletCoreWorkerHelper.onmessage()!");
   console.log(e);
+  
+  // TODO load one time
+  
   self[e.data[0]].apply(null, e.data.slice(1));
 }
 
@@ -25,6 +28,10 @@ self.createWalletRandom = async function(path, password, networkType, daemonUriO
   
   // notify wallet creation
   postMessage(["onCreateWalletRandom"]);
+}
+
+self.createWalletFromMnemonic = async function() {
+  throw new Error("worker helper createWalletFromMnemonic() not implemented");
 }
 
 self.getMnemonic = async function() {

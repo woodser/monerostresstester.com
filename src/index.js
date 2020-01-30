@@ -34,7 +34,7 @@ async function runMain() {
   let walletCoreWorker = await MoneroWalletCoreWorker.createWalletRandom("", "abctesting123", MoneroNetworkType.STAGENET, daemonConnection);
   let mnemonic = await walletCoreWorker.getMnemonic();
   console.log("Got mnemonic from wallet worker: " + mnemonic);
-  let syncResult = await walletCoreWorker.sync();
+  let syncResult = await walletCoreWorker.sync(new WalletSyncPrinter());
   console.log("Done syncing!!!");
   console.log(syncResult);
   
@@ -55,4 +55,21 @@ async function runMain() {
 async function runWorker() {
   console.log("RUN INTERNAL WORKER");
   console.log("EXIT INTERNAL WORKER");
+}
+
+/**
+ * Print sync progress every X blocks.
+ */
+class WalletSyncPrinter extends MoneroWalletListener {
+  
+  constructor(blockResolution) {
+    super();
+    this.blockResolution = blockResolution ? blockResolution : 2500;
+  }
+  
+  onSyncProgress(height, startHeight, endHeight, percentDone, message) {
+    if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
+      console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
+    }
+  }
 }
