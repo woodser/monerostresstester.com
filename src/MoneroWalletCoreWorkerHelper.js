@@ -32,6 +32,15 @@ self.getMnemonic = async function() {
   postMessage(["onGetMnemonic", await self.wallet.getMnemonic()]);
 }
 
+self.getRestoreHeight = async function() {
+  console.log("wallet worker getRestoreHeight()");
+  postMessage(["onGetRestoreHeight", await self.wallet.getRestoreHeight()]);
+}
+self.getHeight = async function() {
+  console.log("wallet worker getHeight()");
+  postMessage(["onGetHeight", await self.wallet.getHeight()]);
+}
+
 self.sync = async function() {
   console.log("wallet worker sync()");
   postMessage(["onSync", await self.wallet.sync()]);
