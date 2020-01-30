@@ -37,7 +37,7 @@ onmessage = function(e) {
     const protocol = "http";
     const host = "localhost";
     //const host = "127.0.0.1";
-    const port = 30381;
+    const port = 38081;
     
     // connect to monero-daemon-rpc
     console.log("Connecting to monero-daemon-rpc...");
