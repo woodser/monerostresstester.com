@@ -41,7 +41,7 @@ onmessage = function(e) {
     
     // connect to monero-daemon-rpc
     console.log("Connecting to monero-daemon-rpc...");
-    let daemon = new MoneroDaemonRpc({protocol: protocol, host: host, port: port, user: "superuser", pass: "abctesting1234"});
+    let daemon = new MoneroDaemonRpc({protocol: protocol, host: host, port: port, user: "superuser", pass: "abctesting123"});
     console.log("Daemon height: " + await daemon.getHeight());
     
     // connect to monero-wallet-rpc
