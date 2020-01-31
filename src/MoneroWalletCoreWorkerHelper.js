@@ -110,11 +110,11 @@ self.stopSyncing = async function() {
 }
 
 self.getBalance = async function() {
-  postMessage(["onGetBalance", await self.wallet.getBalance()]);
+  postMessage(["onGetBalance", (await self.wallet.getBalance()).toString()]);
 }
 
 self.getUnlockedBalance = async function() {
-  postMessage(["onGetUnlockedBalance", await self.wallet.getUnlockedBalance()]);
+  postMessage(["onGetUnlockedBalance", (await self.wallet.getUnlockedBalance()).toString()]);
 }
 
 self.getTxs = async function(query) {

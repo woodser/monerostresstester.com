@@ -321,7 +321,7 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   async getBalance(accountIdx, subaddressIdx) {
     let that = this;
     return new Promise(function(resolve, reject) {
-      that.callbacks["onGetBalance"] = function(balance) { resolve(balance); }
+      that.callbacks["onGetBalance"] = function(balance) { resolve(new BigInteger(balance)); }
       that.worker.postMessage(["getBalance", accountIdx, subaddressIdx]);
     });
   }
@@ -329,7 +329,7 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   async getUnlockedBalance(accountIdx, subaddressIdx) {
     let that = this;
     return new Promise(function(resolve, reject) {
-      that.callbacks["onGetUnlockedBalance"] = function(unlockedBalance) { resolve(unlockedBalance); }
+      that.callbacks["onGetUnlockedBalance"] = function(unlockedBalance) { resolve(new BigInteger(unlockedBalance)); }
       that.worker.postMessage(["getUnlockedBalance", accountIdx, subaddressIdx]);
     });
   }
