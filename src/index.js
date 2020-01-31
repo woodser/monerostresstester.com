@@ -61,7 +61,7 @@ async function runMain() {
   console.log("Sending transaction");
   let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
   console.log("Transaction sent successfully");
-  console.log(txSet.getTxs()[0].toJson());
+  console.log(txSet.getTxs()[0].getHash());
   
 //  // start old worker
 //  var worker = new Worker('wallet_worker.js');

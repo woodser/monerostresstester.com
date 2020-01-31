@@ -225,8 +225,8 @@ class MoneroWalletCoreWorker extends MoneroWallet {
     let listenerId = wrappedListener.getId();
     this.callbacks["onSyncProgress_" + listenerId] = [wrappedListener.onSyncProgress, wrappedListener];
     this.callbacks["onNewBlock_" + listenerId] = [wrappedListener.onNewBlock, wrappedListener];
-    this.callbacks["onOutputSpent_" + listenerId] = [wrappedListener.onOutputReceived, wrappedListener];
-    this.callbacks["onOutputReceived_" + listenerId] = [wrappedListener.onOutputSpent, wrappedListener];
+    this.callbacks["onOutputReceived_" + listenerId] = [wrappedListener.onOutputReceived, wrappedListener];
+    this.callbacks["onOutputSpent_" + listenerId] = [wrappedListener.onOutputSpent, wrappedListener];
     this.wrappedListeners.push(wrappedListener);
     this.worker.postMessage(["addListener", listenerId]);
   }
@@ -397,7 +397,8 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   async sendSplit(requestOrAccountIndex, address, amount, priority) {
     let that = this;
     return new Promise(function(resolve, reject) {
-      that.callbacks["onSendSplit"] = function(txSet) { resolve(txSet); }
+      that.callbacks["onSendSplit"] = function(txSet) { resolve(new MoneroTxSet(txSet)); }
+      requestOrAccountIndex = requestOrAccountIndex instanceof MoneroSendRequest ? requestOrAccountIndex.toJson() : requestOrAccountIndex;  // serialize
       that.worker.postMessage(["sendSplit", requestOrAccountIndex, address, amount, priority]);
     });
   }
@@ -605,12 +606,14 @@ class WalletWorkerListener {
     this.listener.onNewBlock(height);
   }
 
-  onOutputReceived(output) {
-    this.listener.onOutputReceived(output);
+  onOutputReceived(blockJson) {
+    let block = new MoneroBlock(blockJson);
+    this.listener.onOutputReceived(block.getTxs()[0].getOutputs()[0]);
   }
   
-  onOutputSpent(output) {
-    this.listener.onOutputSpent(output);
+  onOutputSpent(blockJson) {
+    let block = new MoneroBlock(blockJson);
+    this.listener.onOutputSpent(block.getTxs()[0].getInputs()[0]);
   }
 }
   

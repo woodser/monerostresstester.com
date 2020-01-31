@@ -73,11 +73,15 @@ self.addListener = async function(listenerId) {
     }
 
     onOutputReceived(output) {
-      this.worker.postMessage(["onOutputReceived_" + this.getId(), output]);  // TODO: serialize from block, deserialize in MoneroWalletCore
+      let block = output.getTx().getBlock();
+      if (block === undefined) block = new MoneroBlock().setTxs([output.getTx()]);
+      this.worker.postMessage(["onOutputReceived_" + this.getId(), block.toJson()]);  // serialize from root block
     }
     
     onOutputSpent(output) {
-      this.worker.postMessage(["onOutputSpent_" + this.getId(), output]);
+      let block = output.getTx().getBlock();
+      if (block === undefined) block = new MoneroBlock().setTxs([output.getTx()]);
+      this.worker.postMessage(["onOutputSpent_" + this.getId(), block.toJson()]);     // serialize from root block
     }
   }
   
@@ -122,5 +126,6 @@ self.getTxs = async function(query) {
 }
 
 self.sendSplit = async function(requestOrAccountIndex, address, amount, priority) {
-  postMessage(["onSendSplit", await self.wallet.sendSplit(requestOrAccountIndex, address, amount, priority)]);
+  if (typeof requestOrAccountIndex === "object") requestOrAccountIndex = new MoneroSendRequest(requestOrAccountIndex);
+  postMessage(["onSendSplit", (await self.wallet.sendSplit(requestOrAccountIndex, address, amount, priority)).toJson()]);
 }
