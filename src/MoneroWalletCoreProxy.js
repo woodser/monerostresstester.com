@@ -1,5 +1,5 @@
 /**
- * Implements a MoneroWallet by messaging a web worker which runs a core wallet.
+ * Implements a MoneroWallet by proxying requests to a web worker which runs a core wallet.
  * 
  * TODO: extends MoneroWallet
  * TODO: sort these methods according to master sort in MoneroWallet.js
