@@ -3,10 +3,12 @@
  * 
  * TODO: extends MoneroWallet
  * TODO: sort these methods according to master sort in MoneroWallet.js
+ * TODO: probably only allow one listener to web worker then propogate to registered listeners for performance
+ * TODO: ability to recycle worker for use in another wallet
  */
 class MoneroWalletCoreWorker extends MoneroWallet {
   
-  static async createWalletRandom(path, password, networkType, daemonUriOrConnection, language) {
+  static async createWalletRandom(password, networkType, daemonUriOrConnection, language) {
     
     // create a wallet worker
     let worker = new Worker("MoneroWalletCoreWorkerHelper.js");
@@ -21,7 +23,26 @@ class MoneroWalletCoreWorker extends MoneroWallet {
       
       // create wallet in worker
       let daemonUriOrConfig = daemonUriOrConnection instanceof MoneroRpcConnection ? daemonUriOrConnection.config : daemonUriOrConnection;
-      worker.postMessage(["createWalletRandom"].concat([path, password, networkType, daemonUriOrConfig, language]));
+      worker.postMessage(["createWalletRandom", password, networkType, daemonUriOrConfig, language]);
+    });
+  }
+  
+  static async createWalletFromMnemonic(password, networkType, mnemonic, daemonUriOrConnection, restoreHeight, seedOffset) {
+    
+    // create a wallet worker
+    let worker = new Worker("MoneroWalletCoreWorkerHelper.js");
+    
+    // return promise which resolves when worker creates wallet
+    return new Promise(function(resolve, reject) {
+      
+      // listen worker to create wallet
+      worker.onmessage = function(e) {
+        if (e.data[0] === "onCreateWalletFromMnemonic") resolve(new MoneroWalletCoreWorker(worker));
+      }
+      
+      // create wallet in worker
+      let daemonUriOrConfig = daemonUriOrConnection instanceof MoneroRpcConnection ? daemonUriOrConnection.config : daemonUriOrConnection;
+      worker.postMessage(["createWalletFromMnemonic", password, networkType, mnemonic, daemonUriOrConfig, restoreHeight, seedOffset]);
     });
   }
   
@@ -38,8 +59,20 @@ class MoneroWalletCoreWorker extends MoneroWallet {
     this.worker = worker;
     this.callbacks = {};
     let that = this;
+    this.wrappedListeners = [];
     this.worker.onmessage = function(e) {
-      that.callbacks[e.data[0]].apply(null, e.data.slice(1));
+      
+      // lookup callback function and this arg
+      let thisArg = null;
+      let callbackFn = that.callbacks[e.data[0]];
+      if (callbackFn === undefined) throw new Error("No worker callback function defined for key '" + e.data[0] + "'");
+      if (callbackFn instanceof Array) {  // this arg may be stored with callback function
+        thisArg = callbackFn[1];
+        callbackFn = callbackFn[0];
+      }
+      
+      // invoke callback function with this arg and arguments
+      callbackFn.apply(thisArg, e.data.slice(1));
     }
   }
   
@@ -93,7 +126,11 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   }
   
   async getAddress(accountIdx, subaddressIdx) {
-    throw new Error("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onGetAddress"] = function(address) { resolve(address); }
+      that.worker.postMessage(["getAddress", accountIdx, subaddressIdx]);
+    });
   }
   
   async getAddressIndex(address) {
@@ -194,22 +231,43 @@ class MoneroWalletCoreWorker extends MoneroWallet {
     startHeight = listenerOrStartHeight instanceof MoneroSyncListener ? startHeight : listenerOrStartHeight;
     let listener = listenerOrStartHeight instanceof MoneroSyncListener ? listenerOrStartHeight : undefined;
     if (startHeight === undefined) startHeight = Math.max(await this.getHeight(), await this.getRestoreHeight());
-//    if (listener !== undefined) throw new Error("Listener in web worker wrapper not supported");
+    
+    // wrap and register sync listener as wallet listener if given
+    let syncListenerWrapper = undefined;
+    if (listener !== undefined) {
+      syncListenerWrapper = new SyncListenerWrapper(listener);
+      await this.addListener(syncListenerWrapper);
+    }
     
     // sync the wallet in worker
     let that = this;
-    return new Promise(function(resolve, reject) {
+    let result = await new Promise(function(resolve, reject) {
       that.callbacks["onSync"] = function(result) { resolve(result); }
       that.worker.postMessage(["sync"]);
     });
+    
+    // unregister sync listener wrapper
+    if (syncListenerWrapper !== undefined) {  // TODO: test that this is executed with error e.g. sync an unconnected wallet
+      await that.removeListener(syncListenerWrapper); // unregister sync listener
+    }
+    
+    return result;
   }
   
   async startSyncing() {
-    throw new MoneroError("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onStartSyncing"] = function() { resolve(); }
+      that.worker.postMessage(["startSyncing"]);
+    });
   }
     
   async stopSyncing() {
-    throw new MoneroError("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onStopSyncing"] = function() { resolve(); }
+      that.worker.postMessage(["stopSyncing"]);
+    });
   }
   
   /**
@@ -218,7 +276,14 @@ class MoneroWalletCoreWorker extends MoneroWallet {
    * @param {MoneroWalletListener} listener is the listener to receive wallet notifications
    */
   async addListener(listener) {
-    throw new Error("Not implemented");
+    let wrappedListener = new WalletWorkerListener(listener);
+    let listenerId = wrappedListener.getId();
+    this.callbacks["onSyncProgress_" + listenerId] = [wrappedListener.onSyncProgress, wrappedListener];
+    this.callbacks["onNewBlock_" + listenerId] = [wrappedListener.onNewBlock, wrappedListener];
+    this.callbacks["onOutputSpent_" + listenerId] = [wrappedListener.onOutputReceived, wrappedListener];
+    this.callbacks["onOutputReceived_" + listenerId] = [wrappedListener.onOutputSpent, wrappedListener];
+    this.wrappedListeners.push(wrappedListener);
+    this.worker.postMessage(["addListener", listenerId]);
   }
   
   /**
@@ -227,7 +292,19 @@ class MoneroWalletCoreWorker extends MoneroWallet {
    * @param {MoneroWalletListener} listener is the listener to unregister
    */
   async removeListener(listener) {
-    throw new Error("Not implemented");
+    for (let i = 0; i < this.wrappedListeners.length; i++) {
+      if (this.wrappedListeners[i].getListener() === listener) {
+        let listenerId = this.wrappedListeners[i].getId();
+        this.worker.postMessage(["removeListener", listenerId]);
+        delete this.callbacks["onSyncProgress_" + listenerId];
+        delete this.callbacks["onNewBlock_" + listenerId];
+        delete this.callbacks["onOutputSpent_" + listenerId];
+        delete this.callbacks["onOutputReceived_" + listenerId];
+        this.wrappedListeners.splice(i, 1);
+        return;
+      }
+    }
+    throw new MoneroError("Listener is not registered to wallet");
   }
   
   /**
@@ -484,6 +561,59 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   
   async close() {
     throw new Error("Not implemented");
+  }
+}
+
+/**
+ * Internal listener to bridge notifications to external listeners.
+ */
+class WalletWorkerListener {
+  
+  constructor(listener) {
+    this.id = GenUtils.uuidv4();
+    this.listener = listener;
+  }
+  
+  getId() {
+    return this.id;
+  }
+  
+  getListener() {
+    return this.listener;
+  }
+  
+  onSyncProgress(height, startHeight, endHeight, percentDone, message) {
+    this.listener.onSyncProgress(height, startHeight, endHeight, percentDone, message);
+  }
+
+  onNewBlock(height) {
+    this.listener.onNewBlock(height);
+  }
+
+  onOutputReceived(output) {
+    this.listener.onOutputReceived(output);
+  }
+  
+  onOutputSpent(output) {
+    this.listener.onOutputSpent(output);
+  }
+}
+  
+/**
+ * Wraps a sync listener as a general wallet listener.
+ * 
+ * TODO: is this type necessary in JS?
+ * TODO: this type is duplicated in MoneroWalletCore - either refactor or collapse sync listener and wallet listener
+ */
+class SyncListenerWrapper extends MoneroWalletListener {
+  
+  constructor(listener) {
+    super();
+    this.listener = listener;
+  }
+  
+  onSyncProgress(height, startHeight, endHeight, percentDone, message) {
+    this.listener.onSyncProgress(height, startHeight, endHeight, percentDone, message);
   }
 }
 
