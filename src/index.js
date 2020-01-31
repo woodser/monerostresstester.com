@@ -56,6 +56,7 @@ async function runMain() {
   // print balance and number of transactions
   console.log("Core wallet balance: " + await walletCore.getBalance());
   console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
+  console.log("First hash: " + (await walletCore.getTxs())[0].getHash());
   
   // send transaction to self, listener will notify when output is received
   console.log("Sending transaction");

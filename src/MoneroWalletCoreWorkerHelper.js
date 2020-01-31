@@ -121,8 +121,32 @@ self.getUnlockedBalance = async function() {
   postMessage(["onGetUnlockedBalance", (await self.wallet.getUnlockedBalance()).toString()]);
 }
 
+// TODO: easier or more efficient way than serializing from root blocks?
 self.getTxs = async function(query) {
-  postMessage(["onGetTxs", await self.wallet.getTxs(query)]);
+  query = undefined;  // TODO: deserialize MoneroTxQuery as block json string
+  let txs = await self.wallet.getTxs(query);
+  
+  // collect unique blocks to preserve model relationships as trees (based on monero_wasm_bridge.cpp::get_txs)
+  let unconfirmedBlock = undefined;
+  let blocks = [];
+  let seenBlocks = new Set();
+  for (let tx of txs) {
+    if (!tx.getBlock()) {
+      if (!unconfirmedBlock) unconfirmedBlock = new MoneroBlock().setTxs([]);
+      tx.setBlock(unconfirmedBlock);
+      unconfirmedBlock.getTxs().push(tx);
+    }
+    if (!seenBlocks.has(tx.getBlock())) {
+      seenBlocks.add(tx.getBlock());
+      blocks.push(tx.getBlock());
+    }
+  }
+  
+  // serialize blocks to json
+  for (let i = 0; i < blocks.length; i++) blocks[i] = blocks[i].toJson();
+  
+  // wrap and serialize response
+  postMessage(["onGetTxs", JSON.stringify({blocks: blocks})]);
 }
 
 self.sendSplit = async function(requestOrAccountIndex, address, amount, priority) {

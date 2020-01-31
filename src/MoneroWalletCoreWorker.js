@@ -356,9 +356,13 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   
   async getTxs(query) {
     let that = this;
+    query = MoneroWalletCore._normalizeTxQuery(query);
     return new Promise(function(resolve, reject) {
-      that.callbacks["onGetTxs"] = function(txs) { resolve(txs); }
-      that.worker.postMessage(["getTxs", query]);
+      that.callbacks["onGetTxs"] = function(blocksJsonStr) {
+        let txs = MoneroWalletCore._blocksJsonToTxs(query, blocksJsonStr); // initialize txs from blocks json string // TODO: using internal private method, make public?
+        resolve(txs);
+      }
+      that.worker.postMessage(["getTxs", query.getBlock().toJson()]);
     });
   }
   
@@ -398,7 +402,7 @@ class MoneroWalletCoreWorker extends MoneroWallet {
     let that = this;
     return new Promise(function(resolve, reject) {
       that.callbacks["onSendSplit"] = function(txSet) { resolve(new MoneroTxSet(txSet)); }
-      requestOrAccountIndex = requestOrAccountIndex instanceof MoneroSendRequest ? requestOrAccountIndex.toJson() : requestOrAccountIndex;  // serialize
+      requestOrAccountIndex = requestOrAccountIndex instanceof MoneroSendRequest ? requestOrAccountIndex.toJson() : requestOrAccountIndex;
       that.worker.postMessage(["sendSplit", requestOrAccountIndex, address, amount, priority]);
     });
   }
