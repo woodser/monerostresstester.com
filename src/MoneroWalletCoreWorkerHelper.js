@@ -18,14 +18,12 @@ self.initOneTime = async function() {
 }
 
 self.createWalletRandom = async function(password, networkType, daemonUriOrConfig, language) {
-  console.log("wallet worker createWalletRandom");
   let daemonConnection = new MoneroRpcConnection(daemonUriOrConfig);
   self.wallet = await MoneroWalletCore.createWalletRandom("", password, networkType, daemonConnection, language);
   postMessage(["onCreateWalletRandom"]);
 }
 
 self.createWalletFromMnemonic = async function(password, networkType, mnemonic, daemonUriOrConfig, restoreHeight, seedOffset) {
-  console.log("wallet worker createWalletFromMnemonic");
   let daemonConnection = new MoneroRpcConnection(daemonUriOrConfig);
   self.wallet = await MoneroWalletCore.createWalletFromMnemonic("", password, networkType, mnemonic, daemonConnection, restoreHeight, seedOffset);
   postMessage(["onCreateWalletFromMnemonic"]);
@@ -109,4 +107,20 @@ self.startSyncing = async function() {
 
 self.stopSyncing = async function() {
   postMessage(["onStopSyncing", await self.wallet.stopSyncing()]);
+}
+
+self.getBalance = async function() {
+  postMessage(["onGetBalance", await self.wallet.getBalance()]);
+}
+
+self.getUnlockedBalance = async function() {
+  postMessage(["onGetUnlockedBalance", await self.wallet.getUnlockedBalance()]);
+}
+
+self.getTxs = async function(query) {
+  postMessage(["onGetTxs", await self.wallet.getTxs(query)]);
+}
+
+self.sendSplit = async function(requestOrAccountIndex, address, amount, priority) {
+  postMessage(["onSendSplit", await self.wallet.sendSplit(requestOrAccountIndex, address, amount, priority)]);
 }

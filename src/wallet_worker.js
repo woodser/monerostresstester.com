@@ -74,7 +74,7 @@ onmessage = function(e) {
     
     // print rpc wallet balance
     console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
-    console.log("Wallet rpc balance: " + await walletRpc.getBalance());
+    console.log("Wallet rpc balance: " + await walletRpc.getBalance());  // TODO:why does this print digits and not object?
     
     // create a random core wallet
     let daemonConnection = new MoneroRpcConnection({uri: protocol + "://" + host + ":" + daemonPort, user: "superuser", pass: "abctesting123"});  // TODO: support 3 strings, "pass" should probably be renamed to "password" 

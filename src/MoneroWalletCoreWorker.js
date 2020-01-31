@@ -216,61 +216,6 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   }
   
   /**
-   * Indicates if the wallet is synced with the daemon.
-   * 
-   * @return {boolean} true if the wallet is synced with the daemon, false otherwise
-   */
-  async isSynced() {
-    throw new Error("Not implemented");
-  }
-  
-  async sync(listenerOrStartHeight, startHeight) {
-    console.log("MoneroWalletCoreWorker.sync(...)");
-    
-    // normalize params
-    startHeight = listenerOrStartHeight instanceof MoneroSyncListener ? startHeight : listenerOrStartHeight;
-    let listener = listenerOrStartHeight instanceof MoneroSyncListener ? listenerOrStartHeight : undefined;
-    if (startHeight === undefined) startHeight = Math.max(await this.getHeight(), await this.getRestoreHeight());
-    
-    // wrap and register sync listener as wallet listener if given
-    let syncListenerWrapper = undefined;
-    if (listener !== undefined) {
-      syncListenerWrapper = new SyncListenerWrapper(listener);
-      await this.addListener(syncListenerWrapper);
-    }
-    
-    // sync the wallet in worker
-    let that = this;
-    let result = await new Promise(function(resolve, reject) {
-      that.callbacks["onSync"] = function(result) { resolve(result); }
-      that.worker.postMessage(["sync"]);
-    });
-    
-    // unregister sync listener wrapper
-    if (syncListenerWrapper !== undefined) {  // TODO: test that this is executed with error e.g. sync an unconnected wallet
-      await that.removeListener(syncListenerWrapper); // unregister sync listener
-    }
-    
-    return result;
-  }
-  
-  async startSyncing() {
-    let that = this;
-    return new Promise(function(resolve, reject) {
-      that.callbacks["onStartSyncing"] = function() { resolve(); }
-      that.worker.postMessage(["startSyncing"]);
-    });
-  }
-    
-  async stopSyncing() {
-    let that = this;
-    return new Promise(function(resolve, reject) {
-      that.callbacks["onStopSyncing"] = function() { resolve(); }
-      that.worker.postMessage(["stopSyncing"]);
-    });
-  }
-  
-  /**
    * Register a listener receive wallet notifications.
    * 
    * @param {MoneroWalletListener} listener is the listener to receive wallet notifications
@@ -316,15 +261,77 @@ class MoneroWalletCoreWorker extends MoneroWallet {
     throw new Error("Not implemented");
   }
   
+  /**
+   * Indicates if the wallet is synced with the daemon.
+   * 
+   * @return {boolean} true if the wallet is synced with the daemon, false otherwise
+   */
+  async isSynced() {
+    throw new Error("Not implemented");
+  }
+  
+  async sync(listenerOrStartHeight, startHeight) {
+    
+    // normalize params
+    startHeight = listenerOrStartHeight instanceof MoneroSyncListener ? startHeight : listenerOrStartHeight;
+    let listener = listenerOrStartHeight instanceof MoneroSyncListener ? listenerOrStartHeight : undefined;
+    if (startHeight === undefined) startHeight = Math.max(await this.getHeight(), await this.getRestoreHeight());
+    
+    // wrap and register sync listener as wallet listener if given
+    let syncListenerWrapper = undefined;
+    if (listener !== undefined) {
+      syncListenerWrapper = new SyncListenerWrapper(listener);
+      await this.addListener(syncListenerWrapper);
+    }
+    
+    // sync the wallet in worker
+    let that = this;
+    let result = await new Promise(function(resolve, reject) {
+      that.callbacks["onSync"] = function(result) { resolve(result); }
+      that.worker.postMessage(["sync"]);
+    });
+    
+    // unregister sync listener wrapper
+    if (syncListenerWrapper !== undefined) {  // TODO: test that this is executed with error e.g. sync an unconnected wallet
+      await that.removeListener(syncListenerWrapper); // unregister sync listener
+    }
+    
+    return result;
+  }
+  
+  async startSyncing() {
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onStartSyncing"] = function() { resolve(); }
+      that.worker.postMessage(["startSyncing"]);
+    });
+  }
+    
+  async stopSyncing() {
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onStopSyncing"] = function() { resolve(); }
+      that.worker.postMessage(["stopSyncing"]);
+    });
+  }
+  
   // rescanSpent
   // rescanBlockchain
   
   async getBalance(accountIdx, subaddressIdx) {
-    throw new MoneroError("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onGetBalance"] = function(balance) { resolve(balance); }
+      that.worker.postMessage(["getBalance", accountIdx, subaddressIdx]);
+    });
   }
   
   async getUnlockedBalance(accountIdx, subaddressIdx) {
-    throw new MoneroError("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onGetUnlockedBalance"] = function(unlockedBalance) { resolve(unlockedBalance); }
+      that.worker.postMessage(["getUnlockedBalance", accountIdx, subaddressIdx]);
+    });
   }
   
   async getAccounts(includeSubaddresses, tag) {
@@ -348,7 +355,11 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   }
   
   async getTxs(query) {
-    throw new MoneroError("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onGetTxs"] = function(txs) { resolve(txs); }
+      that.worker.postMessage(["getTxs", query]);
+    });
   }
   
   async getTransfers(query) {
@@ -384,7 +395,11 @@ class MoneroWalletCoreWorker extends MoneroWallet {
   }
   
   async sendSplit(requestOrAccountIndex, address, amount, priority) {
-    throw new MoneroError("Not implemented");
+    let that = this;
+    return new Promise(function(resolve, reject) {
+      that.callbacks["onSendSplit"] = function(txSet) { resolve(txSet); }
+      that.worker.postMessage(["sendSplit", requestOrAccountIndex, address, amount, priority]);
+    });
   }
   
   async sweepOutput(requestOrAddress, keyImage, priority) {
