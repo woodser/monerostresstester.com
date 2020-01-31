@@ -122,8 +122,8 @@ self.getUnlockedBalance = async function() {
 }
 
 // TODO: easier or more efficient way than serializing from root blocks?
-self.getTxs = async function(query) {
-  query = undefined;  // TODO: deserialize MoneroTxQuery as block json string
+self.getTxs = async function(blockJsonQuery) {
+  let query = new MoneroBlock(blockJsonQuery, MoneroBlock.DeserializationType.TX_QUERY).getTxs()[0];
   let txs = await self.wallet.getTxs(query);
   
   // collect unique blocks to preserve model relationships as trees (based on monero_wasm_bridge.cpp::get_txs)
