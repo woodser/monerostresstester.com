@@ -5,7 +5,7 @@
  */
 
 require("monero-javascript");
-const MoneroWalletCoreWorker = require("./MoneroWalletCoreWorker");
+const MoneroWalletCoreProxy = require("./MoneroWalletCoreProxy");
 
 //"use strict"
 
@@ -37,7 +37,7 @@ async function runMain() {
   let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
   
   // create a core wallet from mnemonic
-  let walletCore = await MoneroWalletCoreWorker.createWalletFromMnemonic("abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
+  let walletCore = await MoneroWalletCoreProxy.createWalletFromMnemonic("abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
   assert.equal(await walletCore.getMnemonic(), mnemonic);
   assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
   console.log("Core wallet imported mnemonic: " + await walletCore.getMnemonic());
