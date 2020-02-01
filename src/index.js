@@ -31,6 +31,8 @@ async function runMain() {
   let daemonRpcUsername = "superuser";
   let daemonRpcPassword = "abctesting123";
   let walletRpcUri = "http://localhost:38083";
+  let walletRpcUsername = "rpc_user";
+  let walletRpcPassword = "abc123";
   let mnemonic = "petals frown aerial leisure ruined needed pruned object misery items sober agile lopped galaxy mouth glide business sieve dizzy imitate ritual nucleus chlorine cottage ruined";
   let primaryAddress = "54tjXUgQVYNXQCJM4CatRQZMacZ2Awq4NboKiUYtUJrhgYZjiDhMz4ccuYRcMTno6V9mzKFXzfY8pbPnGmu2ukfWABV75k4";  // just for reference
   let restoreHeight = 501788;
@@ -58,11 +60,73 @@ async function runMain() {
   console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
   console.log("First hash: " + (await walletCore.getTxs())[0].getHash());
   
-  // send transaction to self, listener will notify when output is received
-  console.log("Sending transaction");
-  let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
-  console.log("Transaction sent successfully");
-  console.log(txSet.getTxs()[0].getHash());
+//  // send transaction to self, listener will notify when output is received
+//  console.log("Sending transaction");
+//  let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
+//  console.log("Transaction sent successfully");
+//  console.log(txSet.getTxs()[0].getHash());
+  
+  // load the wasm module
+  console.log("MAIN loading module");
+  await MoneroUtils.loadWasmModule();
+  console.log("done loading module");
+  
+  const protocol = "http";
+  const host = "localhost";
+  //const host = "127.0.0.1";
+  const daemonPort = 38081;
+  const walletPort = 38083;
+  
+  // connect to monero-daemon-rpc
+  console.log("Connecting to monero-daemon-rpc...");
+  let daemon2 = new MoneroDaemonRpc({protocol: protocol, host: host, port: daemonPort, user: "superuser", pass: "abctesting123"});
+  console.log("Daemon height: " + await daemon2.getHeight());
+  
+  // demonstrate c++ utilities which use monero-project via webassembly
+  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
+  let binary = MoneroUtils.jsonToBinary(json);
+  assert(binary);
+  let json2 = MoneroUtils.binaryToJson(binary);
+  assert.deepEqual(json2, json);
+  console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
+  
+  // create a random keys-only wallet
+  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
+  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
+  
+  // connect to monero-daemon-rpc
+  console.log("Connecting to monero-daemon-rpc...");
+  let daemon = new MoneroDaemonRpc({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
+  console.log("Daemon height: " + await daemon.getHeight());
+  
+  // connect to monero-wallet-rpc
+  let walletRpc = new MoneroWalletRpc({uri: walletRpcUri, user: walletRpcUsername, walletRpcPassword});
+  
+  // configure the rpc wallet to open or create
+  let walletRpcFileName = "test_wallet_1";
+  let walletRpcFilePassword = "supersecretpassword123";
+  
+  // open or create rpc wallet
+  try {
+    console.log("Attempting to open wallet " + walletRpcFileName + "...");
+    await walletRpc.openWallet(walletRpcFileName, walletRpcFilePassword);
+  } catch (e) {
+        
+    // -1 returned when the wallet does not exist or it's open by another application
+    if (e.getCode() === -1) {
+      console.log("Wallet with name '" + walletRpcFileName + "' not found, restoring from mnemonic");
+      
+      // create wallet
+      await walletRpc.createWalletFromMnemonic(walletRpcFileName, walletRpcFilePassword, mnemonic, restoreHeight);
+      await walletRpc.sync();
+    } else {
+      throw e;
+    }
+  }
+  
+  // print wallet rpc balance
+  console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
+  console.log("Wallet rpc balance: " + await walletRpc.getBalance());  // TODO:why does this print digits and not object?
   
 //  // start old worker
 //  var worker = new Worker('wallet_worker.js');
