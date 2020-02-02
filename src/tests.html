@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mocha Tests</title>
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css">
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script src="https://unpkg.com/chai/chai.js"></script>
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+    
+    <script type="module" class="mocha-init">
+        mocha.setup('bdd');
+    </script>
+
+    <!-- ------------------------------------ -->
+    <script type="text/javascript" src="xmr-sample-tests.js"></script>
+    <!-- ------------------------------------ -->
+
+    <script type="module">
+        mocha.run();
+    </script>
+  </body>
+</html>

@@ -60,6 +60,15 @@ let configApp = Object.assign({}, configBase, {
     },
 });
 
+let configTest = Object.assign({}, configBase, {
+  name: "Tests config",
+  entry: "./src/tests.js",
+  output: {
+    path: path.resolve(__dirname, "browser_build"),
+    filename: "xmr-sample-tests.js"
+  },
+});
+
 module.exports = [
-  configMoneroJS, configApp
+  configMoneroJS, configApp, configTest
 ];
