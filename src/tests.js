@@ -29,7 +29,10 @@ document.addEventListener("DOMContentLoaded", function() {
  */
 function runMain() {
   console.log("RUN MAIN");
-tests
+  
+  // test utilitiles
+  new TestMoneroUtils().runTests();
+  
   // test daemon rpc
   new TestMoneroDaemonRpc().runTests({
     liteMode: true,  // skips some thorough but lengthy tests
