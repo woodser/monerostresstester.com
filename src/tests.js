@@ -7,7 +7,17 @@ require("monero-javascript");
 const MoneroWalletCoreProxy = require("./MoneroWalletCoreProxy");
 const assert = require("assert");
 
+/**
+ * Run tests when document ready.
+ */
 document.addEventListener("DOMContentLoaded", function() {
+  runTests();
+});
+
+/**
+ * Run Monero tests.
+ */
+function runTests() {
   
   // mocha setup
   mocha.setup({
@@ -15,20 +25,6 @@ document.addEventListener("DOMContentLoaded", function() {
     timeout: 3000000
   });
   mocha.checkLeaks();
-  //mocha.growl();  // enable web notifications
-  
-  // import tests
-  runMain();
-  
-  // run tests
-  mocha.run();
-});
-
-/**
- * Main thread.
- */
-function runMain() {
-  console.log("RUN MAIN");
   
   // test utilitiles
   new TestMoneroUtils().runTests();
@@ -40,33 +36,34 @@ function runMain() {
     testRelays: false, // creates and relays outgoing txs
     testNotifications: false
   });
-      
-//  // config
-//  let daemonRpcUri = "http://localhost:38081";
-//  let daemonRpcUsername = "superuser";
-//  let daemonRpcPassword = "abctesting123";
-//  let walletRpcUri = "http://localhost:38083";
-//  let walletRpcUsername = "rpc_user";
-//  let walletRpcPassword = "abc123";
-//  let mnemonic = "petals frown aerial leisure ruined needed pruned object misery items sober agile lopped galaxy mouth glide business sieve dizzy imitate ritual nucleus chlorine cottage ruined";
-//  let primaryAddress = "54tjXUgQVYNXQCJM4CatRQZMacZ2Awq4NboKiUYtUJrhgYZjiDhMz4ccuYRcMTno6V9mzKFXzfY8pbPnGmu2ukfWABV75k4";  // just for reference
-//  let restoreHeight = 501788;
-//  let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
-//  
-//  // create a core wallet from mnemonic
-//  let walletCore = await MoneroWalletCoreProxy.createWalletFromMnemonic("abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
-//  assert.equal(await walletCore.getMnemonic(), mnemonic);
-//  assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
-//  console.log("Core wallet imported mnemonic: " + await walletCore.getMnemonic());
-//  console.log("Core wallet imported address: " + await walletCore.getPrimaryAddress());
   
-  console.log("EXIT MAIN");
-}
-
-/**
- * Worker thread.
- */
-async function runWorker() {
-  console.log("RUN INTERNAL WORKER");
-  console.log("EXIT INTERNAL WORKER");
+  // test wallet rpc
+  new TestMoneroWalletRpc().runTests({
+    liteMode: true, // skips some lengthy but detailed tests
+    testNonRelays: true,
+    testRelays: false,
+    testNotifications: false,
+    testResets: false
+  });
+  
+  // test keys-only wallet
+  new TestMoneroWalletKeys().runTests({
+    liteMode: false,
+    testNonRelays: true,
+    testRelays: false,
+    testResets: false,
+    testNotifications: false
+  });
+  
+  // test core wallet
+  new TestMoneroWalletCore().runTests({
+    liteMode: true,
+    testNonRelays: true,
+    testRelays: false,
+    testResets: false,
+    testNotifications: false
+  });
+  
+  // run tests
+  mocha.run();
 }
