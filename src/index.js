@@ -4,7 +4,6 @@
  * bindings.
  */
 require("monero-javascript");
-const MoneroWalletCoreProxy = require("./MoneroWalletCoreProxy");
 
 //"use strict"
 
