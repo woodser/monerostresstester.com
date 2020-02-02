@@ -5,28 +5,11 @@
  */
 require("monero-javascript");
 const MoneroWalletCoreProxy = require("./MoneroWalletCoreProxy");
-//const mocha = require("mocha");
-//const describe = mocha.describe;
-//const before = mocha.before;
-//const it = mocha.it;
 const assert = require("assert");
-
-//"use strict"
-
-//// detect if called from worker
-//console.log("ENTER TESTS.JS");
-//let isWorker = self.document? false : true;
-//console.log("IS WORKER: " + isWorker);
-//if (isWorker) {
-//  runWorker();
-//} else {
-//  runMain();
-//}
 
 document.addEventListener("DOMContentLoaded", function() {
   
   // mocha setup
-  console.log("Calling mocha.setup('bdd');");
   mocha.setup('bdd');
   mocha.checkLeaks();
   //mocha.growl();  // enable web notifications
@@ -35,7 +18,6 @@ document.addEventListener("DOMContentLoaded", function() {
   runMain();
   
   // run tests
-  console.log("Running tests post main!");
   mocha.run();
 });
 
