@@ -35,6 +35,8 @@
     "webpack": "^4.41.3",
     "webpack-cli": "3.1.0",
     "webpack-merge": "4.1.4",
-    "worker-loader": "2.0.0"
+    "worker-loader": "2.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^7.0.1"
   }
 }

@@ -4,33 +4,49 @@
  * bindings.
  */
 require("monero-javascript");
-const mocha = require("mocha");
-const describe = mocha.describe;
-const before = mocha.before;
-const it = mocha.it;
-const assert = require("assert");
 const MoneroWalletCoreProxy = require("./MoneroWalletCoreProxy");
+//const mocha = require("mocha");
+//const describe = mocha.describe;
+//const before = mocha.before;
+//const it = mocha.it;
+const assert = require("assert");
 
 //"use strict"
 
-// detect if called from worker
-console.log("ENTER TESTS.JS");
-let isWorker = self.document? false : true;
-console.log("IS WORKER: " + isWorker);
-if (isWorker) {
-  runWorker();
-} else {
+//// detect if called from worker
+//console.log("ENTER TESTS.JS");
+//let isWorker = self.document? false : true;
+//console.log("IS WORKER: " + isWorker);
+//if (isWorker) {
+//  runWorker();
+//} else {
+//  runMain();
+//}
+
+document.addEventListener("DOMContentLoaded", function() {
+  
+  // mocha setup
+  console.log("Calling mocha.setup('bdd');");
+  mocha.setup('bdd');
+  mocha.checkLeaks();
+  //mocha.growl();  // enable web notifications
+  
+  // import tests
   runMain();
-}
+  
+  // run tests
+  console.log("Running tests post main!");
+  mocha.run();
+});
 
 /**
  * Main thread.
  */
-async function runMain() {
+function runMain() {
   console.log("RUN MAIN");
   
   console.log("What tests do you want to run?");
-  
+
   /**
    * Test utilities including those implemented in WebAssembly.
    */
