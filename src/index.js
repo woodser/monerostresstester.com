@@ -36,7 +36,7 @@ async function runMain() {
   let restoreHeight = 501788;
   let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
   
-  // create a core wallet from mnemonic
+  // create a core wallet from mnemonic which runs on a worker thread
   let walletCore = await MoneroWalletCoreProxy.createWalletFromMnemonic("abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
   assert.equal(await walletCore.getMnemonic(), mnemonic);
   assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
@@ -64,7 +64,7 @@ async function runMain() {
   console.log("Transaction sent successfully");
   console.log(txSet.getTxs()[0].getHash());
   
-  // load the wasm module
+  // load wasm module on main thread
   console.log("MAIN loading module");
   await MoneroUtils.loadWasmModule();
   console.log("done loading module");
