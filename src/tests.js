@@ -56,11 +56,11 @@ function runTests() {
   
   // test core wallet
   new TestMoneroWalletCoreProxy().runTests({
-    liteMode: true,
+    liteMode: false,
     testNonRelays: true,
-    testRelays: false,
+    testRelays: true,
     testResets: false,
-    testNotifications: false
+    testNotifications: true
   });
   
   // run tests
