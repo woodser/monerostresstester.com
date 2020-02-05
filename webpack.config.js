@@ -70,5 +70,6 @@ let configTest = Object.assign({}, configBase, {
 });
 
 module.exports = [
+  //configMoneroJS, configTest
   configMoneroJS, configApp, configTest
 ];

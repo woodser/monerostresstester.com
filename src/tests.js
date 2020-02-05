@@ -25,8 +25,8 @@ function runTests() {
   });
   mocha.checkLeaks();
   
-  // test utilitiles
-  new TestMoneroUtils().runTests();
+//  // test utilitiles
+//  new TestMoneroUtils().runTests();
   
 //  // test daemon rpc
 //  new TestMoneroDaemonRpc().runTests({
