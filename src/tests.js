@@ -58,7 +58,7 @@ function runTests() {
   new TestMoneroWalletCoreProxy().runTests({
     liteMode: false,
     testNonRelays: true,
-    testRelays: true,
+    testRelays: false,
     testResets: false,
     testNotifications: true
   });

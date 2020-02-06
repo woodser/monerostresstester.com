@@ -5,7 +5,7 @@ cp node_modules/monero-javascript/build/monero-javascript-wasm.js browser_build/
 cp node_modules/monero-javascript/build/monero-javascript-wasm.wasm browser_build/monero-javascript-wasm.wasm
 #cp node_modules/monero-javascript/build/monero-javascript-wasm.worker.js browser_build/monero-javascript-wasm.worker.js
 cp -a src/ browser_build/
-cp node_modules/monero-javascript/src/main/js/wallet/MoneroWalletCoreWorker.js browser_build/MoneroWalletCoreWorker.js
+cp node_modules/monero-javascript/src/main/js/utils/MoneroWebWorker.js browser_build/MoneroWebWorker.js
 cp node_modules/mocha/mocha.js browser_build/mocha.js
 cp node_modules/mocha/mocha.css browser_build/mocha.css
 cd browser_build && python ../bin/run_server.py
