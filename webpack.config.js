@@ -44,10 +44,10 @@ let configBase = {
 
 let configMoneroJS = Object.assign({}, configBase, {
     name: "MoneroJS config",
-    entry: "./src/worker_exports.js",
+    entry: "./src/MoneroWebWorker_PreBuild.js",
     output: {
       path: path.resolve(__dirname, "browser_build"),
-      filename: "worker_imports.js"
+      filename: "MoneroWebWorker.js"
     },
 });
 

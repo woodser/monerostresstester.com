@@ -25,8 +25,12 @@ function runTests() {
   });
   mocha.checkLeaks();
   
+  // test config
+  TestUtils.PROXY_TO_WORKER = true; // proxy test wallet and daemon to worker to not lock main browser thread
+  TestUtils.FS = require('memfs');  // use in-memory file system needed for tests since running in the browser
+  
   // test utilitiles
-  new TestMoneroUtils().runTests();
+  //new TestMoneroUtils().runTests();
   
 //  // test daemon rpc
 //  new TestMoneroDaemonRpc({
@@ -56,15 +60,12 @@ function runTests() {
 //  }).runTests();
   
   // test core wallet
-  let proxyToWorker = false;
   new TestMoneroWalletCore({
     liteMode: false,
     testNonRelays: true,
     testRelays: false,
     testResets: false,
     testNotifications: true,
-    proxyToWorker: proxyToWorker,                     // proxy core wallet and daemon to worker
-    fs: proxyToWorker ? undefined : require('memfs')  // use in-memory file system if not proxying since in browser
   }).runTests();
   
   // run tests
