@@ -10,7 +10,7 @@ require("monero-javascript");
 // detect if called from worker
 console.log("ENTER INDEX.JS");
 let isWorker = self.document? false : true;
-console.log("IS WORKER: " + isWorker);
+//console.log("IS WORKER: " + isWorker);
 if (isWorker) {
   //self.importScripts('monero-javascript-wasm.js');  // TODO: necessary to avoid worker.js onmessage() captured an uncaught exception: ReferenceError: monero_javascript is not defined
   runWorker();
