@@ -31,67 +31,22 @@ async function runMain() {
   let walletRpcUri = "http://localhost:38083";
   let walletRpcUsername = "rpc_user";
   let walletRpcPassword = "abc123";
+  let walletRpcFileName = "test_wallet_1";
+  let walletRpcFilePassword = "supersecretpassword123";
   let mnemonic = "petals frown aerial leisure ruined needed pruned object misery items sober agile lopped galaxy mouth glide business sieve dizzy imitate ritual nucleus chlorine cottage ruined";
-  let primaryAddress = "54tjXUgQVYNXQCJM4CatRQZMacZ2Awq4NboKiUYtUJrhgYZjiDhMz4ccuYRcMTno6V9mzKFXzfY8pbPnGmu2ukfWABV75k4";  // just for reference
+  let seedOffset = "";
   let restoreHeight = 501788;
-  let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
+  let proxyToWorker = true;   // proxy core wallet and daemon to worker so main thread is not blocked (recommended)
+  let useFS = true;           // optionally save wallets to a file system, otherwise use empty paths
+  let FS = useFS ? require('memfs') : undefined;  // use in-memory file system for demo
   
-  // create a core wallet from mnemonic which runs on a worker thread
-  let walletCore = await MoneroWalletCoreProxy.createWalletFromMnemonic("abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight);
-  assert.equal(await walletCore.getMnemonic(), mnemonic);
-  assert.equal(await walletCore.getPrimaryAddress(), primaryAddress);
-  console.log("Core wallet imported mnemonic: " + await walletCore.getMnemonic());
-  console.log("Core wallet imported address: " + await walletCore.getPrimaryAddress());
-  
-  // synchronize core wallet
-  console.log("Synchronizing core wallet...");
-  let result = await walletCore.sync(new WalletSyncPrinter());               // synchronize and print progress
-  console.log("Done synchronizing");
-  console.log(result);
-  
-  // start background syncing with listener
-  await walletCore.addListener(new WalletSendReceivePrinter()); // listen for and print send/receive notifications
-  await walletCore.startSyncing();                              // synchronize in background
-  
-  // print balance and number of transactions
-  console.log("Core wallet balance: " + await walletCore.getBalance());
-  console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
-  console.log("First hash: " + (await walletCore.getTxs())[0].getHash());
-  
-  // send transaction to self, listener will notify when output is received
-  console.log("Sending transaction");
-  let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
-  console.log("Transaction sent successfully");
-  console.log(txSet.getTxs()[0].getHash());
-  
-  // load wasm module on main thread
-  console.log("MAIN loading module");
-  await MoneroUtils.loadWasmModule();
-  console.log("done loading module");
-  
-  // demonstrate c++ utilities which use monero-project via webassembly
-  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
-  let binary = MoneroUtils.jsonToBinary(json);
-  assert(binary);
-  let json2 = MoneroUtils.binaryToJson(binary);
-  assert.deepEqual(json2, json);
-  console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
-  
-  // create a random keys-only wallet
-  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
-  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
-  
-  // connect to monero-daemon-rpc
-  console.log("Connecting to monero-daemon-rpc...");
-  let daemon = new MoneroDaemonRpc({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
+  // connect to monero-daemon-rpc on same thread as core wallet so requests from same client to daemon are synced
+  console.log("Connecting to monero-daemon-rpc" + (proxyToWorker ? " in worker" : ""));
+  let daemon = await MoneroDaemonRpc.create({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword, proxyToWorker: proxyToWorker});
   console.log("Daemon height: " + await daemon.getHeight());
   
   // connect to monero-wallet-rpc
   let walletRpc = new MoneroWalletRpc({uri: walletRpcUri, user: walletRpcUsername, pass: walletRpcPassword});
-  
-  // configure the rpc wallet to open or create
-  let walletRpcFileName = "test_wallet_1";
-  let walletRpcFilePassword = "supersecretpassword123";
   
   // open or create rpc wallet
   try {
@@ -113,7 +68,52 @@ async function runMain() {
   
   // print wallet rpc balance
   console.log("Wallet rpc mnemonic: " + await walletRpc.getMnemonic());
-  console.log("Wallet rpc balance: " + await walletRpc.getBalance());  // TODO:why does this print digits and not object?
+  console.log("Wallet rpc balance: " + await walletRpc.getBalance());  // TODO: why does this print digits and not object?
+  
+  // load wasm module on main thread
+  console.log("Loading wasm module on main thread...");
+  await MoneroUtils.loadWasmModule();
+  console.log("done loading module");
+  
+  // demonstrate c++ utilities which use monero-project via webassembly
+  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
+  let binary = MoneroUtils.jsonToBinary(json);
+  assert(binary);
+  let json2 = MoneroUtils.binaryToJson(binary);
+  assert.deepEqual(json2, json);
+  console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
+  
+  // create a random keys-only wallet
+  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
+  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
+  
+  // create a core wallet from mnemonic
+  let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
+  let walletCorePath = useFS ? GenUtils.uuidv4() : "";
+  console.log("Creating core wallet" + (proxyToWorker ? " in worker" : "") + (useFS ? " at path " + walletCorePath : ""));
+  let walletCore = await MoneroWalletCore.createWalletFromMnemonic(walletCorePath, "abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight, seedOffset, proxyToWorker, FS); 
+  console.log("Core wallet imported mnemonic: " + await walletCore.getMnemonic());
+  console.log("Core wallet imported address: " + await walletCore.getPrimaryAddress());
+  
+  // synchronize core wallet
+  console.log("Synchronizing core wallet...");
+  let result = await walletCore.sync(new WalletSyncPrinter());  // synchronize and print progress
+  console.log("Done synchronizing");
+  console.log(result);
+  
+  // start background syncing with listener
+  await walletCore.addListener(new WalletSendReceivePrinter()); // listen for and print send/receive notifications
+  await walletCore.startSyncing();                              // synchronize in background
+  
+  // print balance and number of transactions
+  console.log("Core wallet balance: " + await walletCore.getBalance());
+  console.log("Core wallet number of txs: " + (await walletCore.getTxs()).length);
+  
+  // send transaction to self, listener will notify when output is received
+  console.log("Sending transaction to self");
+  let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
+  console.log("Transaction sent successfully.  Should get receive notification soon...");
+  console.log("Transaction hash: " + txSet.getTxs()[0].getHash());
   
   console.log("EXIT MAIN");
 }
