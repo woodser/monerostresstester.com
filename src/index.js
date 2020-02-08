@@ -112,7 +112,7 @@ async function runMain() {
   // send transaction to self, listener will notify when output is received
   console.log("Sending transaction to self");
   let txSet = await walletCore.send(0, await walletCore.getPrimaryAddress(), new BigInteger("75000000000"));
-  console.log("Transaction sent successfully.  Should get receive notification soon...");
+  console.log("Transaction sent successfully.  Should receive notification soon...");
   console.log("Transaction hash: " + txSet.getTxs()[0].getHash());
   
   console.log("EXIT MAIN");
