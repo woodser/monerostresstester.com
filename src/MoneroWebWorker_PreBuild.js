@@ -150,11 +150,8 @@ self.getTxPool = async function(daemonId) {
     let txs = await self.WORKER_OBJECTS[daemonId].getTxPool();
     
     // collect txs in block
-    let block = new MoneroBlock();
-    for (let tx of txs) {
-      tx.setBlock(block)
-      block.getTxs().push(tx);
-    }
+    let block = new MoneroBlock().setTxs(txs);
+    for (let tx of txs) tx.setBlock(block)
     
     // serialize block
     postMessage([daemonId, "onGetTxPool", {result: block.toJson()}]);
@@ -471,7 +468,7 @@ self.getAddress = async function(walletId, accountIdx, subaddressIdx) {
 
 self.getAddressIndex = async function(walletId, address) {
   try {
-    postMessage([walletId, "onGetAddressIndex", {result: await self.WORKER_OBJECTS[walletId].getAddressIndex(address)}]);
+    postMessage([walletId, "onGetAddressIndex", {result: (await self.WORKER_OBJECTS[walletId].getAddressIndex(address)).toJson()}]);
   } catch (e) {
     postMessage([walletId, "onGetAddressIndex", {error: e.message}]);
   }
