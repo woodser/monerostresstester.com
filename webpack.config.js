@@ -61,5 +61,6 @@ let configTest = Object.assign({}, configBase, {
 });
 
 module.exports = [
-  configApp, configTest
+  configApp,
+  configTest
 ];
