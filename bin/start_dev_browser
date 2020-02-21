@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-cp node_modules/monero-javascript/src/main/js/utils/MoneroWebWorker.js src/MoneroWebWorker_PreBuild.js	# TODO: this goes away when webpack build in monero-javascript
 bin/_build_browser_dev;
-cp node_modules/monero-javascript/build/monero-javascript-wasm.js browser_build/monero-javascript-wasm.js
-cp node_modules/monero-javascript/build/monero-javascript-wasm.wasm browser_build/monero-javascript-wasm.wasm
-#cp node_modules/monero-javascript/build/monero-javascript-wasm.worker.js browser_build/monero-javascript-wasm.worker.js
+
+cp node_modules/monero-javascript/dist/monero-javascript-wasm.js browser_build/monero-javascript-wasm.js
+cp node_modules/monero-javascript/dist/monero-javascript-wasm.wasm browser_build/monero-javascript-wasm.wasm
+#cp node_modules/monero-javascript/dist/monero-javascript-wasm.worker.js browser_build/monero-javascript-wasm.worker.js
+cp node_modules/monero-javascript/dist/MoneroWebWorker.dist.js browser_build/MoneroWebWorker.dist.js
+cp node_modules/monero-javascript/dist/MoneroWebWorker.dist.js.map browser_build/MoneroWebWorker.dist.js.map
 cp -a src/ browser_build/
-cp node_modules/mocha/mocha.js browser_build/mocha.js
+cp node_modules/mocha/mocha.js browser_build/mocha.js		# TODO: part of monero-javascript test web app?
 cp node_modules/mocha/mocha.css browser_build/mocha.css
+
 cd browser_build && python ../bin/run_server.py

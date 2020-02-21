@@ -42,15 +42,6 @@ let configBase = {
     context: __dirname
 };
 
-let configMoneroJS = Object.assign({}, configBase, {
-    name: "MoneroJS config",
-    entry: "./src/MoneroWebWorker_PreBuild.js",
-    output: {
-      path: path.resolve(__dirname, "browser_build"),
-      filename: "MoneroWebWorker.js"
-    },
-});
-
 let configApp = Object.assign({}, configBase, {
     name: "App config",
     entry: "./src/index.js",
@@ -61,7 +52,7 @@ let configApp = Object.assign({}, configBase, {
 });
 
 let configTest = Object.assign({}, configBase, {
-  name: "Tests config",
+  name: "Test config",
   entry: "./src/tests.js",
   output: {
     path: path.resolve(__dirname, "browser_build"),
@@ -70,6 +61,5 @@ let configTest = Object.assign({}, configBase, {
 });
 
 module.exports = [
-  //configMoneroJS, configTest
-  configMoneroJS, configApp, configTest
+  configApp, configTest
 ];
