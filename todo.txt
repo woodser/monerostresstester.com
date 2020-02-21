@@ -1,4 +1,4 @@
-do not load wasm file more than once
+cleanup: remove unecessary build scripts, don't copy src/*.js
 
 WEB APPS
 build wallet web app pictured in src/mockups/wallet/all.png
