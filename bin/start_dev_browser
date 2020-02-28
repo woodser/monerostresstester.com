@@ -2,9 +2,10 @@
 
 bin/_build_browser_dev;
 
-cp node_modules/monero-javascript/dist/monero-javascript-wasm.js browser_build/monero-javascript-wasm.js
-cp node_modules/monero-javascript/dist/monero-javascript-wasm.wasm browser_build/monero-javascript-wasm.wasm
-#cp node_modules/monero-javascript/dist/monero-javascript-wasm.worker.js browser_build/monero-javascript-wasm.worker.js
+cp node_modules/monero-javascript/dist/monero_core_wasm.js browser_build/monero_core_wasm.js
+cp node_modules/monero-javascript/dist/monero_core_wasm.wasm browser_build/monero_core_wasm.wasm
+cp node_modules/monero-javascript/dist/monero_keys_wasm.js browser_build/monero_keys_wasm.js
+cp node_modules/monero-javascript/dist/monero_keys_wasm.wasm browser_build/monero_keys_wasm.wasm
 cp node_modules/monero-javascript/dist/MoneroWebWorker.dist.js browser_build/MoneroWebWorker.dist.js
 cp node_modules/monero-javascript/dist/MoneroWebWorker.dist.js.map browser_build/MoneroWebWorker.dist.js.map
 cp -a src/ browser_build/
