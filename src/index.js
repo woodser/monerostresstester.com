@@ -37,7 +37,7 @@ async function runMain() {
   let seedOffset = "";
   let restoreHeight = 501788;
   let proxyToWorker = true;   // proxy core wallet and daemon to worker so main thread is not blocked (recommended)
-  let useFS = true;           // optionally save wallets to a file system, otherwise use empty paths
+  let useFS = true;           // optionally save wallets to an in-memory file system, otherwise use empty paths
   let FS = useFS ? require('memfs') : undefined;  // use in-memory file system for demo
   
 //  // load wasm module on main thread
