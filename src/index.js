@@ -40,22 +40,22 @@ async function runMain() {
   let useFS = true;           // optionally save wallets to an in-memory file system, otherwise use empty paths
   let FS = useFS ? require('memfs') : undefined;  // use in-memory file system for demo
   
-//  // load wasm module on main thread
-//  console.log("Loading wasm module on main thread...");
-//  await MoneroUtils.loadWasmModule();
-//  console.log("done loading module");
-//  
-//  // demonstrate c++ utilities which use monero-project via webassembly
-//  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
-//  let binary = MoneroUtils.jsonToBinary(json);
-//  assert(binary);
-//  let json2 = MoneroUtils.binaryToJson(binary);
-//  assert.deepEqual(json2, json);
-//  console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
-//  
-//  // create a random keys-only wallet
-//  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
-//  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
+  // load wasm module on main thread
+  console.log("Loading wasm module on main thread...");
+  await MoneroUtils.loadKeysModule();
+  console.log("done loading module");
+  
+  // demonstrate c++ utilities which use monero-project via webassembly
+  let json = { msg: "This text will be serialized to and from Monero's portable storage format!" };
+  let binary = MoneroUtils.jsonToBinary(json);
+  assert(binary);
+  let json2 = MoneroUtils.binaryToJson(binary);
+  assert.deepEqual(json2, json);
+  console.log("WASM utils to serialize to/from Monero\'s portable storage format working");
+  
+  // create a random keys-only wallet
+  let walletKeys = await MoneroWalletKeys.createWalletRandom(MoneroNetworkType.STAGENET, "English");
+  console.log("Keys-only wallet random mnemonic: " + await walletKeys.getMnemonic());
   
   // connect to monero-daemon-rpc on same thread as core wallet so requests from same client to daemon are synced
   console.log("Connecting to monero-daemon-rpc" + (proxyToWorker ? " in worker" : ""));
