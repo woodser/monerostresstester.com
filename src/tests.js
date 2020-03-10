@@ -47,7 +47,7 @@ function runTests() {
   new TestMoneroWalletRpc({
     liteMode: true, // skips some lengthy but detailed tests
     testNonRelays: true,
-    testRelays: false,
+    testRelays: true,
     testNotifications: false,
     testResets: false
   }).runTests();
