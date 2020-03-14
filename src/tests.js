@@ -29,8 +29,8 @@ function runTests() {
   TestUtils.PROXY_TO_WORKER = true; // proxy test wallet and daemon to worker to not lock main browser thread
   TestUtils.FS = require('memfs');  // use in-memory file system needed for tests since running in the browser
   
-//  // test sample code for readme
-//  new TestSampleCode().runTests();
+  // test sample code for readme
+  new TestSampleCode().runTests();
   
   // test utilitiles
   new TestMoneroUtils().runTests();
@@ -45,7 +45,7 @@ function runTests() {
   
   // test wallet rpc
   new TestMoneroWalletRpc({
-    liteMode: true, // skips some lengthy but detailed tests
+    liteMode: false, // skips some lengthy but detailed tests
     testNonRelays: true,
     testRelays: true,
     testNotifications: false,

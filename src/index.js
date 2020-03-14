@@ -33,9 +33,9 @@ async function runMain() {
   let walletRpcPassword = "abc123";
   let walletRpcFileName = "test_wallet_1";
   let walletRpcFilePassword = "supersecretpassword123";
-  let mnemonic = "petals frown aerial leisure ruined needed pruned object misery items sober agile lopped galaxy mouth glide business sieve dizzy imitate ritual nucleus chlorine cottage ruined";
+  let mnemonic = "goblet went maze cylinder stockpile twofold fewest jaded lurk rally espionage grunt aunt puffin kickoff refer shyness tether building eleven lopped dawn tasked toolbox grunt";
   let seedOffset = "";
-  let restoreHeight = 501788;
+  let restoreHeight = 531333;
   let proxyToWorker = true;   // proxy core wallet and daemon to worker so main thread is not blocked (recommended)
   let useFS = true;           // optionally save wallets to an in-memory file system, otherwise use empty paths
   let FS = useFS ? require('memfs') : undefined;  // use in-memory file system for demo
