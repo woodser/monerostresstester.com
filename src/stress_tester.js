@@ -47,7 +47,7 @@ async function runMain() {
   await wallet.addListener(new class extends MoneroWalletListener {
     onNewBlock(height) {
       console.log("Block added: " + height);
-      spendAvailableOutputs();
+      spendAvailableOutputs(wallet);
     }
   });
   
@@ -55,12 +55,12 @@ async function runMain() {
   await wallet.startSyncing();
   
   // spend available outputs
-  await spendAvailableOutputs();
+  await spendAvailableOutputs(wallet);
 }
 
-async function spendAvailableOutputs() {
-  let outputs = await wallet.getOutputs({isSpent: false});
-  console.log("Wallet has " + outputs.length + " unspent outputs...");
+async function spendAvailableOutputs(wallet) {
+  let outputs = await wallet.getOutputs({isLocked: false, isSpent: false});
+  console.log("Wallet has " + outputs.length + " available outputs...");
 }
 
 /**
