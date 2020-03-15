@@ -29,7 +29,8 @@ async function runMain() {
   
   // connect to daemon 
   let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
-  let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
+  //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
+  let daemon = await MoneroDaemonRpc.create(Object.assign({proxyToWorker: proxyToWorker}, daemonConnection.getConfig()));
   
   // create a wallet from mnemonic
   let path = useFS ? GenUtils.uuidv4() : "";
@@ -74,8 +75,8 @@ async function spendAvailableOutputs(daemon, wallet) {
   let outputs = await wallet.getOutputs({isLocked: false, isSpent: false});
   console.log("Wallet has " + outputs.length + " available outputs...");
   for (let output of outputs) {
+    let expectedFee = await daemon.getFeeEstimate();
     if (output.getAmount().compare(expectedFee) > 0) {
-      let expectedFee = await daemon.getFeeEstimate();
       
       // build send request
       let request = new MoneroSendRequest().setAccountIndex(output.getAccountIndex()).setSubaddressIndex(output.getSubaddressIndex());  // source from output subaddress
@@ -91,7 +92,7 @@ async function spendAvailableOutputs(daemon, wallet) {
       // attempt to send
       try {
         let tx = (await wallet.createTx(request)).getTxs()[0];
-        console.log("Gonna send tx id: " + tx.getId());
+        console.log("Gonna send tx id: " + tx.getHash());
       } catch (e) {
         console.log("Error creating tx: " + e.message);
       }
