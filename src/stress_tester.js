@@ -76,6 +76,7 @@ async function spendAvailableOutputs(daemon, wallet) {
   console.log("Wallet has " + outputs.length + " available outputs...");
   for (let output of outputs) {
     let expectedFee = await daemon.getFeeEstimate();
+    expectedFee = expectedFee.multiply(BigInteger.parse("1.2"));  // fee multiplier to conservatively cover fees
     if (output.getAmount().compare(expectedFee) > 0) {
       
       // build send request
@@ -87,11 +88,11 @@ async function spendAvailableOutputs(daemon, wallet) {
         destinations.push(new MoneroDestination((await wallet.getSubaddress(dstAccount, dstSubaddress)).getAddress(), amtPerSubaddress)); // TODO: without getAddress(), obscure optional deref error, prolly from serializing in first step of monero_wallet_core::send_split
       }
       request.setDestinations(destinations);
-      request.setDoNotRelay(true);
+      //request.setDoNotRelay(true);
       
       // attempt to send
       try {
-        let tx = (await wallet.createTx(request)).getTxs()[0];
+        let tx = (await wallet.send(request)).getTxs()[0];
         console.log("Gonna send tx id: " + tx.getHash());
       } catch (e) {
         console.log("Error creating tx: " + e.message);
