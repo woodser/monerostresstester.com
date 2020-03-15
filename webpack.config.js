@@ -60,7 +60,17 @@ let configTest = Object.assign({}, configBase, {
   },
 });
 
+let configStressTester = Object.assign({}, configBase, {
+  name: "Stress Tester",
+  entry: "./src/stress_tester.js",
+  output: {
+    path: path.resolve(__dirname, "browser_build"),
+    filename: "stress_tester.dist.js"
+  },
+});
+
 module.exports = [
-  configApp,
-  configTest
+  //configApp,
+  //configTest,
+  configStressTester
 ];
