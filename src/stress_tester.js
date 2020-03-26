@@ -1,41 +1,41 @@
 /**
- * Tx spammer to stress test the network.
+ * Web app to stress test the Monero network by generating transactions.
  */
+
+// import dependencies
 require("monero-javascript");
+const MoneroTxGenerator = require("./MoneroTxGenerator");
 
-// detect if called from worker
-let isWorker = self.document? false : true;
-if (!isWorker) runMain();
+// configuration
+const DAEMON_RPC_URI = "http://localhost:38081";
+const DAEMON_RPC_USERNAME = "superuser";
+const DAEMON_RPC_PASSWORD = "abctesting123";
+const MNEMONIC = "goblet went maze cylinder stockpile twofold fewest jaded lurk rally espionage grunt aunt puffin kickoff refer shyness tether building eleven lopped dawn tasked toolbox grunt";
+const SEED_OFFSET = "";
+const RESTORE_HEIGHT = 531333;
+const PROXY_TO_WORKER = true;   // proxy core wallet and daemon to worker so main thread is not blocked (recommended)
+const USE_FS = true;            // optionally save wallets to an in-memory file system, otherwise use empty paths
+const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system for demo
 
-const MAX_OUTPUTS = 16; // maximum number of outputs per tx
+// run application on main thread
+let isMain = self.document? true : false;
+if (isMain) runApp();
 
 /**
- * Main thread.
+ * Run the application.
  */
-async function runMain() {
-  console.log("RUN MAIN");
-  
-  // config
-  let daemonRpcUri = "http://localhost:38081";
-  let daemonRpcUsername = "superuser";
-  let daemonRpcPassword = "abctesting123";
-  let walletRpcUri = "http://localhost:38083";
-  let mnemonic = "goblet went maze cylinder stockpile twofold fewest jaded lurk rally espionage grunt aunt puffin kickoff refer shyness tether building eleven lopped dawn tasked toolbox grunt";
-  let seedOffset = "";
-  let restoreHeight = 531333;
-  let proxyToWorker = true;   // proxy core wallet and daemon to worker so main thread is not blocked (recommended)
-  let useFS = true;           // optionally save wallets to an in-memory file system, otherwise use empty paths
-  let FS = useFS ? require('memfs') : undefined;  // use in-memory file system for demo
+async function runApp() {
+  console.log("APPLICATION START");
   
   // connect to daemon 
-  let daemonConnection = new MoneroRpcConnection({uri: daemonRpcUri, user: daemonRpcUsername, pass: daemonRpcPassword});
+  let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
   //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
-  let daemon = await MoneroDaemonRpc.create(Object.assign({proxyToWorker: proxyToWorker}, daemonConnection.getConfig()));
+  let daemon = await MoneroDaemonRpc.create(Object.assign({PROXY_TO_WORKER: PROXY_TO_WORKER}, daemonConnection.getConfig()));
   
   // create a wallet from mnemonic
-  let path = useFS ? GenUtils.uuidv4() : "";
-  console.log("Creating core wallet" + (proxyToWorker ? " in worker" : "") + (useFS ? " at path " + path : ""));
-  let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, mnemonic, daemonConnection, restoreHeight, seedOffset, proxyToWorker, FS); 
+  let path = USE_FS ? GenUtils.uuidv4() : "";
+  console.log("Creating core wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
+  let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, MNEMONIC, daemonConnection, RESTORE_HEIGHT, SEED_OFFSET, PROXY_TO_WORKER, FS); 
   console.log("Core wallet imported mnemonic: " + await wallet.getMnemonic());
   console.log("Core wallet imported address: " + await wallet.getPrimaryAddress());
   
@@ -51,56 +51,24 @@ async function runMain() {
   
   // create sufficient number of subaddresses in account 0 and 1
   let numSubaddresses = (await wallet.getSubaddresses(0)).length;
-  if (numSubaddresses.length < MAX_OUTPUTS - 1) for (let i = 0; i < (MAX_OUTPUTS - 1 - numSubaddresses); i++) await wallet.createSubaddress(0);
+  if (numSubaddresses.length < MAX_OUTPUTS_PER_TX - 1) for (let i = 0; i < (MAX_OUTPUTS_PER_TX - 1 - numSubaddresses); i++) await wallet.createSubaddress(0);
   numSubaddresses = (await wallet.getSubaddresses(0)).length;
-  if (numSubaddresses.length < MAX_OUTPUTS - 1) for (let i = 0; i < (MAX_OUTPUTS - 1 - numSubaddresses); i++) await wallet.createSubaddress(1);
-  await wallet.save();
+  if (numSubaddresses.length < MAX_OUTPUTS_PER_TX - 1) for (let i = 0; i < (MAX_OUTPUTS_PER_TX - 1 - numSubaddresses); i++) await wallet.createSubaddress(1);
   
-  // receive notifications when blocks are added to the chain
-  await wallet.addListener(new class extends MoneroWalletListener {
-    onNewBlock(height) {
-      console.log("Block added: " + height);
-      spendAvailableOutputs(daemon, wallet);
-    }
-  });
+//  // receive notifications when blocks are added to the chain
+//  await wallet.addListener(new class extends MoneroWalletListener {
+//    onNewBlock(height) {
+//      console.log("Block added: " + height);
+//      //spendAvailableOutputs(daemon, wallet);
+//    }
+//  });
   
   // start background syncing
   await wallet.startSyncing();
   
-  // spend available outputs
-  await spendAvailableOutputs(daemon, wallet);
-}
-
-async function spendAvailableOutputs(daemon, wallet) {
-  let outputs = await wallet.getOutputs({isLocked: false, isSpent: false});
-  console.log("Wallet has " + outputs.length + " available outputs...");
-  for (let output of outputs) {
-    let expectedFee = await daemon.getFeeEstimate();
-    expectedFee = expectedFee.multiply(BigInteger.parse("1.2"));  // fee multiplier to conservatively cover fees
-    if (output.getAmount().compare(expectedFee) > 0) {
-      
-      // build send request
-      let request = new MoneroSendRequest().setAccountIndex(output.getAccountIndex()).setSubaddressIndex(output.getSubaddressIndex());  // source from output subaddress
-      let amtPerSubaddress = output.getAmount().subtract(expectedFee).divide(new BigInteger(MAX_OUTPUTS - 1));                          // amount to send per subaddress, one output used for change
-      let dstAccount = output.getAccountIndex() === 0 ? 1 : 0;
-      let destinations = [];
-      for (let dstSubaddress = 0; dstSubaddress < MAX_OUTPUTS - 1; dstSubaddress++) {
-        destinations.push(new MoneroDestination((await wallet.getSubaddress(dstAccount, dstSubaddress)).getAddress(), amtPerSubaddress)); // TODO: without getAddress(), obscure optional deref error, prolly from serializing in first step of monero_wallet_core::send_split
-      }
-      request.setDestinations(destinations);
-      //request.setDoNotRelay(true);
-      
-      // attempt to send
-      try {
-        let tx = (await wallet.send(request)).getTxs()[0];
-        console.log("Gonna send tx id: " + tx.getHash());
-      } catch (e) {
-        console.log("Error creating tx: " + e.message);
-      }
-    } else {
-      //console.log("Output is too small to cover fee");
-    }
-  }
+  // start generating transactions
+  let txGenerator = new MoneroTxGenerator(wallet);
+  txGenerator.start();
 }
 
 /**
