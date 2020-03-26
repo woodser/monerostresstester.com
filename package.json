@@ -1,7 +1,7 @@
 {
-  "name": "xmr-sample-app",
+  "name": "monerostresstester.com",
   "version": "0.0.3",
-  "description": "Sample web app using the monero-javascript library",
+  "description": "Web app to stress test the Monero network by generating transactions",
   "main": "src/index.js",
   "scripts": {
     "test": "node --experimental-wasm-threads --experimental-wasm-bulk-memory node_modules/mocha/bin/_mocha 'src/test/TestAll' --timeout 3000000 --exit"
