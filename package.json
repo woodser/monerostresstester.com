@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/woodser/xmr-sample-app.git"
+    "url": "git+https://github.com/woodser/monerostresstester.git"
   },
   "keywords": [
     "xmr",
@@ -20,9 +20,9 @@
   "author": "woodser",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/woodser/xmr-sample-app/issues"
+    "url": "https://github.com/woodser/monerostresstester/issues"
   },
-  "homepage": "https://github.com/woodser/xmr-sample-app#readme",
+  "homepage": "https://github.com/woodser/monerostresstester#readme",
   "dependencies": {
     "monero-javascript": "^0.2.7"
   },
