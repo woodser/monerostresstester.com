@@ -42,27 +42,9 @@ let configBase = {
     context: __dirname
 };
 
-let configApp = Object.assign({}, configBase, {
-    name: "App config",
-    entry: "./src/index.js",
-    output: {
-      path: path.resolve(__dirname, "browser_build"),
-      filename: "xmr-sample-app.js"
-    },
-});
-
-let configTest = Object.assign({}, configBase, {
-  name: "Test config",
-  entry: "./src/tests.js",
-  output: {
-    path: path.resolve(__dirname, "browser_build"),
-    filename: "xmr-sample-tests.js"
-  },
-});
-
 let configStressTester = Object.assign({}, configBase, {
   name: "Stress Tester",
-  entry: "./src/stress_tester.js",
+  entry: "./src/main/stress_tester.js",
   output: {
     path: path.resolve(__dirname, "browser_build"),
     filename: "stress_tester.dist.js"
@@ -70,7 +52,5 @@ let configStressTester = Object.assign({}, configBase, {
 });
 
 module.exports = [
-  //configApp,
-  //configTest,
   configStressTester
 ];

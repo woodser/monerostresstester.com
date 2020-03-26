@@ -4,7 +4,7 @@
   "description": "Sample web app using the monero-javascript library",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-wasm-threads --experimental-wasm-bulk-memory node_modules/mocha/bin/_mocha 'src/test/TestAll' --timeout 3000000 --exit"
   },
   "repository": {
     "type": "git",
