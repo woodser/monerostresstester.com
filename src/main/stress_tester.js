@@ -50,12 +50,6 @@ async function runApp() {
   console.log("Core wallet balance: " + await wallet.getBalance());
   console.log("Core wallet number of txs: " + (await wallet.getTxs()).length);
   
-  // create sufficient number of subaddresses in account 0 and 1
-  let numSubaddresses = (await wallet.getSubaddresses(0)).length;
-  if (numSubaddresses.length < MAX_OUTPUTS_PER_TX - 1) for (let i = 0; i < (MAX_OUTPUTS_PER_TX - 1 - numSubaddresses); i++) await wallet.createSubaddress(0);
-  numSubaddresses = (await wallet.getSubaddresses(0)).length;
-  if (numSubaddresses.length < MAX_OUTPUTS_PER_TX - 1) for (let i = 0; i < (MAX_OUTPUTS_PER_TX - 1 - numSubaddresses); i++) await wallet.createSubaddress(1);
-  
 //  // receive notifications when blocks are added to the chain
 //  await wallet.addListener(new class extends MoneroWalletListener {
 //    onNewBlock(height) {
@@ -68,8 +62,9 @@ async function runApp() {
   await wallet.startSyncing();
   
   // start generating transactions
-  let txGenerator = new MoneroTxGenerator(wallet);
-  txGenerator.start();
+  let txGenerator = new MoneroTxGenerator(daemon, wallet);
+  console.log("Starting...");
+  await txGenerator.start();
 }
 
 /**

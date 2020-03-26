@@ -33,7 +33,7 @@ class TestMoneroTxGenerator {
       
       it("Can generate txs", async function() {
         let txGenerator = new MoneroTxGenerator(that.daemon, that.wallet);
-        txGenerator.start();
+        await txGenerator.start();
       });
     });
   }
