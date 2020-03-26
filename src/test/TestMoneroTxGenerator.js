@@ -1,5 +1,7 @@
+const MoneroTxGenerator = require("../main/MoneroTxGenerator");
+
 /**
- * Tests the tx generator.
+ * Test the tx generator.
  */
 class TestMoneroTxGenerator {
   
@@ -30,7 +32,8 @@ class TestMoneroTxGenerator {
       // -------------------------- TESTS ---------------------------
       
       it("Can generate txs", async function() {
-        throw new Error("Not implemented");
+        let txGenerator = new MoneroTxGenerator(that.daemon, that.wallet);
+        txGenerator.start();
       });
     });
   }
