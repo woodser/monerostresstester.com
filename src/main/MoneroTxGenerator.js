@@ -11,6 +11,7 @@ class MoneroTxGenerator {
   constructor(daemon, wallet) {
     this.daemon = daemon;
     this.wallet = wallet;
+    this.numTxsGenerated = 0;
   }
   
   async start() {
@@ -33,6 +34,10 @@ class MoneroTxGenerator {
   
   isGenerating() {
     return this._isGenerating;
+  }
+  
+  getNumTxsGenerated() {
+    return this.numTxsGenerated;
   }
   
   // ---------------------------- PRIVATE HELPERS -----------------------------
@@ -92,8 +97,10 @@ class MoneroTxGenerator {
         // attempt to send
         try {
           let tx = (await this.wallet.send(request)).getTxs()[0];
-          console.log("Sent tx id: " + tx.getHash());
+          this.numTxsGenerated++;
           outputsToCreate -= numDsts;
+          console.log("Sent tx id: " + tx.getHash());
+          console.log(this.numTxsGenerated + "txs generated");
         } catch (e) {
           console.log("Error creating tx: " + e.message);
         }
@@ -105,7 +112,9 @@ class MoneroTxGenerator {
         let dstAddress = await this.wallet.getAddress(dstAccount, 0);
         try {
           let tx = (await this.wallet.sweepOutput(dstAddress, output.getKeyImage().getHex())).getTxs()[0];
+          this.numTxsGenerated++;
           console.log("Sweep tx id: " + tx.getHash());
+          console.log(this.numTxsGenerated + "txs generated");
         } catch (e) {
           console.log("Error creating tx: " + e.message);
         }
