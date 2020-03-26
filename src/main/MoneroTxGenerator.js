@@ -58,19 +58,19 @@ class MoneroTxGenerator {
     
     console.log("Got " + outputs.length + " available outputs");
     
-    // create additional outputs until enough of are available
+    // create additional outputs until enough are available to stay busy
     let outputsToCreate = MAX_AVAILABLE_OUTPUTS - outputs.length;
     console.log(outputsToCreate > 0 ? outputsToCreate + " remaining outputs to create" : "Not creating new outputs, sweeping existing");
+    
+    // get fee with multiplier to be conservative
+    let expectedFee = await this.daemon.getFeeEstimate();
+    expectedFee = expectedFee.multiply(BigInteger.parse("1.2"));
     
     // spend each available output
     for (let output of outputs) {
       
       // break if not generating
       if (!this._isGenerating) break;
-      
-      // get fee with multiplier to be conservative
-      let expectedFee = await this.daemon.getFeeEstimate();
-      expectedFee = expectedFee.multiply(BigInteger.parse("1.2"));
       
       // skip if output is too small to cover fee
       if (output.getAmount().compare(expectedFee) <= 0) continue;

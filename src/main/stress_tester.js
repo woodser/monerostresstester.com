@@ -16,7 +16,6 @@ const RESTORE_HEIGHT = 531333;
 const PROXY_TO_WORKER = true;   // proxy core wallet and daemon to worker so main thread is not blocked (recommended)
 const USE_FS = true;            // optionally save wallets to an in-memory file system, otherwise use empty paths
 const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system for demo
-const MAX_OUTPUTS_PER_TX = 16;  // maximum outputs per tx
 
 // run application on main thread
 let isMain = self.document? true : false;
@@ -48,7 +47,6 @@ async function runApp() {
   
   // print balance and number of transactions
   console.log("Core wallet balance: " + await wallet.getBalance());
-  console.log("Core wallet number of txs: " + (await wallet.getTxs()).length);
   
 //  // receive notifications when blocks are added to the chain
 //  await wallet.addListener(new class extends MoneroWalletListener {
