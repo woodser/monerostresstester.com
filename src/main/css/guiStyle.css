@@ -1,0 +1,47 @@
+.flex-container {
+	display: flex;
+	width: 600px;
+	height: 100vh;
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: column;
+}
+
+#parentContainer {
+	background-image: linear-gradient(to bottom left, red, yellow);
+}
+
+table {
+	width: 60%;
+}
+
+table, tr {
+    border-bottom: 1px solid black;
+    border-collapse: collapse;
+}
+
+td {
+	padding: 10px;
+}
+.tableLabel {
+	text-align: left;
+}
+.tableValue {
+	text-align: right;
+}
+
+body {
+	position: fixed;
+	left: 50%;
+	transform: translate(-50%, 0%);
+	
+	align-items: center;
+	margin: 0px;
+}
+
+.jsVariable {
+	display: none;
+}
+
+
+
