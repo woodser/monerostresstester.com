@@ -51,16 +51,6 @@ let configStressTester = Object.assign({}, configBase, {
   },
 });
 
-let configGui = Object.assign({}, configBase, {
-  name: "Stress Tester GUI",
-  entry: "./src/main/gui.js",
-  output: {
-	path: path.resolve(__dirname, "browser_build"),
-	filename: "gui.dist.js"
-  },
-});
-
 module.exports = [
-  configStressTester,
-  configGui
+  configStressTester
 ];

@@ -6,6 +6,8 @@
 require("monero-javascript");
 const MoneroTxGenerator = require("./MoneroTxGenerator");
 
+var $ = require("jquery");
+
 // configuration
 const DAEMON_RPC_URI = "http://localhost:38081";
 const DAEMON_RPC_USERNAME = "superuser";
@@ -17,6 +19,12 @@ const PROXY_TO_WORKER = true;   // proxy core wallet and daemon to worker so mai
 const USE_FS = true;            // optionally save wallets to an in-memory file system, otherwise use empty paths
 const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system for demo
 
+
+// GUI variables
+const FLEX_SRC = "img/muscleFlex.gif";
+const RELAX_SRC = "img/muscleRelax.gif";
+
+
 // run application on main thread
 let isMain = self.document? true : false;
 if (isMain) runApp();
@@ -25,8 +33,24 @@ if (isMain) runApp();
  * Run the application.
  */
 async function runApp() {
+	
+  let txGenerated = 0;
+  let totalFee = 0;	
   console.log("APPLICATION START");
+
+  // Set the start/stop button image to RELAX
+  $("#muscleButton").attr('src',RELAX_SRC);
+
+  // Display a "working..." message on the page so the user knows
+  // They can't start generating TXs yet
+  $("#statusMessage").html("working...");
   
+  // bool to track whether the stress test loop is running
+  // This will help us know which muscle button animation to play
+  // and whether to send a "start" or "stop" stignal to the
+  // generator
+  let isTestRunning = false;
+
   // connect to daemon 
   let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
   //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
@@ -35,35 +59,65 @@ async function runApp() {
   // create a wallet from mnemonic
   let path = USE_FS ? GenUtils.uuidv4() : "";
   console.log("Creating core wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
-  let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, MNEMONIC, daemonConnection, RESTORE_HEIGHT, SEED_OFFSET, PROXY_TO_WORKER, FS); 
+  let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, MNEMONIC, daemonConnection, RESTORE_HEIGHT, SEED_OFFSET, PROXY_TO_WORKER, FS);
+
+  //Get the wallet address 
+  let walletAddress = await wallet.getPrimaryAddress();
+  //Display wallet address on page
+  $("#walletAddress").html(walletAddress);
+
   console.log("Core wallet imported mnemonic: " + await wallet.getMnemonic());
-  console.log("Core wallet imported address: " + await wallet.getPrimaryAddress());
+  console.log("Core wallet imported address: " + walletAddress);
   
+  //request notifications from wallet whenever a new block is added to the chain
+  await wallet.addListener(new class extends MoneroWalletListener {
+	onNewBlock(height) {
+	  wallet.get
+	}
+  });
+
   // synchronize wallet
-  console.log("Synchronizing core wallet...");
+    $("#statusMessage").html("Syncronizing core wallet...");
   let result = await wallet.sync(new WalletSyncPrinter());  // synchronize and print progress
-  console.log("Done synchronizing");
-  console.log(result);
+  $("#statusMessage").html("Done syncing. Result: " + result);
+    $("#statusMessage").html("working...");
   
   // print balance and number of transactions
   console.log("Core wallet balance: " + await wallet.getBalance());
   
-//  // receive notifications when blocks are added to the chain
-//  await wallet.addListener(new class extends MoneroWalletListener {
-//    onNewBlock(height) {
-//      console.log("Block added: " + height);
-//      //spendAvailableOutputs(daemon, wallet);
-//    }
-//  });
+  // receive notifications when outputs are spent
+  await wallet.addListener(new class extends MoneroWalletListener {
+    onOutputSpent(output) {
+      console.log("Output spent: " + output);
+      // todo: get amount spent to add it to the total
+      // (can we get the fee from the output object too?)
+    }
+  });
   
   // start background syncing
   await wallet.startSyncing();
   
-  // start generating transactions
+  // instantiate a transaction generator
   let txGenerator = new MoneroTxGenerator(daemon, wallet);
-  console.log("Starting...");
-  await txGenerator.start();
+    $("#statusMessage").html("Ready to stress the system!");
+
+  // give start/stop control over transaction generator to the muscle button
+  // Listen for the start/stop button to be clicked
+  $("#muscleButton").click(async function() {
+    if (isTestRunning) {
+	  isTestRunning = false;
+      txGenerator.stop();  
+      $("#muscleButton").attr('src',RELAX_SRC);
+	} else {
+	  isTestRunning = true;
+      $("#muscleButton").attr('src',FLEX_SRC);
+      await txGenerator.start();
+	}
+  })  
+
 }
+
+
 
 /**
  * Print sync progress every X blocks.

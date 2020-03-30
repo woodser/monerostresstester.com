@@ -11,6 +11,13 @@
 	background-image: linear-gradient(to bottom left, red, yellow);
 }
 
+#statusMessage {
+	background-color: grey;
+	padding: 10px;
+	width: 80%;
+	text-align: center;
+}
+
 table {
 	width: 60%;
 }

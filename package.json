@@ -24,6 +24,8 @@
   },
   "homepage": "https://github.com/woodser/monerostresstester#readme",
   "dependencies": {
+    "jquery": "^3.4.1",
+    "jsdom": "^16.2.1",
     "monero-javascript": "^0.2.9"
   },
   "devDependencies": {

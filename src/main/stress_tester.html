@@ -7,9 +7,11 @@
 		<link rel="stylesheet" type="text/css" href="css/guiStyle.css">
     </head>
     <body>
-
+		<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 		<div class="flex-container" id="parentContainer">
         	<h3 style='font-weight: bold; font-family:avenir,Helvetica Neue;'>Stress Tester...</h3>
+			<h2> Wallet Address:</h2>
+			<div id="walletAddress">placeholder text</div>
 			<table>
 				<tr>
 					<td class="tableLabel">Total transactions:</td>
@@ -28,12 +30,11 @@
 					<td class="tableValue" id="feeTotal">0.00037</td>
 				</tr>
 			</table>
+			<div id="statusMessage">Placeholder text</div>
 			<div id="muscleButtonContainer"><img src="" id="muscleButton" alt="muscle button"></img></div>
 			<!--<button type="button">Use me to test responsiveness</button>-->
 
 	        <script type="text/javascript" src="stress_tester.dist.js"></script>
-			<script defer type="text/javascript" src="gui.dist.js"></script>
-
 		</div>
 		
 		<!--Invisible! for preserving JS ariable state-->
