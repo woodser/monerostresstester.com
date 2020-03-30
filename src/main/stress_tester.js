@@ -55,13 +55,13 @@ async function runApp() {
   console.log("Core wallet balance: " + await wallet.getBalance());
   $("#wallet_balance").text("Wallet balance: " + await wallet.getBalance());
   
-//  // receive notifications when blocks are added to the chain
-//  await wallet.addListener(new class extends MoneroWalletListener {
-//    onNewBlock(height) {
-//      console.log("Block added: " + height);
-//      //spendAvailableOutputs(daemon, wallet);
-//    }
-//  });
+  // receive notifications when blocks are added to the chain
+  await wallet.addListener(new class extends MoneroWalletListener {
+    onOutputSpent(output) {
+      console.log("Output spent");
+      console.log(output);
+    }
+  });
   
   // start background syncing
   await wallet.startSyncing();
@@ -83,6 +83,7 @@ class WalletSyncPrinter extends MoneroWalletListener {
   }
   
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
+    $("#wallet_balance").text("Wallet balance: Synchronizing: " + percentDone);
     if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
       console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
     }
