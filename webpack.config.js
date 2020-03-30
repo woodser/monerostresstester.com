@@ -1,4 +1,5 @@
 const path = require("path");
+var webpack = require('webpack');
 //const fileLoader = require("file-loader");
 
 let configBase = {
@@ -39,7 +40,13 @@ let configBase = {
       ]
     },
     cache: true,
-    context: __dirname
+    context: __dirname,
+    plugins: [
+      new webpack.ProvidePlugin({
+        '$': 'jquery',
+        jQuery: 'jquery'
+      })
+    ]
 };
 
 let configStressTester = Object.assign({}, configBase, {
@@ -48,7 +55,7 @@ let configStressTester = Object.assign({}, configBase, {
   output: {
     path: path.resolve(__dirname, "browser_build"),
     filename: "stress_tester.dist.js"
-  },
+  }
 });
 
 module.exports = [

@@ -17,15 +17,20 @@ const PROXY_TO_WORKER = true;   // proxy core wallet and daemon to worker so mai
 const USE_FS = true;            // optionally save wallets to an in-memory file system, otherwise use empty paths
 const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system for demo
 
-// run application on main thread
-let isMain = self.document? true : false;
-if (isMain) runApp();
+/**
+ * Start when document ready.
+ */
+$(document).ready(function() {
+  runApp();
+});
 
 /**
  * Run the application.
  */
 async function runApp() {
   console.log("APPLICATION START");
+  
+  $("#wallet_balance").text("Wallet balance: Initializing...");
   
   // connect to daemon 
   let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
@@ -40,6 +45,7 @@ async function runApp() {
   console.log("Core wallet imported address: " + await wallet.getPrimaryAddress());
   
   // synchronize wallet
+  $("#wallet_balance").text("Wallet balance: Synchronizing...");
   console.log("Synchronizing core wallet...");
   let result = await wallet.sync(new WalletSyncPrinter());  // synchronize and print progress
   console.log("Done synchronizing");
@@ -47,6 +53,7 @@ async function runApp() {
   
   // print balance and number of transactions
   console.log("Core wallet balance: " + await wallet.getBalance());
+  $("#wallet_balance").text("Wallet balance: " + await wallet.getBalance());
   
 //  // receive notifications when blocks are added to the chain
 //  await wallet.addListener(new class extends MoneroWalletListener {
