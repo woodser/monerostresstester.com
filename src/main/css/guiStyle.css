@@ -37,6 +37,19 @@ td {
 	text-align: right;
 }
 
+#progressBarContainer {
+	width: 60%;
+	height: 20px;
+	border-style: solid;
+	align-content: left;
+}
+
+#progressBar {
+	height: 20px;
+	width: 0%;
+	background-color: red;
+}
+
 body {
 	position: fixed;
 	left: 50%;

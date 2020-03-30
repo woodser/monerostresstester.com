@@ -68,13 +68,6 @@ async function runApp() {
 
   console.log("Core wallet imported mnemonic: " + await wallet.getMnemonic());
   console.log("Core wallet imported address: " + walletAddress);
-  
-  //request notifications from wallet whenever a new block is added to the chain
-  await wallet.addListener(new class extends MoneroWalletListener {
-	onNewBlock(height) {
-	  wallet.get
-	}
-  });
 
   // synchronize wallet
     $("#statusMessage").html("Syncronizing core wallet...");
@@ -117,8 +110,6 @@ async function runApp() {
 
 }
 
-
-
 /**
  * Print sync progress every X blocks.
  */
@@ -131,7 +122,11 @@ class WalletSyncPrinter extends MoneroWalletListener {
   
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
     if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
+      let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
+      $("#progressBar").val(percentString);
+      console.log("Percent string: " + percentString);
       console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
+      $("#progressBar").attr("width", percentString);
     }
   }
 }
