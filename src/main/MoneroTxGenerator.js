@@ -114,7 +114,7 @@ class MoneroTxGenerator {
           let tx = (await this.wallet.sweepOutput(dstAddress, output.getKeyImage().getHex())).getTxs()[0];
           this.numTxsGenerated++;
           console.log("Sweep tx id: " + tx.getHash());
-          console.log(this.numTxsGenerated + "txs generated");
+          console.log(this.numTxsGenerated + " txs generated");
         } catch (e) {
           console.log("Error creating tx: " + e.message);
         }

@@ -6,8 +6,6 @@
 require("monero-javascript");
 const MoneroTxGenerator = require("./MoneroTxGenerator");
 
-var $ = require("jquery");
-
 // configuration
 const DAEMON_RPC_URI = "http://localhost:38081";
 const DAEMON_RPC_USERNAME = "superuser";
@@ -25,7 +23,7 @@ const FLEX_SRC = "img/muscleFlex.gif";
 const RELAX_SRC = "img/muscleRelax.gif";
 
 
-// run application on main thread
+// Run application on main thread.
 let isMain = self.document? true : false;
 if (isMain) runApp();
 
@@ -33,7 +31,7 @@ if (isMain) runApp();
  * Run the application.
  */
 async function runApp() {
-	
+  // Initialize GUI-displayed wallet statistics
   let txGenerated = 0;
   let totalFee = 0;	
   console.log("APPLICATION START");
@@ -51,6 +49,8 @@ async function runApp() {
   // generator
   let isTestRunning = false;
 
+  $("#wallet_balance").text("Wallet balance: Initializing...");
+  
   // connect to daemon 
   let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
   //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
@@ -63,8 +63,10 @@ async function runApp() {
 
   //Get the wallet address 
   let walletAddress = await wallet.getPrimaryAddress();
+  let walletAddressLine1 = walletAddress.substring(0,walletAddress.length);
+  let walletAddressLine2 = walletAddress.substring(walletAddress.length);
   //Display wallet address on page
-  $("#walletAddress").html(walletAddress);
+  $("#walletAddress").html(walletAddressLine1 + "<br/>" + walletAddressLine2);
 
   console.log("Core wallet imported mnemonic: " + await wallet.getMnemonic());
   console.log("Core wallet imported address: " + walletAddress);
@@ -78,6 +80,7 @@ async function runApp() {
   // print balance and number of transactions
   console.log("Core wallet balance: " + await wallet.getBalance());
   
+  /* commented out; currently does nothing
   // receive notifications when outputs are spent
   await wallet.addListener(new class extends MoneroWalletListener {
     onOutputSpent(output) {
@@ -86,6 +89,7 @@ async function runApp() {
       // (can we get the fee from the output object too?)
     }
   });
+  */
   
   // start background syncing
   await wallet.startSyncing();
