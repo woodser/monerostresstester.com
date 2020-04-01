@@ -22,7 +22,6 @@ const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system 
 const FLEX_SRC = "img/muscleFlex.gif";
 const RELAX_SRC = "img/muscleRelax.gif";
 
-
 // Run application on main thread.
 let isMain = self.document? true : false;
 if (isMain) runApp();
@@ -63,8 +62,8 @@ async function runApp() {
 
   //Get the wallet address 
   let walletAddress = await wallet.getPrimaryAddress();
-  let walletAddressLine1 = walletAddress.substring(0,walletAddress.length);
-  let walletAddressLine2 = walletAddress.substring(walletAddress.length);
+  let walletAddressLine1 = walletAddress.substring(0,walletAddress.length/2);
+  let walletAddressLine2 = walletAddress.substring(walletAddress.length/2);
   //Display wallet address on page
   $("#walletAddress").html(walletAddressLine1 + "<br/>" + walletAddressLine2);
 
@@ -127,10 +126,10 @@ class WalletSyncPrinter extends MoneroWalletListener {
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
     if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
       let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
-      $("#progressBar").val(percentString);
+      $("#progressBar").width(percentString);
       console.log("Percent string: " + percentString);
       console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
-      $("#progressBar").attr("width", percentString);
+
     }
   }
 }
