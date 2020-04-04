@@ -1,7 +1,7 @@
 
 // configuration
-const MAX_OUTPUTS_PER_TX = 16;      // maximum outputs per tx
-const MAX_AVAILABLE_OUTPUTS = 20;  // max new outputs to create until wallet sweeps each output
+const MAX_OUTPUTS_PER_TX = 16       // maximum outputs per tx
+const MAX_AVAILABLE_OUTPUTS = 100;  // max new outputs to create until wallet sweeps each output
 
 /**
  * Generates transactions on the Monero network using a wallet.
@@ -65,11 +65,9 @@ class MoneroTxGenerator {
     
     // create additional outputs until enough are available to stay busy
     let outputsToCreate = MAX_AVAILABLE_OUTPUTS - outputs.length;
-    console.log(outputsToCreate > 0 ? outputsToCreate + " remaining outputs to create" : "Not creating new outputs, sweeping existing");
     
     // get fee with multiplier to be conservative
-    let expectedFee = await this.daemon.getFeeEstimate();
-    expectedFee = expectedFee.multiply(BigInteger.parse("1.2"));
+    let expectedFee = (await this.daemon.getFeeEstimate()).multiply(new BigInteger(1.2));
     
     // spend each available output
     for (let output of outputs) {
@@ -77,16 +75,17 @@ class MoneroTxGenerator {
       // break if not generating
       if (!this._isGenerating) break;
       
-      // skip if output is too small to cover fee
-      if (output.getAmount().compare(expectedFee) <= 0) continue;
-      
       // split output until max available outputs reached
       if (outputsToCreate > 0) {
         
-        // build send request
-        let request = new MoneroSendRequest().setAccountIndex(output.getAccountIndex()).setSubaddressIndex(output.getSubaddressIndex());            // source from output subaddress
+        // skip if output is too small to cover fee
         let numDsts = Math.min(outputsToCreate, MAX_OUTPUTS_PER_TX - 1);
-        let amtPerSubaddress = output.getAmount().subtract(expectedFee).divide(new BigInteger(numDsts));  // amount to send per subaddress, one output used for change
+        expectedFee.multiply(new BigInteger(100));  // increase fee factor when splitting outputs
+        if (output.getAmount().compare(expectedFee.multiply(numDsts)) <= 0) continue;
+        
+        // build send request
+        let request = new MoneroSendRequest().setAccountIndex(output.getAccountIndex()).setSubaddressIndex(output.getSubaddressIndex());  // source from output subaddress
+        let amtPerSubaddress = (output.getAmount().subtract(expectedFee.multiply(numDsts))).divide(new BigInteger(numDsts));  // amount to send per subaddress, one output used for change
         let dstAccount = output.getAccountIndex() === 0 ? 1 : 0;
         let destinations = [];
         for (let dstSubaddress = 0; dstSubaddress < numDsts; dstSubaddress++) {
@@ -96,11 +95,13 @@ class MoneroTxGenerator {
         
         // attempt to send
         try {
-          let tx = (await this.wallet.send(request)).getTxs()[0];
-          this.numTxsGenerated++;
-          outputsToCreate -= numDsts;
-          console.log("Sent tx id: " + tx.getHash());
-          console.log(this.numTxsGenerated + "txs generated");
+          let txs = (await this.wallet.sendSplit(request)).getTxs();
+          for (let tx of txs) {
+            this.numTxsGenerated++;
+            outputsToCreate -= numDsts;
+            console.log("Sent tx id: " + tx.getHash());
+            console.log(this.numTxsGenerated + " txs generated");
+          }
         } catch (e) {
           console.log("Error creating tx: " + e.message);
         }
