@@ -1,7 +1,7 @@
 
 // configuration
 const MAX_OUTPUTS_PER_TX = 16       // maximum outputs per tx
-const MAX_AVAILABLE_OUTPUTS = 200;  // max new outputs to create until wallet sweeps each output
+const MAX_OUTPUT_GROWTH = 200; // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
 
 /**
  * Generates transactions on the Monero network using a wallet.
@@ -63,8 +63,8 @@ class MoneroTxGenerator {
     
     console.log("Got " + outputs.length + " available outputs");
     
-    // create additional outputs until enough are available to stay busy
-    let outputsToCreate = MAX_AVAILABLE_OUTPUTS - outputs.length;
+    // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
+    let outputsToCreate = MAX_OUTPUT_GROWTH - outputs.length;
     
     // get fee with multiplier to be conservative
     let expectedFee = (await this.daemon.getFeeEstimate()).multiply(new BigInteger(1.2));
