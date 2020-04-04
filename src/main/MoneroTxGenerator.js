@@ -47,7 +47,7 @@ class MoneroTxGenerator {
       if (!this._isGenerating) break;
       
       // spend available outputs
-      await this._spendAvailableOutputs(this.daemon, this.wallet);
+      await this._spendAvailableOutputs();
       
       // sleep for a moment
       await new Promise(function(resolve) { setTimeout(resolve, MoneroUtils.WALLET_REFRESH_RATE); });
