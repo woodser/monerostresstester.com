@@ -1,7 +1,7 @@
 
 // configuration
-const MAX_OUTPUTS_PER_TX = 16       // maximum outputs per tx
-const MAX_OUTPUT_GROWTH = 200; // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
+const MAX_OUTPUTS_PER_TX = 16;  // maximum outputs per tx
+const MAX_OUTPUT_GROWTH = 25;   // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
 
 /**
  * Generates transactions on the Monero network using a wallet.
@@ -26,7 +26,7 @@ class MoneroTxGenerator {
 
     // start generation loop
     this._isGenerating = true;
-    await this._startGenerateLoop();
+    this._startGenerateLoop();
   }
 
   stop() {
@@ -55,9 +55,15 @@ class MoneroTxGenerator {
       if (!this._isGenerating) break;
 
       // spend available outputs
-      await this._spendAvailableOutputs();
+      try {
+        await this._spendAvailableOutputs();
+      } catch (e) {
+        console.log("Caught error in spendAvailableOuptuts()");
+        console.log(e);
+      }
 
       // sleep for a moment
+      if (!this._isGenerating) break;
       await new Promise(function(resolve) { setTimeout(resolve, MoneroUtils.WALLET_REFRESH_RATE); });
     }
   }
@@ -67,7 +73,7 @@ class MoneroTxGenerator {
   // transactions up to this point
   onTransaction(tx) {
     console.log("onTransaction() was called!");
-    for(let i = 0; i < listeners.length; i++) {
+    for(let i = 0; i < this.listeners.length; i++) {
       this.listeners[i](tx, this.numTxsGenerated);
     }
   }
@@ -115,6 +121,7 @@ class MoneroTxGenerator {
         try {
           console.log("Sending multi-output tx");
           let tx = (await this.wallet.send(request)).getTxs()[0];
+          console.log(tx.toJson());
           this.numTxsGenerated++;
           outputsToCreate -= numDsts;
           console.log("Sent tx id: " + tx.getHash());
@@ -127,7 +134,7 @@ class MoneroTxGenerator {
           this.onTransaction(tx);
 
         } catch (e) {
-          console.log("Error creating tx: " + e.message);
+          console.log("Error creating multi-output tx: " + e.message);
         }
       }
 
@@ -149,7 +156,7 @@ class MoneroTxGenerator {
           // data and total number of transactios up to this point
           this.onTransaction(tx);
         } catch (e) {
-          console.log("Error creating tx: " + e.message);
+          console.log("Error creating sweep tx: " + e.message);
         }
       }
     }

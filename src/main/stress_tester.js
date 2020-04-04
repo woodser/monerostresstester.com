@@ -134,12 +134,10 @@ class WalletSyncPrinter extends MoneroWalletListener {
   }
 
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
+    let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
+    $("#progressBar").width(percentString);
     if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
-      let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
-      $("#progressBar").width(percentString);
-      console.log("Percent string: " + percentString);
       console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
-
     }
   }
 }
