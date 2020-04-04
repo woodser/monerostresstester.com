@@ -22,6 +22,9 @@ const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system 
 const FLEX_SRC = "img/muscleFlex.gif";
 const RELAX_SRC = "img/muscleRelax.gif";
 
+// Keep track of the number of transactions to this point
+let numTxsGenerated = 0;
+
 // Run application on main thread.
 let isMain = self.document? true : false;
 if (isMain) runApp();
@@ -32,7 +35,7 @@ if (isMain) runApp();
 async function runApp() {
   // Initialize GUI-displayed wallet statistics
   let txGenerated = 0;
-  let totalFee = 0;	
+  let totalFee = 0;
   console.log("APPLICATION START");
 
   // Set the start/stop button image to RELAX
@@ -41,7 +44,7 @@ async function runApp() {
   // Display a "working..." message on the page so the user knows
   // They can't start generating TXs yet
   $("#statusMessage").html("working...");
-  
+
   // bool to track whether the stress test loop is running
   // This will help us know which muscle button animation to play
   // and whether to send a "start" or "stop" stignal to the
@@ -49,18 +52,18 @@ async function runApp() {
   let isTestRunning = false;
 
   $("#wallet_balance").text("Wallet balance: Initializing...");
-  
-  // connect to daemon 
+
+  // connect to daemon
   let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
   //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
   let daemon = await MoneroDaemonRpc.create(Object.assign({PROXY_TO_WORKER: PROXY_TO_WORKER}, daemonConnection.getConfig()));
-  
+
   // create a wallet from mnemonic
   let path = USE_FS ? GenUtils.uuidv4() : "";
   console.log("Creating core wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
   let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, MNEMONIC, daemonConnection, RESTORE_HEIGHT, SEED_OFFSET, PROXY_TO_WORKER, FS);
 
-  //Get the wallet address 
+  //Get the wallet address
   let walletAddress = await wallet.getPrimaryAddress();
   let walletAddressLine1 = walletAddress.substring(0,walletAddress.length/2);
   let walletAddressLine2 = walletAddress.substring(walletAddress.length/2);
@@ -75,10 +78,10 @@ async function runApp() {
   let result = await wallet.sync(new WalletSyncPrinter());  // synchronize and print progress
   $("#statusMessage").html("Done syncing. Result: " + result);
     $("#statusMessage").html("working...");
-  
+
   // print balance and number of transactions
   console.log("Core wallet balance: " + await wallet.getBalance());
-  
+
   /* commented out; currently does nothing
   // receive notifications when outputs are spent
   await wallet.addListener(new class extends MoneroWalletListener {
@@ -89,27 +92,34 @@ async function runApp() {
     }
   });
   */
-  
+
   // start background syncing
   await wallet.startSyncing();
-  
+
   // instantiate a transaction generator
   let txGenerator = new MoneroTxGenerator(daemon, wallet);
     $("#statusMessage").html("Ready to stress the system!");
+  // send a listener to the txGenerator so we can respond to transaction events
+  // and be provided with transaction data
+  txGenerator.addTransactionListener((tx, numTxsGenerated) => {
+    console.log("Running transaction listener callback");
+    this.numTxsGenerated = numTxsGenerated;
+    $("#txTotal").html(numTxsGenerated);
+  });
 
   // give start/stop control over transaction generator to the muscle button
   // Listen for the start/stop button to be clicked
   $("#muscleButton").click(async function() {
     if (isTestRunning) {
 	  isTestRunning = false;
-      txGenerator.stop();  
+      txGenerator.stop();
       $("#muscleButton").attr('src',RELAX_SRC);
 	} else {
 	  isTestRunning = true;
       $("#muscleButton").attr('src',FLEX_SRC);
       await txGenerator.start();
 	}
-  })  
+  })
 
 }
 
@@ -117,12 +127,12 @@ async function runApp() {
  * Print sync progress every X blocks.
  */
 class WalletSyncPrinter extends MoneroWalletListener {
-  
+
   constructor(blockResolution) {
     super();
     this.blockResolution = blockResolution ? blockResolution : 2500;
   }
-  
+
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
     if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
       let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
