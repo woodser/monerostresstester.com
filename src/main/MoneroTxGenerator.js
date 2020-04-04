@@ -1,7 +1,7 @@
 
 // configuration
 const MAX_OUTPUTS_PER_TX = 16       // maximum outputs per tx
-const MAX_AVAILABLE_OUTPUTS = 100;  // max new outputs to create until wallet sweeps each output
+const MAX_AVAILABLE_OUTPUTS = 200;  // max new outputs to create until wallet sweeps each output
 
 /**
  * Generates transactions on the Monero network using a wallet.
