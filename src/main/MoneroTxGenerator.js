@@ -55,7 +55,6 @@ class MoneroTxGenerator {
       if (!this._isGenerating) break;
 
       // spend available outputs
-<<<<<<< Updated upstream
       try {
         await this._spendAvailableOutputs();
       } catch (e) {
@@ -63,15 +62,6 @@ class MoneroTxGenerator {
         console.log(e);
       }
 
-=======
-<<<<<<< Updated upstream
-      await this._spendAvailableOutputs();
-      
-=======
-      await this._spendAvailableOutputs(this.daemon, this.wallet);
-
->>>>>>> Stashed changes
->>>>>>> Stashed changes
       // sleep for a moment
       if (!this._isGenerating) break;
       await new Promise(function(resolve) { setTimeout(resolve, MoneroUtils.WALLET_REFRESH_RATE); });
@@ -82,14 +72,9 @@ class MoneroTxGenerator {
   // and to provide those classes with transaction data and total number of
   // transactions up to this point
   onTransaction(tx) {
-<<<<<<< Updated upstream
     console.log("onTransaction() was called!");
     for(let i = 0; i < this.listeners.length; i++) {
       this.listeners[i](tx, this.numTxsGenerated);
-=======
-    for(i = 0; i < listeners.length; i++) {
-      listeners[i](tx, numTxsGenerated);
->>>>>>> Stashed changes
     }
   }
 
@@ -99,7 +84,6 @@ class MoneroTxGenerator {
 
     // get available outputs
     let outputs = await this.wallet.getOutputs({isLocked: false, isSpent: false});
-<<<<<<< Updated upstream
     console.log("Wallet has " + outputs.length + " available outputs");
 
     // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
@@ -107,50 +91,17 @@ class MoneroTxGenerator {
 
     // get fee with multiplier to be conservative
     let expectedFee = (await this.daemon.getFeeEstimate()).multiply(new BigInteger(1.2));
-<<<<<<< Updated upstream
 
-=======
-    
-=======
-
-    console.log("Got " + outputs.length + " available outputs");
-
-    // create additional outputs until enough are available to stay busy
-    let outputsToCreate = MAX_AVAILABLE_OUTPUTS - outputs.length;
-    console.log(outputsToCreate > 0 ? outputsToCreate + " remaining outputs to create" : "Not creating new outputs, sweeping existing");
-
-    // get fee with multiplier to be conservative
-    let expectedFee = await this.daemon.getFeeEstimate();
-    expectedFee = expectedFee.multiply(BigInteger.parse("1.2"));
-
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     // spend each available output
     for (let output of outputs) {
 
       // break if not generating
       if (!this._isGenerating) break;
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< Updated upstream
-      
->>>>>>> Stashed changes
       // split output to reach MAX_OUTPUT_GROWTH
       if (outputsToCreate > 0) {
 
         // skip if output is too small to cover fee
-=======
-
-      // skip if output is too small to cover fee
-      if (output.getAmount().compare(expectedFee) <= 0) continue;
-
-      // split output until max available outputs reached
-      if (outputsToCreate > 0) {
-
-        // build send request
-        let request = new MoneroSendRequest().setAccountIndex(output.getAccountIndex()).setSubaddressIndex(output.getSubaddressIndex());            // source from output subaddress
->>>>>>> Stashed changes
         let numDsts = Math.min(outputsToCreate, MAX_OUTPUTS_PER_TX - 1);
         expectedFee = expectedFee.multiply(new BigInteger(numDsts));
         expectedFee = expectedFee.multiply(new BigInteger(10));  // increase fee multiplier for multi-output txs
@@ -174,27 +125,14 @@ class MoneroTxGenerator {
           this.numTxsGenerated++;
           outputsToCreate -= numDsts;
           console.log("Sent tx id: " + tx.getHash());
-<<<<<<< Updated upstream
           console.log(this.numTxsGenerated + "txs generated");
 
-=======
-<<<<<<< Updated upstream
-          console.log(this.numTxsGenerated + " txs generated");
-=======
-          console.log(this.numTxsGenerated + "txs generated");
->>>>>>> Stashed changes
           // The transaction was successful, so fire the "onTransaction" event
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-<<<<<<< Updated upstream
           this.onTransaction(tx);
 
-=======
-          onTransaction(tx);
-
->>>>>>> Stashed changes
->>>>>>> Stashed changes
         } catch (e) {
           console.log("Error creating multi-output tx: " + e.message);
         }
