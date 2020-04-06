@@ -11,7 +11,10 @@ class MoneroTxGenerator {
   constructor(daemon, wallet) {
     this.daemon = daemon;
     this.wallet = wallet;
+    // Track the total number of transactions completed
     this.numTxsGenerated = 0;
+    // Track the sum of all all cumulative transaction fees
+    this.totalFee = new BigInteger(0);
     this.listeners = [];
   }
 
@@ -71,10 +74,10 @@ class MoneroTxGenerator {
   // Callback to notify requesting classes that a transaction occurred
   // and to provide those classes with transaction data and total number of
   // transactions up to this point
-  onTransaction(tx) {
+  onTransaction() {
     console.log("onTransaction() was called!");
     for(let i = 0; i < this.listeners.length; i++) {
-      this.listeners[i](tx, this.numTxsGenerated);
+      this.listeners[i](this.numTxsGenerated, this.totalFee);
     }
   }
 
@@ -123,15 +126,17 @@ class MoneroTxGenerator {
           let tx = (await this.wallet.send(request)).getTxs()[0];
           console.log(tx.toJson());
           this.numTxsGenerated++;
+          this.totalFee = this.totalFee.add(tx.getFee());
           outputsToCreate -= numDsts;
           console.log("Sent tx id: " + tx.getHash());
           console.log(this.numTxsGenerated + "txs generated");
+          console.log("Total fee: " + this.totalFee);
 
           // The transaction was successful, so fire the "onTransaction" event
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          this.onTransaction(tx);
+          this.onTransaction();
 
         } catch (e) {
           console.log("Error creating multi-output tx: " + e.message);
@@ -147,14 +152,17 @@ class MoneroTxGenerator {
           console.log("Sending output sweep tx");
           let tx = (await this.wallet.sweepOutput(dstAddress, output.getKeyImage().getHex())).getTxs()[0];
           this.numTxsGenerated++;
+          this.totalFee = this.totalFee.add(tx.getFee());
           console.log("Sweep tx id: " + tx.getHash());
           console.log(this.numTxsGenerated + " txs generated");
+          console.log("Total fee: " + this.totalFee);
 
           // The transaction was successful, so fire the "onTransaction" event
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          this.onTransaction(tx);
+          this.onTransaction();
+
         } catch (e) {
           console.log("Error creating sweep tx: " + e.message);
         }

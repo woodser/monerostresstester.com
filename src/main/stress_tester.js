@@ -17,15 +17,9 @@ const PROXY_TO_WORKER = true;   // proxy core wallet and daemon to worker so mai
 const USE_FS = true;            // optionally save wallets to an in-memory file system, otherwise use empty paths
 const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system for demo
 
-
 // GUI variables
 const FLEX_SRC = "img/muscleFlex.gif";
 const RELAX_SRC = "img/muscleRelax.gif";
-
-// Keep track of the number of transactions to this point
-let numTxsGenerated = 0;
-// Keep track of the total transaction fees up to this point
-let totalFees = new BigInteger(0);
 
 // Run application on main thread.
 let isMain = self.document? true : false;
@@ -103,13 +97,10 @@ async function runApp() {
     $("#statusMessage").html("Ready to stress the system!");
   // send a listener to the txGenerator so we can respond to transaction events
   // and be provided with transaction data
-  txGenerator.addTransactionListener((tx, numTxsGenerated) => {
+  txGenerator.addTransactionListener((numTxsGenerated, totalFee) => {
     console.log("Running transaction listener callback");
-    this.numTxsGenerated = numTxsGenerated;
-    this.totalFees = this.totalFees.add(tx.getFee());
-    console.log("tx.getFee: " + tx.getFee());
     $("#txTotal").html(numTxsGenerated);
-    $("#feeTotal").html(this.totalFees.toString());
+    $("#feeTotal").html(totalFee.toString());
   });
 
   // give start/stop control over transaction generator to the muscle button
