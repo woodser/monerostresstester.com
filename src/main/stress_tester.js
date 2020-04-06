@@ -17,9 +17,30 @@ const PROXY_TO_WORKER = true;   // proxy core wallet and daemon to worker so mai
 const USE_FS = true;            // optionally save wallets to an in-memory file system, otherwise use empty paths
 const FS = USE_FS ? require('memfs') : undefined;  // use in-memory file system for demo
 
-// GUI variables
+// GUI constants
 const FLEX_SRC = "img/muscleFlex.gif";
 const RELAX_SRC = "img/muscleRelax.gif";
+
+// Math constants
+const AU_DECIMAL_PLACES = 12
+
+//Hepler function to convert bigInt in atomic units to decimal representation
+function atomicUnitsToDecimal(aUAmount) {
+  // 1 XMR = 1,000,000,000,000 atomic units
+  // BigInteger does not support numbers larger than 2,147,483,647
+  // Thus, it is impossible to rely on its division function (divrem) to convert atomic units to XMR
+  // The solution is to manually alter the string representation to move the decimal twelve places to the left
+  // TODO: remove trailing zeros from the string
+
+  let aUAmountString = aUAmount.toString();
+  // figure out how many zeros need to be added between the decimal point and the current value
+  let numZerosToAdd = AU_DECIMAL_PLACES - aUAmountString.length();
+  
+}
+  
+  let conversionFactor = new BigInteger(1))
+  quotientAndRemainder = aUAmount.divRem()
+}
 
 // Run application on main thread.
 let isMain = self.document? true : false;
