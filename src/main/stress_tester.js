@@ -24,6 +24,8 @@ const RELAX_SRC = "img/muscleRelax.gif";
 
 // Keep track of the number of transactions to this point
 let numTxsGenerated = 0;
+// Keep track of the total transaction fees up to this point
+let totalFees = new BigInteger(0);
 
 // Run application on main thread.
 let isMain = self.document? true : false;
@@ -104,7 +106,10 @@ async function runApp() {
   txGenerator.addTransactionListener((tx, numTxsGenerated) => {
     console.log("Running transaction listener callback");
     this.numTxsGenerated = numTxsGenerated;
+    this.totalFees = this.totalFees.add(tx.getFee());
+    console.log("tx.getFee: " + tx.getFee());
     $("#txTotal").html(numTxsGenerated);
+    $("#feeTotal").html(this.totalFees.toString());
   });
 
   // give start/stop control over transaction generator to the muscle button
