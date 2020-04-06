@@ -29,9 +29,6 @@ if (isMain) runApp();
  * Run the application.
  */
 async function runApp() {
-  // Initialize GUI-displayed wallet statistics
-  let txGenerated = 0;
-  let totalFee = 0;
   console.log("APPLICATION START");
 
   // Set the start/stop button image to RELAX
@@ -97,10 +94,10 @@ async function runApp() {
     $("#statusMessage").html("Ready to stress the system!");
   // send a listener to the txGenerator so we can respond to transaction events
   // and be provided with transaction data
-  txGenerator.addTransactionListener((numTxsGenerated, totalFee) => {
+  txGenerator.addTransactionListener((tx) => {
     console.log("Running transaction listener callback");
-    $("#txTotal").html(numTxsGenerated);
-    $("#feeTotal").html(totalFee.toString());
+    $("#txTotal").html(txGenerator.getNumTxsGenerated());
+    $("#feeTotal").html(txGenerator.getTotalFee().toString());
   });
 
   // give start/stop control over transaction generator to the muscle button

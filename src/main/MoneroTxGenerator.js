@@ -44,6 +44,10 @@ class MoneroTxGenerator {
     return this.numTxsGenerated;
   }
 
+  getTotalFee() {
+	return this.totalFee;
+  }
+
   // Add an event listener to allow external classes to take actions in
   // response to each
   addTransactionListener(listener) {
@@ -74,10 +78,10 @@ class MoneroTxGenerator {
   // Callback to notify requesting classes that a transaction occurred
   // and to provide those classes with transaction data and total number of
   // transactions up to this point
-  onTransaction() {
+  onTransaction(tx) {
     console.log("onTransaction() was called!");
     for(let i = 0; i < this.listeners.length; i++) {
-      this.listeners[i](this.numTxsGenerated, this.totalFee);
+      this.listeners[i](tx);
     }
   }
 
@@ -136,7 +140,7 @@ class MoneroTxGenerator {
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          this.onTransaction();
+          this.onTransaction(tx);
 
         } catch (e) {
           console.log("Error creating multi-output tx: " + e.message);
@@ -161,7 +165,7 @@ class MoneroTxGenerator {
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          this.onTransaction();
+          this.onTransaction(tx);
 
         } catch (e) {
           console.log("Error creating sweep tx: " + e.message);
