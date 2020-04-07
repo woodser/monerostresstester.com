@@ -59,17 +59,15 @@ async function runApp() {
   // Set the start/stop button image to RELAX
   $("#muscleButton").attr('src',RELAX_SRC);
 
-  // Display a "working..." message on the page so the user knows
+  // Display a "Initializing..." message on the page so the user knows
   // They can't start generating TXs yet
-  $("#statusMessage").html("working...");
+  $("#statusMessage").html("Initializing...");
 
   // bool to track whether the stress test loop is running
   // This will help us know which muscle button animation to play
   // and whether to send a "start" or "stop" stignal to the
   // generator
   let isTestRunning = false;
-
-  $("#wallet_balance").text("Wallet balance: Initializing...");
 
   // connect to daemon
   let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
@@ -92,10 +90,8 @@ async function runApp() {
   console.log("Core wallet imported address: " + walletAddress);
 
   // synchronize wallet
-  $("#statusMessage").html("Syncronizing core wallet...");
+  $("#statusMessage").html("Synchronizing wallet...");
   let result = await wallet.sync(new WalletSyncPrinter());  // synchronize and print progress
-  $("#statusMessage").html("Done syncing. Result: " + result);
-  $("#statusMessage").html("working...");
 
   // render balances
   console.log("Core wallet balance: " + await wallet.getBalance());
@@ -107,7 +103,6 @@ async function runApp() {
 
   // instantiate a transaction generator
   let txGenerator = new MoneroTxGenerator(daemon, wallet);
-  $("#statusMessage").html("Ready to stress the system!");
 
   // send a listener to the txGenerator so we can respond to transaction events
   // and be provided with transaction data
@@ -131,8 +126,9 @@ async function runApp() {
       $("#muscleButton").attr('src',FLEX_SRC);
       await txGenerator.start();
 	}
-  })
+  });
 
+  $("#statusMessage").html("Ready to stress the system!");
 }
 
 /**
