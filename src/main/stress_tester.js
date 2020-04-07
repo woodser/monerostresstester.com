@@ -22,24 +22,28 @@ const FLEX_SRC = "img/muscleFlex.gif";
 const RELAX_SRC = "img/muscleRelax.gif";
 
 // Math constants
-const AU_DECIMAL_PLACES = 12
+const AU_PER_XMR = 1000000000000;
 
 //Hepler function to convert bigInt in atomic units to decimal representation
-function atomicUnitsToDecimal(aUAmount) {
-  // 1 XMR = 1,000,000,000,000 atomic units
-  // BigInteger does not support numbers larger than 2,147,483,647
-  // Thus, it is impossible to rely on its division function (divrem) to convert atomic units to XMR
-  // The solution is to manually alter the string representation to move the decimal twelve places to the left
-  // TODO: remove trailing zeros from the string
+function atomicUnitsToDecimalString(aUAmount) {
+  console.log("Testing the BigInteger value: " + aUAmount.toString());
+  // Get a two-dimensional array containing the quotient and remainder of the result of 
+  // dividing the fee in atomic units by the number of atomic units in one XMR
+  let quotientAndRemainder = aUAmount.divRem(BigInteger(AU_PER_XMR));
 
-  let aUAmountString = aUAmount.toString();
-  // figure out how many zeros need to be added between the decimal point and the current value
-  let numZerosToAdd = AU_DECIMAL_PLACES - aUAmountString.length();
-  
-}
-  
-  let conversionFactor = new BigInteger(1))
-  quotientAndRemainder = aUAmount.divRem()
+  // Convert the quotient and remainder to JS integers
+  quotientAndRemainder[0] = quotientAndRemainder[0].toJSValue();
+  quotientAndRemainder[1] = quotientAndRemainder[1].toJSValue();
+
+  // Divide remainder by AU_PER_XMR
+  quotientAndRemainder[1] = quotientAndRemainder[1] / AU_PER_XMR;
+
+  // Convert result to a string for display
+  let stringRepresentation = (quotientAndRemainder[0]+quotientAndRemainder[1]).toString();
+  console.log("AU to convert: " + aUAmount.toString());
+  console.log("decimal string: " + stringRepresentation);
+
+  return stringRepresentation;    
 }
 
 // Run application on main thread.
@@ -113,12 +117,13 @@ async function runApp() {
   // instantiate a transaction generator
   let txGenerator = new MoneroTxGenerator(daemon, wallet);
     $("#statusMessage").html("Ready to stress the system!");
+
   // send a listener to the txGenerator so we can respond to transaction events
   // and be provided with transaction data
   txGenerator.addTransactionListener((tx) => {
     console.log("Running transaction listener callback");
     $("#txTotal").html(txGenerator.getNumTxsGenerated());
-    $("#feeTotal").html(txGenerator.getTotalFee().toString());
+    $("#feeTotal").html(atomicUnitsToDecimalString(txGenerator.getTotalFee()));
   });
 
   // give start/stop control over transaction generator to the muscle button
