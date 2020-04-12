@@ -75,7 +75,7 @@ async function runApp() {
   let daemon = await MoneroDaemonRpc.create(Object.assign({PROXY_TO_WORKER: PROXY_TO_WORKER}, daemonConnection.getConfig()));
 
   // create a wallet from mnemonic
-  let path = USE_FS ? GenUtils.uuidv4() : "";
+  let path = USE_FS ? GenUtils.getUUID() : "";
   console.log("Creating core wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
   let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, MNEMONIC, daemonConnection, RESTORE_HEIGHT, SEED_OFFSET, PROXY_TO_WORKER, FS);
 
