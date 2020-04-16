@@ -70,14 +70,24 @@ async function runApp() {
   let isTestRunning = false;
 
   // connect to daemon
-  let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, user: DAEMON_RPC_USERNAME, pass: DAEMON_RPC_PASSWORD});
+  let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, username: DAEMON_RPC_USERNAME, password: DAEMON_RPC_PASSWORD});
   //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
   let daemon = await MoneroDaemonRpc.create(Object.assign({PROXY_TO_WORKER: PROXY_TO_WORKER}, daemonConnection.getConfig()));
 
   // create a wallet from mnemonic
   let path = USE_FS ? GenUtils.getUUID() : "";
   console.log("Creating core wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
-  let wallet = await MoneroWalletCore.createWalletFromMnemonic(path, "abctesting123", MoneroNetworkType.STAGENET, MNEMONIC, daemonConnection, RESTORE_HEIGHT, SEED_OFFSET, PROXY_TO_WORKER, FS);
+  let wallet = await MoneroWalletWasm.createWallet({
+    path: path,
+    password: "abctesting123",
+    networkType: MoneroNetworkType.STAGENET,
+    mnemonic: MNEMONIC,
+    server: daemonConnection,
+    restoreHeight: RESTORE_HEIGHT,
+    seedOffset: SEED_OFFSET,
+    proxyToWorker: PROXY_TO_WORKER,
+    fs: FS
+  });
 
   //Get the wallet address
   let walletAddress = await wallet.getPrimaryAddress();

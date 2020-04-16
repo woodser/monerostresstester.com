@@ -66,13 +66,13 @@ class TestUtils {
   /**
    * Get a singleton core wallet instance shared among tests.
    * 
-   * @return {MoneroWalletCore} a core wallet instance
+   * @return {MoneroWalletWasm} a core wallet instance
    */
   static async getWalletCore() {
     if (!TestUtils.walletCore || await TestUtils.walletCore.isClosed()) {
       
       // create wallet from mnemonic phrase if it doesn't exist
-      if (!await MoneroWalletCore.walletExists(TestUtils.WALLET_WASM_PATH_1, TestUtils.FS)) {
+      if (!await MoneroWalletWasm.walletExists(TestUtils.WALLET_WASM_PATH_1, TestUtils.FS)) {
         
         // create directory for test wallets if it doesn't exist
         if (!TestUtils.FS.existsSync(TestUtils.TEST_WALLETS_DIR)) {
@@ -81,7 +81,7 @@ class TestUtils {
         }
         
         // create wallet with connection
-        TestUtils.walletCore = await MoneroWalletCore.createWalletFromMnemonic(TestUtils.WALLET_WASM_PATH_1, TestUtils.WALLET_PASSWORD, TestUtils.NETWORK_TYPE, TestUtils.MNEMONIC, TestUtils.getDaemonRpcConnection(), TestUtils.FIRST_RECEIVE_HEIGHT, undefined, TestUtils.PROXY_TO_WORKER, TestUtils.FS);
+        TestUtils.walletCore = await MoneroWalletWasm.createWalletFromMnemonic(TestUtils.WALLET_WASM_PATH_1, TestUtils.WALLET_PASSWORD, TestUtils.NETWORK_TYPE, TestUtils.MNEMONIC, TestUtils.getDaemonRpcConnection(), TestUtils.FIRST_RECEIVE_HEIGHT, undefined, TestUtils.PROXY_TO_WORKER, TestUtils.FS);
         assert.equal(await TestUtils.walletCore.getRestoreHeight(), TestUtils.FIRST_RECEIVE_HEIGHT);
         await TestUtils.walletCore.sync(new WalletSyncPrinter());
         await TestUtils.walletCore.save();
@@ -90,7 +90,7 @@ class TestUtils {
       
       // otherwise open existing wallet
       else {
-        TestUtils.walletCore = await MoneroWalletCore.openWallet(TestUtils.WALLET_WASM_PATH_1, TestUtils.WALLET_PASSWORD, TestUtils.NETWORK_TYPE, TestUtils.getDaemonRpcConnection(), TestUtils.PROXY_TO_WORKER, TestUtils.FS);
+        TestUtils.walletCore = await MoneroWalletWasm.openWallet(TestUtils.WALLET_WASM_PATH_1, TestUtils.WALLET_PASSWORD, TestUtils.NETWORK_TYPE, TestUtils.getDaemonRpcConnection(), TestUtils.PROXY_TO_WORKER, TestUtils.FS);
         await TestUtils.walletCore.sync(new WalletSyncPrinter());
         await TestUtils.walletCore.startSyncing();
       }
@@ -151,18 +151,16 @@ TestUtils.WALLET_PASSWORD = "supersecretpassword123";
 // wallet RPC config
 TestUtils.WALLET_RPC_CONFIG = {
   uri: "http://localhost:38083",
-  user: "rpc_user",
-  pass: "abc123",
-  maxRequestsPerSecond: 500,
+  username: "rpc_user",
+  password: "abc123",
   rejectUnauthorized: true // reject self-signed certificates if true
 };
 
 // daemon RPC config
 TestUtils.DAEMON_RPC_CONFIG = {
   uri: "http://localhost:38081",
-  user: "superuser",
-  pass: "abctesting123",
-  maxRequestsPerSecond: 500,
+  username: "superuser",
+  password: "abctesting123",
   rejectUnauthorized: true // reject self-signed certificates if true
 };
 
@@ -174,8 +172,8 @@ TestUtils.FS = require('fs');
 
 //utils/TestUtils.DAEMON_RPC_CONFIG = {
 //  uri: "http://node.xmrbackb.one:28081",
-//  //user: "superuser",
-//  //pass: "abctesting123",
+//  //username: "superuser",
+//  //password: "abctesting123",
 //  maxRequestsPerSecond: 1
 //};
 
