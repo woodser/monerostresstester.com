@@ -127,7 +127,7 @@ class MoneroTxGenerator {
         // attempt to send
         try {
           console.log("Sending multi-output tx");
-          let tx = (await this.wallet.send(request)).getTxs()[0];
+          let tx = (await this.wallet.sendTx(request)).getTxs()[0];
           console.log(tx.toJson());
           this.numTxsGenerated++;
           this.totalFee = this.totalFee.add(tx.getFee());
