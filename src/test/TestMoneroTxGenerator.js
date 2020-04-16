@@ -20,7 +20,7 @@ class TestMoneroTxGenerator {
       // initialize wallet before all tests
       before(async function() {
         try {
-          that.wallet = await TestUtils.getWalletCore();
+          that.wallet = await TestUtils.getWalletWasm();
           that.daemon = await TestUtils.getDaemonRpc();
           TestUtils.TX_POOL_WALLET_TRACKER.reset(); // all wallets need to wait for txs to confirm to reliably sync
         } catch (e) {

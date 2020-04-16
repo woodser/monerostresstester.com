@@ -76,7 +76,7 @@ async function runApp() {
 
   // create a wallet from mnemonic
   let path = USE_FS ? GenUtils.getUUID() : "";
-  console.log("Creating core wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
+  console.log("Creating wasm wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
   let wallet = await MoneroWalletWasm.createWallet({
     path: path,
     password: "abctesting123",
@@ -96,15 +96,15 @@ async function runApp() {
   //Display wallet address on page
   $("#walletAddress").html(walletAddressLine1 + "<br/>" + walletAddressLine2);  // TODO: this will split address for copy/paste, should use max width and auto line wrap
 
-  console.log("Core wallet imported mnemonic: " + await wallet.getMnemonic());
-  console.log("Core wallet imported address: " + walletAddress);
+  console.log("Wallet imported mnemonic: " + await wallet.getMnemonic());
+  console.log("Wallet imported address: " + walletAddress);
 
   // synchronize wallet
   $("#statusMessage").html("Synchronizing wallet...");
   let result = await wallet.sync(new WalletSyncPrinter());  // synchronize and print progress
 
   // render balances
-  console.log("Core wallet balance: " + await wallet.getBalance());
+  console.log("Wallet balance: " + await wallet.getBalance());
   $("#walletBalance").html(atomicUnitsToDecimalString(await wallet.getBalance()));
   $("#walletAvailableBalance").html(atomicUnitsToDecimalString(await wallet.getUnlockedBalance()));
 
