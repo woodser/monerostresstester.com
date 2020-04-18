@@ -46,15 +46,12 @@ function atomicUnitsToDecimalString(aUAmount) {
   return stringRepresentation;    
 }
 
-// Run application on main thread.
-let isMain = self.document? true : false;
-if (isMain) runApp();
-
 /**
  * Run the application.
  */
+runApp()
 async function runApp() {
-  console.log("APPLICATION START");
+  console.log("APPLICATION START!");
 
   // Set the start/stop button image to RELAX
   $("#muscleButton").attr('src',RELAX_SRC);
