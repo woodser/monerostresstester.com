@@ -24,7 +24,7 @@ const RELAX_SRC = "img/muscleRelax.gif";
 // Math constants
 const AU_PER_XMR = 1000000000000;
 
-//Hepler function to convert bigInt in atomic units to decimal representation
+// Helper function to convert biginteger in atomic units to decimal representation
 function atomicUnitsToDecimalString(aUAmount) {
   console.log("Testing the BigInteger value: " + aUAmount.toString());
   // Get a two-dimensional array containing the quotient and remainder of the result of 
