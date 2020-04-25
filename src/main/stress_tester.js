@@ -67,9 +67,11 @@ async function runApp() {
   let isTestRunning = false;
 
   // connect to daemon
-  let daemonConnection = new MoneroRpcConnection({uri: DAEMON_RPC_URI, username: DAEMON_RPC_USERNAME, password: DAEMON_RPC_PASSWORD});
-  //let daemon = new MoneroDaemonRpc(daemonConnection.getConfig()); // TODO: support passing connection
-  let daemon = await MoneroDaemonRpc.create(Object.assign({PROXY_TO_WORKER: PROXY_TO_WORKER}, daemonConnection.getConfig()));
+  let daemonConnection = new MoneroRpcConnection(DAEMON_RPC_URI, DAEMON_RPC_USERNAME, DAEMON_RPC_PASSWORD);
+  let daemon = new MoneroDaemonRpc({
+    server: daemonConnection,
+    proxyToWorker: PROXY_TO_WORKER
+  });
 
   // create a wallet from mnemonic
   let path = USE_FS ? GenUtils.getUUID() : "";
