@@ -52,7 +52,7 @@ let configBase = {
 
 let configStressTester = Object.assign({}, configBase, {
   name: "Stress Tester",
-  entry: "./src/main/stress_tester.js",
+  entry: "./src/main/index.js",
   output: {
     path: path.resolve(__dirname, "browser_build"),
     filename: "stress_tester.dist.js"
