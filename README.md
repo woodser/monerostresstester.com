@@ -8,5 +8,5 @@ Generates transactions on the Monero network using the [monero-javascript](https
 3. `git clone https://github.com/woodser/monerostresstester.com`
 4. `cd monerostresstester.com`
 5. `npm install`
-6. `./bin/start_dev_browser`
+6. `./bin/build_browser_app.sh`
 7. Access web app at http://localhost:9100
