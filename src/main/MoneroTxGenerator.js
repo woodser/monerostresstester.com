@@ -114,21 +114,24 @@ class MoneroTxGenerator {
         expectedFee = expectedFee.multiply(new BigInteger(10));  // increase fee multiplier for multi-output txs
         if (output.getAmount().compare(expectedFee) <= 0) continue;
 
-        // build send request
-        let request = new MoneroSendRequest().setAccountIndex(output.getAccountIndex()).setSubaddressIndex(output.getSubaddressIndex());  // source from output subaddress
+        // build tx configuration
         let amtPerSubaddress = output.getAmount().subtract(expectedFee).divide(new BigInteger(numDsts));  // amount to send per subaddress, one output used for change
         let dstAccount = output.getAccountIndex() === 0 ? 1 : 0;
         let destinations = [];
         for (let dstSubaddress = 0; dstSubaddress < numDsts; dstSubaddress++) {
           destinations.push(new MoneroDestination((await this.wallet.getSubaddress(dstAccount, dstSubaddress)).getAddress(), amtPerSubaddress)); // TODO: without getAddress(), obscure optional deref error, prolly from serializing in first step of monero_wallet_core::send_split
         }
-        request.setDestinations(destinations);
+        let config = new MoneroTxConfig({
+          accountIndex: output.getAccountIndex(), 
+          subaddressIndex: output.getSubaddressIndex(),
+          destinations: destinations,
+          relay: true
+        });
 
         // attempt to send
         try {
           console.log("Sending multi-output tx");
-          let tx = (await this.wallet.sendTx(request)).getTxs()[0];
-          console.log(tx.toJson());
+          let tx = await this.wallet.createTx(config);
           this.numTxsGenerated++;
           this.totalFee = this.totalFee.add(tx.getFee());
           outputsToCreate -= numDsts;
@@ -154,7 +157,11 @@ class MoneroTxGenerator {
         if (output.getAmount().compare(expectedFee) <= 0) continue;
         try {
           console.log("Sending output sweep tx");
-          let tx = (await this.wallet.sweepOutput(dstAddress, output.getKeyImage().getHex())).getTxs()[0];
+          let tx = await this.wallet.sweepOutput({
+            address: dstAddress,
+            keyImage: output.getKeyImage().getHex(),
+            relay: true
+          });
           this.numTxsGenerated++;
           this.totalFee = this.totalFee.add(tx.getFee());
           console.log("Sweep tx id: " + tx.getHash());
