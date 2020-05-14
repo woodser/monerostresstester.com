@@ -26,7 +26,6 @@ const AU_PER_XMR = 1000000000000;
 
 // Helper function to convert biginteger in atomic units to decimal representation
 function atomicUnitsToDecimalString(aUAmount) {
-  console.log("Testing the BigInteger value: " + aUAmount.toString());
   // Get a two-dimensional array containing the quotient and remainder of the result of 
   // dividing the fee in atomic units by the number of atomic units in one XMR
   let quotientAndRemainder = aUAmount.divRem(BigInteger(AU_PER_XMR));
@@ -40,8 +39,6 @@ function atomicUnitsToDecimalString(aUAmount) {
 
   // Convert result to a string for display
   let stringRepresentation = (quotientAndRemainder[0]+quotientAndRemainder[1]).toString();
-  console.log("AU to convert: " + aUAmount.toString());
-  console.log("decimal string: " + stringRepresentation);
 
   return stringRepresentation;    
 }
@@ -51,7 +48,6 @@ function atomicUnitsToDecimalString(aUAmount) {
  */
 runApp()
 async function runApp() {
-  console.log("APPLICATION START!");
 
   // Set the start/stop button image to RELAX
   $("#muscleButton").attr('src',RELAX_SRC);
@@ -116,7 +112,6 @@ async function runApp() {
   // send a listener to the txGenerator so we can respond to transaction events
   // and be provided with transaction data
   txGenerator.addTransactionListener(async function(tx) {
-    console.log("Running transaction listener callback");
     $("#txTotal").html(txGenerator.getNumTxsGenerated());
     $("#walletBalance").html(atomicUnitsToDecimalString(await wallet.getBalance()) + " XMR");
     $("#walletAvailableBalance").html(atomicUnitsToDecimalString(await wallet.getUnlockedBalance()) + " XMR");
