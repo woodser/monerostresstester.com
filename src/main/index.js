@@ -139,17 +139,19 @@ async function runApp() {
  * Print sync progress every X blocks.
  */
 class WalletSyncPrinter extends MoneroWalletListener {
-
-  constructor(blockResolution) {
+  
+  constructor(syncResolution) {
     super();
-    this.blockResolution = blockResolution ? blockResolution : 2500;
+    this.syncResolution = syncResolution ? syncResolution : .05;
+    this.lastIncrement = 0;
   }
-
+  
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
     let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
     $("#progressBar").width(percentString);
-    if (percentDone === 1 || (startHeight - height) % this.blockResolution === 0) {
-      console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone + ", " + message + ")");
+    if (percentDone >= this.lastIncrement + this.syncResolution) {
+      console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone  + ", " + message + ")");
+      this.lastIncrement += this.syncResolution;
     }
   }
 }
