@@ -5,7 +5,7 @@ mkdir -p ./browser_build/ || exit 1
 rm -r ./browser_build/ || exit 1
 
 # build browser tests
-npm run build_browser_app || exit 1
+npm run build_browser_app_unix || exit 1
 
 # copy dependencies to browser build
 cp node_modules/monero-javascript/dist/monero_core.js browser_build/monero_core.js
