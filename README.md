@@ -11,8 +11,8 @@ Generates transactions on the Monero network using the [monero-javascript](https
 6. `./bin/build_browser_app.sh`
 7. Access web app at http://localhost:9100
 
-## Design (coming soon)
+## UI Design (work in progress)
+Initial homepage design.  See [design.pdf](design.pdf) for more mockups.
 <p align="center">
 	<img width="85%" height="auto" src="homepage.png"/><br>
-	<i>Initial homepage design (work in progress)</i>
 </p>
