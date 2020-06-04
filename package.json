@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build_browser_app_unix": "webpack --config ./webpack.config.js",
-    "build_browser_app_windows": "webpack --config .\webpack.config.js",
+    "build_browser_app_windows": "webpack --config .\\webpack.config.js",
     "test": "node --experimental-wasm-threads --experimental-wasm-bulk-memory node_modules/mocha/bin/_mocha 'src/test/TestAll' --timeout 3000000 --exit"
   },
   "repository": {
