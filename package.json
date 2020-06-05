@@ -27,7 +27,7 @@
   "homepage": "https://github.com/woodser/monerostresstester#readme",
   "dependencies": {
     "jquery": "^3.5.0",
-    "monero-javascript": "^0.2.14"
+    "monero-javascript": "^0.3.0"
   },
   "devDependencies": {
     "babel-core": "6.26.3",
