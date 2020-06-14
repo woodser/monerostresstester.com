@@ -1,3 +1,5 @@
+const monerojs = require("monero-javascript");
+const BigInteger = monerojs.BigInteger;
 
 // configuration
 const MAX_OUTPUTS_PER_TX = 16;  // maximum outputs per tx

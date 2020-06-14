@@ -3,8 +3,12 @@
  */
 
 // import dependencies
-require("monero-javascript");
 const MoneroTxGenerator = require("./MoneroTxGenerator");
+const monerojs = require("monero-javascript");
+const MoneroRpcConnection = monerojs.MoneroRpcConnection;
+const MoneroWalletListener = monerojs.MoneroWalletListener;
+const BigInteger = monerojs.BigInteger;
+const GenUtils = monerojs.GenUtils;
 
 // configuration
 const DAEMON_RPC_URI = "http://localhost:38081";
@@ -64,7 +68,7 @@ async function runApp() {
 
   // connect to daemon
   let daemonConnection = new MoneroRpcConnection(DAEMON_RPC_URI, DAEMON_RPC_USERNAME, DAEMON_RPC_PASSWORD);
-  let daemon = new MoneroDaemonRpc({
+  let daemon = monerojs.connectToDaemonRpc({
     server: daemonConnection,
     proxyToWorker: PROXY_TO_WORKER
   });
@@ -72,7 +76,7 @@ async function runApp() {
   // create a wallet from mnemonic
   let path = USE_FS ? GenUtils.getUUID() : "";
   console.log("Creating wasm wallet" + (PROXY_TO_WORKER ? " in worker" : "") + (USE_FS ? " at path " + path : ""));
-  let wallet = await MoneroWalletWasm.createWallet({
+  let wallet = await monerojs.createWalletWasm({
     path: path,
     password: "abctesting123",
     networkType: MoneroNetworkType.STAGENET,
