@@ -79,7 +79,7 @@ async function runApp() {
   let wallet = await monerojs.createWalletWasm({
     path: path,
     password: "abctesting123",
-    networkType: MoneroNetworkType.STAGENET,
+    networkType: "stagenet",
     mnemonic: MNEMONIC,
     server: daemonConnection,
     restoreHeight: RESTORE_HEIGHT,
