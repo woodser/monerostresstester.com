@@ -1,48 +1,32 @@
 {
-  "name": "monerostresstester.com",
-  "version": "0.0.3",
-  "description": "Web app to stress test the Monero network by generating transactions",
-  "main": "src/index.js",
+  "name": "monerostresstester",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "build_browser_app_unix": "webpack --config ./webpack.config.js",
-    "build_browser_app_windows": "webpack --config .\\webpack.config.js",
-    "test": "node --experimental-wasm-threads --experimental-wasm-bulk-memory node_modules/mocha/bin/_mocha 'src/test/TestAll' --timeout 3000000 --exit"
+    "start_updating": "webpack-dev-server --config ./webpack.config.js --mode development --open",
+    "build": "webpack --mode production",
+    "start": "webpack --config ./webpack.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/woodser/monerostresstester.git"
-  },
-  "keywords": [
-    "xmr",
-    "monero",
-    "web",
-    "javascript",
-    "js"
-  ],
-  "author": "woodser",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/woodser/monerostresstester/issues"
-  },
-  "homepage": "https://github.com/woodser/monerostresstester#readme",
-  "dependencies": {
-    "jquery": "^3.5.0",
-    "monero-javascript": "^0.4.1"
-  },
+  "author": "Michael Jones",
+  "license": "ISC",
   "devDependencies": {
-    "babel-core": "6.26.3",
-    "babel-loader": "8.0.2",
-    "babel-minify": "0.4.3",
-    "electron": "3.0.3",
-    "eslint": "5.6.0",
-    "memfs": "^3.0.4",
-    "webpack": "^4.41.3",
-    "webpack-cli": "3.1.0",
-    "webpack-merge": "4.1.4",
-    "worker-loader": "2.0.0",
-    "chai": "^4.2.0",
-    "mocha": "^7.0.1",
-    "minimist": "^1.2.2",
-    "acorn": "^6.4.1"
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "babel-loader": "^8.1.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "css-loader": "^3.6.0",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "style-loader": "^1.2.1",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   }
 }

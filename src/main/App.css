@@ -1,0 +1,12 @@
+:root {
+  --bg-color: #e3f1f0;
+}
+
+#app_container {
+  max-width: 1400px;
+  min-width: 1150px;
+  margin: 0 auto;
+  height: 1060px;
+  background-color: var(--bg-color);
+  color: blue;
+}

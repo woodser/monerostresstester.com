@@ -1,0 +1,73 @@
+:root {
+  --banner-color: #017b76;
+  --banner-height: 115px;
+
+  --banner-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --title-size: 38px;
+
+  --h1-horizontal-offset: 40px;
+  --nav-horizontal-offset: 35px;
+
+  --nav-font-size: 22px;
+  --nav-vertical-displacement: 46%;
+
+  --nav-unselected-text-color: #cfd2d2;
+}
+
+#banner-container {
+  color: white;
+  background-color: var(--banner-color);
+  width: 100%;
+  height: var(--banner-height);
+  position: relative;
+  font-family: var(--banner-font);
+}
+
+a {
+  font-weight: normal;
+  text-decoration: none;
+  margin-right:5px;
+  margin-left: 5px;
+}
+.vertical_center {
+  position: absolute;
+  margin: 0;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+#title {
+  display: flex;
+}
+
+#monero_muscle_logo {
+
+}
+
+#nav {
+  position: absolute;
+  right: 0px;
+  margin-right: var(--nav-horizontal-offset);
+  top: var(--nav-vertical-displacement);
+}
+
+h1 {
+  font-size: var(--title-size);
+  font-family: var(--banner-font);
+  margin-right: 25px;
+  margin-left: var(--h1-horizontal-offset);
+}
+
+.nav_link {
+  color: white;
+  font-size: var(--nav-font-size);
+}
+
+.current_nav {
+  font-weight: bold;
+}
+
+.unselected_nav {
+  color: var(--nav-unselected-text-color);
+}

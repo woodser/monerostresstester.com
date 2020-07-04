@@ -1,2 +1,0 @@
-rename stress_tester.html to index.html
-first few sweep outputs fail
