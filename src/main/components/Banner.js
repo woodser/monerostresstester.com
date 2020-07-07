@@ -13,15 +13,15 @@ export default function Banner() {
         </div>
       </div>
       <div id="nav">
-      <a href="www.dot.com" className="nav_link current_nav">Home</a>
-      &nbsp;|&nbsp;
-      <a href="www.dot.com" className="nav_link unselected_nav">Backup</a>
-      &nbsp;|&nbsp;
-      <a href="www.dot.com" className="nav_link unselected_nav">Deposit</a>
-      &nbsp;|&nbsp;
-      <a href="www.dot.com" className="nav_link unselected_nav">Withdraw</a>
-      &nbsp;|&nbsp;
-      <a href="www.dot.com" className="nav_link unselected_nav">Sign Out</a>
+        <a href="www.dot.com" className="nav_link current_nav">Home</a>
+        &nbsp;|&nbsp;
+        <a href="www.dot.com" className="nav_link unselected_nav">Backup</a>
+        &nbsp;|&nbsp;
+        <a href="www.dot.com" className="nav_link unselected_nav">Deposit</a>
+        &nbsp;|&nbsp;
+        <a href="www.dot.com" className="nav_link unselected_nav">Withdraw</a>
+        &nbsp;|&nbsp;
+        <a href="www.dot.com" className="nav_link unselected_nav">Sign Out</a>
       </div>
     </div>
   );

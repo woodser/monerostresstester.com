@@ -2,6 +2,10 @@
   --bg-color: #e3f1f0;
 }
 
+body {
+  margin: 0;
+}
+
 #app_container {
   position: absolute;
   width: 100%;
