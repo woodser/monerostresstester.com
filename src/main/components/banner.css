@@ -9,9 +9,9 @@
   --nav-horizontal-offset: 35px;
 
   --nav-font-size: 22px;
-  --nav-vertical-displacement: 46%;
+  --nav-vertical-displacement: 39%;
 
-  --nav-unselected-text-color: #cfd2d2;
+  --nav-text-color: #cfd2d2;
 }
 
 #banner-container {
@@ -50,6 +50,8 @@ a {
   right: 0px;
   margin-right: var(--nav-horizontal-offset);
   top: var(--nav-vertical-displacement);
+  font-size: var(--nav-font-size);
+  color: var(--nav-text-color);
 }
 
 h1 {
@@ -60,14 +62,13 @@ h1 {
 }
 
 .nav_link {
-  color: white;
-  font-size: var(--nav-font-size);
 }
 
 .current_nav {
   font-weight: bold;
+  color: white;
 }
 
 .unselected_nav {
-  color: var(--nav-unselected-text-color);
+  color: inherit;
 }
