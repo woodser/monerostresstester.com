@@ -1,0 +1,28 @@
+#title_text {
+
+}
+
+.sub_text {
+
+}
+
+.button_text {
+
+}
+
+#green_box {
+  grid-area: w_box;
+  width: 990px;
+  height: 400px;
+  top: 110px;
+  background-color: green;
+  margin: 0 auto;
+}
+
+#button {
+
+}
+
+#pseudo_button {
+
+}
