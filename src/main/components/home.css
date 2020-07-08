@@ -1,0 +1,17 @@
+.title {
+  font-size: 30px;
+}
+
+.sub_title {
+  font-size: 20px;
+}
+
+.blue_button {
+  width: 200px;
+  background-color: blue;
+}
+
+.clear_button {
+  width: 200px;
+  background-color: inherit;
+}
