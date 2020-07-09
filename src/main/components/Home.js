@@ -21,12 +21,11 @@ function Home_Welcome_Box() {
     <Page_Box>
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
-      <div>
-        <button className="blue_button">Create New Wallet</button>
-      </div>
-      <div>
-        <button className="clear_button">Or Import Existing</button>
-      </div>
+
+        <div className="blue_button button">Create New Wallet</div>
+
+        <div className="clear_button button">Or Import Existing</div>
+
     </Page_Box>
   );
 }

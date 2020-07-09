@@ -54,10 +54,10 @@
   grid-area: main_content;
 }
 
-button {
+.button {
+  display: block;
   height: 95px;
   width: 860px;
-  font-size: 26px;
   color: white;
   margin: 0;
 }
@@ -67,7 +67,6 @@ button {
   background-color: #56c1ff;
   font-size: 34px;
   border: 4px solid black;
-  margin: 0;
 }
 
 .clear_button {
@@ -75,4 +74,5 @@ button {
   background-color: inherit;
   border: none;
   background: none;
+  font-size: 26px;
 }
