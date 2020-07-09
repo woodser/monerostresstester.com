@@ -21,8 +21,12 @@ function Home_Welcome_Box() {
     <Page_Box>
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
-      <button className="blue_button" label="Create New Wallet" />
-      <button className="clear_button" label="Or Import Existing" />
+      <div>
+        <button className="blue_button">Create New Wallet</button>
+      </div>
+      <div>
+        <button className="clear_button">Or Import Existing</button>
+      </div>
     </Page_Box>
   );
 }
@@ -59,11 +63,19 @@ function Generate_Transactions() {
 }
 */
 
-
 export default function Home(){
   return (
+    /*
+     * Home_Welcome_Box classes:
+     * title
+     * sub_title
+     * header
+     * main_content
+     * blue_button
+     * clear_button
+     */
     <div id="home">
-      <Home_Welcome_box />
+      <Home_Welcome_Box />
     </div>
   );
 }

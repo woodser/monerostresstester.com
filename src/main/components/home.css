@@ -1,17 +1,78 @@
+#home {
+  display: grid;
+  grid-template-areas:
+  ". . ."
+  ". page_box .";
+  grid-template-rows: 110px auto;
+  grid-template-columns: 1fr 990px 1fr;
+  padding: 0;
+  margin: 0;
+}
+
+.page_box {
+  grid-row-gap: 0px;
+  grid-area: page_box;
+  width: inherit;
+  display: grid;
+  grid-template-areas:
+  "title"
+  "sub_title"
+  "header"
+  "main_content"
+  "blue_button"
+  "clear_button";
+  background-color: #017b76;
+}
+
+.page_box > div {
+  margin: 0 auto;
+}
+
 .title {
-  font-size: 30px;
+  grid-area: title;
+  font-size: 45px;
+  padding-bottom: 36px;
+  padding-top: 40px;
+  margin: 0;
+  line-height: 33px;
 }
 
 .sub_title {
+  grid-area: sub_title;
+  font-weight: bold;
+  font-size: 26px;
+  padding-bottom: 85px;
+  margin: 0;
+}
+
+.header {
+  grid-area: header;
   font-size: 20px;
 }
 
+.main_content {
+  grid-area: main_content;
+}
+
+button {
+  height: 95px;
+  width: 860px;
+  font-size: 26px;
+  color: white;
+  margin: 0;
+}
+
 .blue_button {
-  width: 200px;
-  background-color: blue;
+  grid-area: blue_button;
+  background-color: #56c1ff;
+  font-size: 34px;
+  border: 4px solid black;
+  margin: 0;
 }
 
 .clear_button {
-  width: 200px;
+  grid-area: clear_button;
   background-color: inherit;
+  border: none;
+  background: none;
 }
