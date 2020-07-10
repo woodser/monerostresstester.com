@@ -54,12 +54,22 @@
   grid-area: main_content;
 }
 
-.button {
-  display: block;
+.link_button {
   height: 95px;
+  display: block;
   width: 860px;
   color: white;
+  position: relative;
+  margin: 0 auto;
+}
+
+.button_text {
+  position: absolute;
   margin: 0;
+  top:50%;
+  left:50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
 
 .blue_button {
@@ -75,4 +85,8 @@
   border: none;
   background: none;
   font-size: 26px;
+}
+
+.save_phrase_box {
+  background-color: gray;
 }
