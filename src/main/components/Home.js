@@ -81,12 +81,15 @@ function UI_Button_Link(props) {
 // Component for the unique "Regenerate" button in the wallet generation sub-page
 function Regenerate_Phrase_Button() {
   return(
-    <div className="regenerate_button_container">
-      <div className="regenerate_button_left_spacer"></div>
-      <div className="regenerate_button">
-        Regenerate
+    <>
+      <div className="regenerate_button_container">
+        <div className="regenerate_button_left_spacer"></div>
+        <div className="regenerate_button">
+          Regenerate
+        </div>
       </div>
-    </div>
+      <div className="regenerate_button_bottom_margin"></div>
+    </>
   );
 }
 
@@ -99,11 +102,10 @@ function New_Wallet(props) {
     <Page_Box>
       <div className="header">Save your backup phrase</div>
       <Regenerate_Phrase_Button />
-      <div className="regenerate_phrase_button_bottom_margin"></div>
       <Save_Phrase_Box phrase="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link className="sub_page_link_button blue_button" buttonText="Continue" destination="/new_wallet" />
-      <UI_Button_Link className="sub_page_link_button clear_button" buttonText="Or Go Back" destination="/" />
+      <UI_Button_Link className="blue_button" buttonText="Continue" destination="/new_wallet" />
+      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/" />
     </Page_Box>
   );
 }
