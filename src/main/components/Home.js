@@ -14,18 +14,19 @@ export default function Home(){
      * blue_button
      * clear_button
      */
-    <Router>
-      <div id="home">
-        <Home_Welcome_Box />
-      </div>
-      <Switch>
-        <Route path="/new_wallet" exact render={() => <New_Wallet />} />
-        <Route path="/import_wallet" exact render={() => <New_Wallet />} />
-      </Switch>
-    </Router>
+    <div id="home">
+      <Router>
+        <Switch>
+          <Route path="/" exact render={() => <Home_Welcome_Box />} />
+          <Route path="/new_wallet" render={() => <New_Wallet />} />
+          <Route path="/import_wallet" render={() => <New_Wallet />} />
+        </Switch>
+      </Router>
+    </div>
   );
 }
 
+// A generic container for the common "box format" of most of the home sub-pages
 function Page_Box(props) {
   return (
     <div className="page_box">
@@ -34,6 +35,7 @@ function Page_Box(props) {
   );
 }
 
+// The initial home page
 function Home_Welcome_Box() {
   return (
     <Page_Box>
@@ -45,7 +47,19 @@ function Home_Welcome_Box() {
   );
 }
 
-//buttons
+function Save_Phrase_Box(props) {
+  return(
+    <div className="save_phrase_box main_content">
+      {props.phrase}
+    </div>
+  );
+}
+
+/*
+ * home page box buttons
+ */
+
+// Component for the common "button link" used in the bottom of the page_box home pages
 function UI_Button_Link(props) {
   return(
     <Link to={props.destination} className={"link_button " + props.className}>
@@ -56,29 +70,32 @@ function UI_Button_Link(props) {
   );
 }
 
-function Save_Phrase_Box(props) {
+// Component for the unique "Regenerate" button in the wallet generation sub-page
+function Regenerate_Phrase_Button() {
   return(
-    <div className="save_phrase_box">
-      {props.phrase}
+    <div className="regenerate_button_container">
+      <div className="regenerate_button">
+        Regenerate
+      </div>
     </div>
   );
 }
 
-function Regenerate_Phrase_Button() {
-  return(
-    <div className="button regenerate_button">Regenerate</div>
-  );
-}
-
+/*
+ * Home sub-pages
+ */
 function New_Wallet(props) {
   //Save your backup phrase
   return(
     <Page_Box>
       <div className="header">Save your backup phrase</div>
       <Regenerate_Phrase_Button />
+      <div className="regenerate_phrase_button_bottom_margin"></div>
+      <div className="main_content"></div>
       <Save_Phrase_Box phrase="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
+      <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link className="blue_button" buttonText="Continue" destination="/new_wallet" />
-      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/import_walet" />
+      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/" />
     </Page_Box>
   );
 }
