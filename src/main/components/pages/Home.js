@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './home.css';
-import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
+import {BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
+import {UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
+import {Page_Box, Page_Text_Box} from '../Widgets.js';
 
 export default function Home(){
   return (
@@ -26,15 +28,6 @@ export default function Home(){
   );
 }
 
-// A generic container for the common "box format" of most of the home sub-pages
-function Page_Box(props) {
-  return (
-    <div className="page_box">
-      {props.children}
-    </div>
-  );
-}
-
 // The initial home page
 function Home_Welcome_Box() {
   return (
@@ -42,54 +35,8 @@ function Home_Welcome_Box() {
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
       <UI_Button_Link className="blue_button" buttonText="Create New Wallet" destination="/new_wallet" />
-      <UI_Button_Link className="clear_button" buttonText="Or Import Existing" destination="/import_walet" />
+      <UI_Button_Link className="clear_button" buttonText="Or Import Existing" destination="/import_wallet" />
     </Page_Box>
-  );
-}
-
-function Save_Phrase_Box(props) {
-  return(
-    <div className="save_phrase_box main_content">
-      {
-      /*
-       * Add top and bottom padding to space top and bottom edges of the text
-       * box specific distances from the text within
-       */
-      }
-      <div className="save_phrase_box_padding">
-        {props.phrase}
-      </div>
-    </div>
-  );
-}
-
-/*
- * home page box buttons
- */
-
-// Component for the common "button link" used in the bottom of the page_box home pages
-function UI_Button_Link(props) {
-  return(
-    <Link to={props.destination} className={"link_button " + props.className}>
-      <div className="button_text">
-        {props.buttonText}
-      </div>
-    </Link>
-  );
-}
-
-// Component for the unique "Regenerate" button in the wallet generation sub-page
-function Regenerate_Phrase_Button() {
-  return(
-    <>
-      <div className="regenerate_button_container">
-        <div className="regenerate_button_left_spacer"></div>
-        <div className="regenerate_button">
-          Regenerate
-        </div>
-      </div>
-      <div className="regenerate_button_bottom_margin"></div>
-    </>
   );
 }
 
@@ -102,7 +49,7 @@ function New_Wallet(props) {
     <Page_Box>
       <div className="header">Save your backup phrase</div>
       <Regenerate_Phrase_Button />
-      <Save_Phrase_Box phrase="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
+      <Page_Text_Box boxText="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link className="blue_button" buttonText="Continue" destination="/new_wallet" />
       <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/" />
