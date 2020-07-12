@@ -1,0 +1,67 @@
+:root {
+  --item-width: 860px;
+}
+
+#home {
+  display: grid;
+  grid-template-areas:
+  ". . ."
+  ". page_box .";
+  grid-template-rows: 110px auto;
+  grid-template-columns: 1fr 990px 1fr;
+  padding: 0;
+  margin: 0;
+}
+
+.page_box {
+  grid-row-gap: 0px;
+  grid-area: page_box;
+  width: inherit;
+  display: grid;
+  grid-template-areas:
+  "title"
+  "sub_title"
+  "header"
+  "regenerate_button"
+  "regenerate_button_bottom_margin"
+  "main_content"
+  "save_phrase_box_bottom_margin"
+  "blue_button"
+  "clear_button";
+  background-color: #017b76;
+}
+
+.save_phrase_box_bottom_margin {
+  grid-area: save_phrase_box_bottom_margin;
+}
+.regenerate_button_bottom_margin {
+  grid-area: regenerate_button_bottom_margin;
+}
+
+.title {
+  grid-area: title;
+}
+
+.sub_title {
+  grid-area: sub_title;
+}
+
+.header {
+  grid-area: header;
+}
+
+.regenerate_button_container {
+  grid-area: regenerate_button;
+}
+
+.main_content {
+  grid-area: main_content;
+}
+
+.blue_button {
+  grid-area: blue_button;
+}
+
+.clear_button {
+  grid-area: clear_button;
+}
