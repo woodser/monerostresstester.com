@@ -35,7 +35,7 @@ function Home_Welcome_Box() {
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
       <UI_Button_Link className="blue_button" buttonText="Create New Wallet" destination="/new_wallet" />
-      <UI_Button_Link className="clear_button" buttonText="Or Import Existing" destination="/import_wallet" />
+      <UI_Button_Link className="clear_button" buttonText="Or Import Existing Wallet" destination="/import_wallet" />
     </Page_Box>
   );
 }
