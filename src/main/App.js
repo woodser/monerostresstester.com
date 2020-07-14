@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import "./App.css";
+import "./app.css";
 
 import Banner from "./components/Banner.js";
 import Home from "./components/pages/Home.js";
