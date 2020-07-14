@@ -1,24 +1,23 @@
 :root {
   --item-width: 860px;
+  --app-content-bg-color: #ece4d4;
 }
 
 #home {
-  display: grid;
-  grid-template-areas:
-  ". . ."
-  ". page_box .";
   grid-template-rows: 110px auto;
   grid-template-columns: 1fr 990px 1fr;
   padding: 0;
   margin: 0;
+  height: 100%;
 }
 
 .page_box {
   grid-row-gap: 0px;
-  grid-area: page_box;
-  width: inherit;
+  width: 900px;
+  height: 100%;
+  margin: 0 auto;
   display: grid;
-  grid-template-areas:
+  grid-template:
   "title"
   "sub_title"
   "header"
@@ -27,8 +26,8 @@
   "main_content"
   "save_phrase_box_bottom_margin"
   "blue_button"
-  "clear_button";
-  background-color: #017b76;
+  "clear_button" 1fr;
+  background-color: var(--app-content-bg-color);
 }
 
 .save_phrase_box_bottom_margin {

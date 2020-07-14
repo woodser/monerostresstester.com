@@ -11,16 +11,16 @@
 
 .title {
   font-size: 45px;
-  padding-bottom: 36px;
-  padding-top: 40px;
+  font-weight: bold;
+  padding-bottom: 42px;
+  padding-top: 80px;
   margin: 0;
   line-height: 33px;
 }
 
 .sub_title {
-  font-weight: bold;
   font-size: 26px;
-  padding-bottom:72px;
+  padding-bottom: 120px;
   margin: 0;
 }
 
