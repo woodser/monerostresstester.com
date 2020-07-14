@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Route, NavLink } from "react-router-dom";
 
 export default function Banner() {
   return(
-    <div id="banner-container" className="blue_box">
+    <div id="banner-container">
       <div id="title" className="vertical_center">
         <h1>MoneroStressTester.com</h1>
         <div>
