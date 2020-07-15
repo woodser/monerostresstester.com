@@ -1,6 +1,7 @@
 :root {
   --banner-color: #017b76;
   --banner-height: 115px;
+  --text-color: white;
 
   --title-size: 38px;
 
@@ -14,6 +15,7 @@
 }
 
 #banner-container {
+  color: var(--text-color);
   background-color: var(--banner-color);
   width: 100%;
   min-width: 1200px;
