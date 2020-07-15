@@ -13,16 +13,14 @@ export function Page_Box(props) {
 
 export function Page_Text_Box(props) {
   return(
-    <div className="save_phrase_box main_content">
-      {
-      /*
-       * Add top and bottom padding to space top and bottom edges of the text
-       * box specific distances from the text within
-       */
-      }
-      <div className="save_phrase_box_padding">
-        {props.boxText}
-      </div>
+    <div className="text_box save_phrase_box main_content">
+      {props.box_text}
     </div>
+  );
+}
+
+export function Page_Text_Entry(props) {
+  return (
+    <textarea className="text_box confirm_phrase_box main_content">Sample Text</textarea>
   );
 }
