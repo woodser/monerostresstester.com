@@ -21,8 +21,6 @@
   "title"
   "sub_title"
   "header"
-  "regenerate_button"
-  "regenerate_button_bottom_margin"
   "main_content"
   "save_phrase_box_bottom_margin"
   "blue_button"
@@ -33,9 +31,6 @@
 
 .save_phrase_box_bottom_margin {
   grid-area: save_phrase_box_bottom_margin;
-}
-.regenerate_button_bottom_margin {
-  grid-area: regenerate_button_bottom_margin;
 }
 
 .title {
@@ -48,10 +43,6 @@
 
 .header {
   grid-area: header;
-}
-
-.regenerate_button_container {
-  grid-area: regenerate_button;
 }
 
 .main_content {

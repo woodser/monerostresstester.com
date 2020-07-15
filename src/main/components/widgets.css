@@ -25,10 +25,19 @@
 }
 
 .header {
+  width: inherit;
   font-size: 35px;
   padding-top: 44px;
   margin: 0;
   line-height: 33px;
+}
+
+.header_text {
+  text-align: center;
+}
+
+.header_bottom_margin {
+  height: 48px;
 }
 
 .regenerate_button_container {

@@ -21,6 +21,20 @@ export function Page_Text_Box(props) {
 
 export function Page_Text_Entry(props) {
   return (
-    <textarea className="text_box confirm_phrase_box main_content">Sample Text</textarea>
+    <textarea className="text_box confirm_phrase_box main_content" />
+  );
+}
+
+export function Header(props) {
+  return (
+    <div className="header">
+      <div className="header_text">
+        {props.text}
+      </div>
+
+      <div className="header_bottom_margin">
+        {props.margin_content}
+      </div>
+    </div>
   );
 }

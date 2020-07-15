@@ -21,14 +21,11 @@ export function UI_Button_Link(props) {
 // Component for the unique "Regenerate" button in the wallet generation sub-page
 export function Regenerate_Phrase_Button() {
   return(
-    <>
-      <div className="regenerate_button_container">
-        <div className="regenerate_button_left_spacer"></div>
-        <div className="regenerate_button">
-          Regenerate
-        </div>
+    <div className="regenerate_button_container">
+      <div className="regenerate_button_left_spacer"></div>
+      <div className="regenerate_button">
+        Regenerate
       </div>
-      <div className="regenerate_button_bottom_margin"></div>
-    </>
+    </div>
   );
 }

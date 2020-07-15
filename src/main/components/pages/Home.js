@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './home.css';
 import {BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import {UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header} from '../Widgets.js';
 
 export default function Home(){
   return (
@@ -48,8 +48,7 @@ function New_Wallet(props) {
   //Save your backup phrase
   return(
     <Page_Box>
-      <div className="header">Save your backup phrase</div>
-      <Regenerate_Phrase_Button />
+      <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button />/>
       <Page_Text_Box box_text="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link className="blue_button" buttonText="Continue" destination="/confirm_phrase" />
@@ -62,7 +61,7 @@ function Confirm_Phrase(props) {
   //Save your backup phrase
   return(
     <Page_Box>
-      <div className="header">Confirm your backup phrase</div>
+      <Header text="Confirm your backup phrase"/>
       <Page_Text_Entry />
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link className="blue_button" buttonText="Continue" destination="/" />
