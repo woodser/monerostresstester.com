@@ -26,7 +26,8 @@
   "main_content"
   "save_phrase_box_bottom_margin"
   "blue_button"
-  "clear_button" 1fr;
+  "clear_button"
+  "." 1fr;
   background-color: var(--app-content-bg-color);
 }
 

@@ -40,15 +40,25 @@
   width: var(--item-width);
 }
 
+.text_box {
+  font-size: 31px;
+  color: black;
+  line-height: 41px;
+  border: 4px solid black;
+  height: 180px;
+  margin: 0 auto;
+}
+
 .save_phrase_box {
   background-color: #d6d5d5;
   font-size: 31px;
   color: black;
   line-height: 41px;
-  border: 4px solid black;
 }
 
-.save_phrase_box>div {
-  padding-top: 20px;
-  padding-bottom: 62px;
+.confirm_phrase_box {
+  font-size: 31px;
+  background-color: #dddddd;
+  color: black;
+  line-height: 41px;
 }

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './home.css';
 import {BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import {UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry} from '../Widgets.js';
 
 export default function Home(){
   return (
@@ -22,6 +22,7 @@ export default function Home(){
           <Route path="/" exact render={() => <Home_Welcome_Box />} />
           <Route path="/new_wallet" render={() => <New_Wallet />} />
           <Route path="/import_wallet" render={() => <New_Wallet />} />
+          <Route path="/confirm_phrase" render={() => <Confirm_Phrase />} />
         </Switch>
       </Router>
     </div>
@@ -49,10 +50,23 @@ function New_Wallet(props) {
     <Page_Box>
       <div className="header">Save your backup phrase</div>
       <Regenerate_Phrase_Button />
-      <Page_Text_Box boxText="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
+      <Page_Text_Box box_text="tamper tutor urgent satin sanity slower union germs itself bagpipe obnoxious otherwise jerseys viewpoint daily abyss elope locker skew putty river tether amaze betting sanity"/>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link className="blue_button" buttonText="Continue" destination="/new_wallet" />
+      <UI_Button_Link className="blue_button" buttonText="Continue" destination="/confirm_phrase" />
       <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/" />
+    </Page_Box>
+  );
+}
+
+function Confirm_Phrase(props) {
+  //Save your backup phrase
+  return(
+    <Page_Box>
+      <div className="header">Confirm your backup phrase</div>
+      <Page_Text_Entry />
+      <div className="save_phrase_box_bottom_margin"></div>
+      <UI_Button_Link className="blue_button" buttonText="Continue" destination="/" />
+      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/new_wallet" />
     </Page_Box>
   );
 }
