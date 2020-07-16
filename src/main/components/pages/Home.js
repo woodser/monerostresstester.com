@@ -21,7 +21,7 @@ export default function Home(){
         <Switch>
           <Route path="/" exact render={() => <Home_Welcome_Box />} />
           <Route path="/new_wallet" render={() => <New_Wallet />} />
-          <Route path="/import_wallet" render={() => <New_Wallet />} />
+          <Route path="/import_wallet" render={() => <Import_Wallet />} />
           <Route path="/confirm_phrase" render={() => <Confirm_Phrase />} />
         </Switch>
       </Router>
@@ -57,22 +57,29 @@ function New_Wallet(props) {
   );
 }
 
-function Confirm_Phrase(props) {
+function Enter_Phrase_Page(props) {
   //Save your backup phrase
   return(
     <Page_Box>
-      <Header text="Confirm your backup phrase"/>
+      <Header text={props.header}/>
       <Page_Text_Entry isDefault={true} value="Enter backup phrase..."/>
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link className="blue_button" buttonText="Continue" destination="/" />
-      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/new_wallet" />
+      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination={props.back_destination} />
     </Page_Box>
+  );
+}
+
+function Confirm_Phrase(props) {
+  //Save your backup phrase
+  return(
+    <Enter_Phrase_Page header="Confirm your backup phrase" back_destination="/new_wallet" />
   );
 }
 
 function Import_Wallet(props) {
   return(
-    <div>empty</div>
+    <Enter_Phrase_Page header="Enter your backup phrase" back_destination="/" />
   );
 }
 
