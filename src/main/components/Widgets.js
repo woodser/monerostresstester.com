@@ -19,11 +19,19 @@ export function Page_Text_Box(props) {
   );
 }
 
-export function Page_Text_Entry(props) {
-  return (
-    <textarea className="text_box confirm_phrase_box main_content" />
-  );
+/*
+ * props.isDefault: Denotes whether the box contains the intial, unedited text;
+ *   if so, set a css class to use gray text instead of black.
+ * props.value:
+ */
+export class Page_Text_Entry extends React.Component {
+  render() {
+    return (
+      <textarea className={"text_box enter_phrase_box main_content" + ((this.props.isDefault === true) ? " default_value" : " new_value")} value={this.props.value}/>
+    );
+  }
 }
+
 
 export function Header(props) {
   return (

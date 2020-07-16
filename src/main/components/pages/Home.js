@@ -62,7 +62,7 @@ function Confirm_Phrase(props) {
   return(
     <Page_Box>
       <Header text="Confirm your backup phrase"/>
-      <Page_Text_Entry />
+      <Page_Text_Entry isDefault={true} value="Enter backup phrase..."/>
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link className="blue_button" buttonText="Continue" destination="/" />
       <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination="/new_wallet" />
