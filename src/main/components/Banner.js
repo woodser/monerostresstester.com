@@ -14,7 +14,7 @@ export default function Banner() {
         </div>
       </div>
       <div id="nav">
-        <NavLink exact to="/" className="nav_link" activeClassName="current_nav">Home</NavLink>
+        <NavLink exact to="/home" className="nav_link" activeClassName="current_nav">Home</NavLink>
         &nbsp;|&nbsp;
         <NavLink to="/backup" className="nav_link" activeClassName="current_nav">Backup</NavLink>
         &nbsp;|&nbsp;

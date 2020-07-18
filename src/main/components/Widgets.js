@@ -25,9 +25,27 @@ export function Page_Text_Box(props) {
  * props.value:
  */
 export class Page_Text_Entry extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state={
+      isDefault: true,
+      enteredPhrase: ""
+    }
+  }
+
+handleChange(e){
+  this.setState({
+    isDefault: false,
+    enteredPhrase: e.target.value
+  })
+}
+
   render() {
     return (
-      <textarea className={"text_box enter_phrase_box main_content" + ((this.props.isDefault === true) ? " default_value" : " new_value")} value={this.props.value}/>
+      <textarea
+        className={"text_box enter_phrase_box main_content" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+        defaultValue={this.props.value}
+        onChange={this.handleChange.bind(this)} />
     );
   }
 }
