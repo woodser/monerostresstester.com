@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import "./banner.css";
 import logo from "../img/monero_muscle_logo.gif";
+import { BrowserRouter as Router, Route, NavLink } from "react-router-dom";
 
 export default function Banner() {
   return(
@@ -13,15 +14,15 @@ export default function Banner() {
         </div>
       </div>
       <div id="nav">
-        <a href="www.dot.com" className="nav_link current_nav">Home</a>
+        <NavLink exact to="/" className="nav_link" activeClassName="current_nav">Home</NavLink>
         &nbsp;|&nbsp;
-        <a href="www.dot.com" className="nav_link unselected_nav">Backup</a>
+        <NavLink to="/backup" className="nav_link" activeClassName="current_nav">Backup</NavLink>
         &nbsp;|&nbsp;
-        <a href="www.dot.com" className="nav_link unselected_nav">Deposit</a>
+        <NavLink to="/deposit" className="nav_link" activeClassName="current_nav">Deposit</NavLink>
         &nbsp;|&nbsp;
-        <a href="www.dot.com" className="nav_link unselected_nav">Withdraw</a>
+        <NavLink to="/withdraw" className="nav_link" activeClassName="current_nav">Withdraw</NavLink>
         &nbsp;|&nbsp;
-        <a href="www.dot.com" className="nav_link unselected_nav">Sign Out</a>
+        <NavLink to="/signOut" className="nav_link" activeClassName="current_nav">Sign Out</NavLink>
       </div>
     </div>
   );

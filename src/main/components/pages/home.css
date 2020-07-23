@@ -1,0 +1,66 @@
+:root {
+  --item-width: 860px;
+  --app-content-bg-color: #ece4d4;
+}
+
+#home {
+  grid-template-rows: 110px auto;
+  grid-template-columns: 1fr 990px 1fr;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+.page_box {
+  grid-row-gap: 0px;
+  width: 900px;
+  height: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template:
+  "title"
+  "sub_title"
+  "header"
+  "regenerate_button"
+  "regenerate_button_bottom_margin"
+  "main_content"
+  "save_phrase_box_bottom_margin"
+  "blue_button"
+  "clear_button" 1fr;
+  background-color: var(--app-content-bg-color);
+}
+
+.save_phrase_box_bottom_margin {
+  grid-area: save_phrase_box_bottom_margin;
+}
+.regenerate_button_bottom_margin {
+  grid-area: regenerate_button_bottom_margin;
+}
+
+.title {
+  grid-area: title;
+}
+
+.sub_title {
+  grid-area: sub_title;
+}
+
+.header {
+  grid-area: header;
+}
+
+.regenerate_button_container {
+  grid-area: regenerate_button;
+}
+
+.main_content {
+  grid-area: main_content;
+}
+
+.blue_button {
+  grid-area: blue_button;
+}
+
+.clear_button {
+  grid-area: clear_button;
+}

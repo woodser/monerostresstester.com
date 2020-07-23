@@ -1,8 +1,8 @@
 :root {
   --banner-color: #017b76;
   --banner-height: 115px;
+  --text-color: white;
 
-  --banner-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --title-size: 38px;
 
   --h1-horizontal-offset: 40px;
@@ -15,9 +15,10 @@
 }
 
 #banner-container {
-  color: white;
+  color: var(--text-color);
   background-color: var(--banner-color);
   width: 100%;
+  min-width: 1200px;
   height: var(--banner-height);
   position: relative;
   font-family: var(--banner-font);
@@ -62,6 +63,7 @@ h1 {
 }
 
 .nav_link {
+  color: white;
 }
 
 .current_nav {
