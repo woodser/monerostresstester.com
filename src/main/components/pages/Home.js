@@ -27,12 +27,12 @@ export default function Home(props){
           handleBack={deleteWallet}
         />} />
         <Route path={`${path}/import_wallet`} component={Import_Wallet} />
-        <Route path={`${path}/confirm_phrase`}
+        <Route path={`${path}/confirm_phrase`} render={(props) => <Confirm_Phrase
+          {...props}
           text={walletPhrase}
           defaultEntryString={DEFAULT_BACKUP_PHRASE_STRING}
           handleContinue={handleConfirm}
-          component={Confirm_Phrase}
-        />
+        /> } />
       </Switch>
     </div>
   );
@@ -59,7 +59,7 @@ function New_Wallet(props) {
       <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>/>
       <Page_Text_Box box_text={props.text} />
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link className="blue_button" button_text="Continue" destination={`${props.match.url}/confirm_phrase`} />
+      <UI_Button_Link className="blue_button" button_text="Continue" destination={`confirm_phrase`} />
       <UI_Button_Link className="clear_button" button_text="Or Go Back" destination='/home' handleClick={props.handleBack}/>
     </Page_Box>
   );
@@ -72,7 +72,7 @@ function Enter_Phrase_Page(props) {
       <Header text={props.header}/>
       <Page_Text_Entry isDefault={true} value="Enter backup phrase..."/>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link className="blue_button" buttonText="Continue" destination={props.match.url} handleClick={props.handleContinue}/>
+      <UI_Button_Link className="blue_button" buttonText="Continue" destination={"/syncronize_wallet"} handleClick={props.handleContinue}/>
       <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
     </Page_Box>
   );
@@ -81,7 +81,7 @@ function Enter_Phrase_Page(props) {
 function Confirm_Phrase(props) {
   //Save your backup phrase
   return(
-    <Enter_Phrase_Page header="Confirm your backup phrase" back_destination={`${props.url}/new_wallet`} />
+    <Enter_Phrase_Page header="Confirm your backup phrase" back_destination={`/home/new_wallet`} />
   );
 }
 

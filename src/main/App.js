@@ -49,18 +49,6 @@ class App extends React.Component {
         <Router>
           <Banner />
           <Switch>
-            {/*
-            <Route path="/" exact render={() => <Home
-              walletPhrase={this.state.walletPhrase}
-              generateWallet={this.generateWallet.bind(this)}
-              confirmWallet={this.confirmWallet.bind(this)}
-              deleteWallet={this.deleteWallet.bind(this)}
-            />} />
-            <Route path="/deposit" render={() => <Deposit />} />
-            <Route path="/signOut" render={() => <SignOut />} />
-            <Route path="/backup" render={() => <Backup />} />
-            <Route path="/withdraw" render={() => <Withdraw />} />
-            */}
             <Route exact path="/" render={() => {
               alert("Redirection to 'Home'");
               return(
@@ -73,11 +61,28 @@ class App extends React.Component {
               confirmWallet={this.confirmWallet.bind(this)}
               deleteWallet={this.deleteWallet.bind(this)}
             />} />
+            <Route path="/backup" render={(props) => <Backup
+              {...props}
+            />} />
+            <Route path="/deposit" render={(props) => <Backup
+              {...props}
+            />} />
+            <Route path="/sign_out" render={(props) => <SignOut
+              {...props}
+            />} />
+            <Route path="/withdraw" render={(props) => <Withdraw
+              {...props}
+            />} />
+            <Route component={default_page} />
           </Switch>
         </Router>
       </div>
     );
   }
+}
+
+function default_page(){
+  return <h1>ERROR - invalid url path!</h1>
 }
 
 export default App;

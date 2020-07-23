@@ -22,7 +22,7 @@ export default function Banner() {
         &nbsp;|&nbsp;
         <NavLink to="/withdraw" className="nav_link" activeClassName="current_nav">Withdraw</NavLink>
         &nbsp;|&nbsp;
-        <NavLink to="/signOut" className="nav_link" activeClassName="current_nav">Sign Out</NavLink>
+        <NavLink to="/sign_out" className="nav_link" activeClassName="current_nav">Sign Out</NavLink>
       </div>
     </div>
   );
