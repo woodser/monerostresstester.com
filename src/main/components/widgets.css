@@ -25,10 +25,19 @@
 }
 
 .header {
+  width: inherit;
   font-size: 35px;
   padding-top: 44px;
   margin: 0;
   line-height: 33px;
+}
+
+.header_text {
+  text-align: center;
+}
+
+.header_bottom_margin {
+  height: 48px;
 }
 
 .regenerate_button_container {
@@ -40,15 +49,24 @@
   width: var(--item-width);
 }
 
-.save_phrase_box {
-  background-color: #d6d5d5;
+.text_box {
   font-size: 31px;
-  color: black;
+  font-family: var(--font);
   line-height: 41px;
   border: 4px solid black;
+  height: 180px;
+  margin: 0 auto;
 }
 
-.save_phrase_box>div {
-  padding-top: 20px;
-  padding-bottom: 62px;
+.default_value {
+  color: gray;
+}
+
+.new_value {
+  color: black;
+}
+
+.enter_phrase_box {
+  background-color: #dddddd;
+  line-height: 41px;
 }

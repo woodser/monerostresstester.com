@@ -1,10 +1,11 @@
 :root {
   --bg-color: #eaf0f0;
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font);
 }
 
 #app_container {
