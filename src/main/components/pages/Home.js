@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './home.css';
 import {Route, Switch, Link, useRouteMatch} from "react-router-dom";
-import {UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
+import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
 import {Page_Box, Page_Text_Box, Page_Text_Entry, Header} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
@@ -44,8 +44,8 @@ function Welcome(props) {
     <Page_Box>
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
-      <UI_Button_Link className="blue_button" button_text="Create New Wallet" destination={`${props.match.url}/new_wallet`} handleClick={props.handleContinue}/>
-      <UI_Button_Link className="clear_button" button_text="Or Import Existing Wallet" destination={`${props.match.url}/import_wallet`} />
+      <UI_Button_Link link_text="Create New Wallet" destination={`${props.match.url}/new_wallet`} handleClick={props.handleContinue}/>
+      <UI_Text_Link link_text="Or Import Existing Wallet" destination={`${props.match.url}/import_wallet`} />
     </Page_Box>
   );
 }
@@ -59,8 +59,8 @@ function New_Wallet(props) {
       <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>/>
       <Page_Text_Box box_text={props.text} />
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link className="blue_button" button_text="Continue" destination={`confirm_phrase`} />
-      <UI_Button_Link className="clear_button" button_text="Or Go Back" destination='/home' handleClick={props.handleBack}/>
+      <UI_Button_Link link_text="Continue" destination={`confirm_phrase`} />
+      <UI_Text_Link link_text="Or Go Back" destination='/home' handleClick={props.handleBack}/>
     </Page_Box>
   );
 }
@@ -72,8 +72,8 @@ function Enter_Phrase_Page(props) {
       <Header text={props.header}/>
       <Page_Text_Entry isDefault={true} value="Enter backup phrase..."/>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link className="blue_button" buttonText="Continue" destination={"/syncronize_wallet"} handleClick={props.handleContinue}/>
-      <UI_Button_Link className="clear_button" buttonText="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
+      <UI_Button_Link link_text="Continue" destination={"/syncronize_wallet"} handleClick={props.handleContinue}/>
+      <UI_Text_Link link_text="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
     </Page_Box>
   );
 }

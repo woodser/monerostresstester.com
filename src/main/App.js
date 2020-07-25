@@ -64,7 +64,7 @@ class App extends React.Component {
             <Route path="/backup" render={(props) => <Backup
               {...props}
             />} />
-            <Route path="/deposit" render={(props) => <Backup
+            <Route path="/deposit" render={(props) => <Deposit
               {...props}
             />} />
             <Route path="/sign_out" render={(props) => <SignOut
