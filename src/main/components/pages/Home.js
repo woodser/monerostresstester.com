@@ -3,17 +3,20 @@ import ReactDOM from 'react-dom';
 import './home.css';
 import {Route, Switch, Link, useRouteMatch} from "react-router-dom";
 import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry, Header} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
 export default function Home(props){
   let {path, url} = useRouteMatch();
-
   let generateWallet = props.generateWallet;
   let deleteWallet = props.deleteWallet;
   let walletPhrase = props.walletPhrase;
-  let handleConfirm = props.handleConfirm;
+  let confirmWallet = props.confirmWallet;
+  let walletSyncProgress = props.walletSyncProgress;
+  let setEnteredPhrase = props.setEnteredPhrase;
+  let restoreWallet = props.restoreWallet;
+
   return (
     <div id="home">
       <Switch>
@@ -21,17 +24,29 @@ export default function Home(props){
           {...props}
           handleContinue={generateWallet}
         />} />
-        <Route path={`${path}/new_wallet`} render={(props) => <New_Wallet {...props}
+        <Route path={`${path}/new_wallet`} render={(props) => <New_Wallet 
+          {...props}
           text={walletPhrase}
           handleRegenerate={generateWallet}
           handleBack={deleteWallet}
         />} />
-        <Route path={`${path}/import_wallet`} component={Import_Wallet} />
-        <Route path={`${path}/confirm_phrase`} render={(props) => <Confirm_Phrase
+        <Route path={`${path}/import_wallet`} render={(props) => <Enter_Phrase_Page
           {...props}
-          text={walletPhrase}
-          defaultEntryString={DEFAULT_BACKUP_PHRASE_STRING}
-          handleContinue={handleConfirm}
+          header="Enter your backup phrase" 
+          back_destination='/home' 
+          handleTextChange={setEnteredPhrase} 
+          handleContinue={() => restoreWallet(props.history)}
+        /> } />
+        <Route path={`${path}/confirm_phrase`} render={(props) => <Enter_Phrase_Page
+          {...props} 
+          header="Confirm your backup phrase" 
+          back_destination='/home/new_wallet' 
+          handleTextChange={setEnteredPhrase} 
+          handleContinue={() => confirmWallet(props.history)}
+        /> } />
+        <Route path={`${path}/synchronize_wallet`} render={(props) => <Sync_Wallet_Page
+          {...props}
+          progress={walletSyncProgress}
         /> } />
       </Switch>
     </div>
@@ -65,29 +80,35 @@ function New_Wallet(props) {
   );
 }
 
+function Sync_Wallet_Page(props) {
+  return (
+    <Page_Box>
+    <Header text="Synchronizing Wallet" />
+    <Progress_Bar progress={props.progress}/>
+    <UI_Text_Link link_text="Go Back"
+      handleClick={() => {
+        props.history.goBack();
+      }}
+      destination=''
+    />
+    </Page_Box>
+  );
+}
+
 function Enter_Phrase_Page(props) {
   //Save your backup phrase
   return(
     <Page_Box>
       <Header text={props.header}/>
-      <Page_Text_Entry isDefault={true} value="Enter backup phrase..."/>
+      <Page_Text_Entry 
+        isDefault={true} 
+        value="Enter backup phrase..." 
+        handleTextChange={props.handleTextChange}
+      />
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link link_text="Continue" destination={"/syncronize_wallet"} handleClick={props.handleContinue}/>
+      <UI_Button_Link link_text="Continue" destination={"/home/synchronize_wallet"} handleClick={props.handleContinue}/>
       <UI_Text_Link link_text="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
     </Page_Box>
-  );
-}
-
-function Confirm_Phrase(props) {
-  //Save your backup phrase
-  return(
-    <Enter_Phrase_Page header="Confirm your backup phrase" back_destination={`/home/new_wallet`} />
-  );
-}
-
-function Import_Wallet(props) {
-  return(
-    <Enter_Phrase_Page header="Enter your backup phrase" back_destination='/home' />
   );
 }
 
