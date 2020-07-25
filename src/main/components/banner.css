@@ -30,6 +30,9 @@ a {
   margin-right:5px;
   margin-left: 5px;
 }
+a:hover{
+  text-decoration: underline;
+}
 .vertical_center {
   position: absolute;
   margin: 0;

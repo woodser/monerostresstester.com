@@ -14,14 +14,14 @@ export default function Banner() {
         </div>
       </div>
       <div id="nav">
-        <NavLink exact to="/home" className="nav_link" activeClassName="current_nav">Home</NavLink>
-        &nbsp;|&nbsp;
+        <NavLink to="/home" className="nav_link" activeClassName="current_nav">Home</NavLink>
+        &nbsp;&nbsp;&nbsp;
         <NavLink to="/backup" className="nav_link" activeClassName="current_nav">Backup</NavLink>
-        &nbsp;|&nbsp;
+        &nbsp;&nbsp;&nbsp;
         <NavLink to="/deposit" className="nav_link" activeClassName="current_nav">Deposit</NavLink>
-        &nbsp;|&nbsp;
+        &nbsp;&nbsp;&nbsp;
         <NavLink to="/withdraw" className="nav_link" activeClassName="current_nav">Withdraw</NavLink>
-        &nbsp;|&nbsp;
+        &nbsp;&nbsp;&nbsp;
         <NavLink to="/sign_out" className="nav_link" activeClassName="current_nav">Sign Out</NavLink>
       </div>
     </div>
