@@ -72,8 +72,8 @@ function Enter_Phrase_Page(props) {
       <Header text={props.header}/>
       <Page_Text_Entry isDefault={true} value="Enter backup phrase..."/>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link linkText="Continue" destination={"/syncronize_wallet"} handleClick={props.handleContinue}/>
-      <UI_Text_Link linkText="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
+      <UI_Button_Link link_text="Continue" destination={"/syncronize_wallet"} handleClick={props.handleContinue}/>
+      <UI_Text_Link link_text="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
     </Page_Box>
   );
 }

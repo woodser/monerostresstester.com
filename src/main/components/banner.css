@@ -33,6 +33,10 @@ a {
 a:hover{
   text-decoration: underline;
 }
+
+.header_link {
+  color: var(--text-color);
+}
 .vertical_center {
   position: absolute;
   margin: 0;
@@ -51,16 +55,17 @@ a:hover{
 
 #nav {
   position: absolute;
+  color: var(--nav-text-color);
   right: 0px;
   margin-right: var(--nav-horizontal-offset);
   top: var(--nav-vertical-displacement);
   font-size: var(--nav-font-size);
-  color: var(--nav-text-color);
 }
 
 h1 {
   font-size: var(--title-size);
   font-family: var(--banner-font);
+  color: var(--font-color);
   margin-right: 25px;
   margin-left: var(--h1-horizontal-offset);
 }
