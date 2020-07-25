@@ -23,8 +23,8 @@
   "header"
   "main_content"
   "save_phrase_box_bottom_margin"
-  "blue_button"
-  "clear_button"
+  "ui_button_link"
+  "ui_text_link"
   "." 1fr;
   background-color: var(--app-content-bg-color);
 }
@@ -49,10 +49,10 @@
   grid-area: main_content;
 }
 
-.blue_button {
-  grid-area: blue_button;
+.ui_button_link {
+  grid-area: ui_button_link;
 }
 
-.clear_button {
-  grid-area: clear_button;
+.ui_link_text_container {
+  grid-area: ui_text_link;
 }
