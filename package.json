@@ -4,9 +4,8 @@
   "description": "A browser app intended to be run by many users simultaneously in order to test the limits of the Monero network",
   "main": "index.js",
   "scripts": {
-    "start_updating": "webpack-dev-server --config ./webpack.config.js --mode development --open",
+    "start": "webpack-dev-server --config ./webpack.config.js --mode development --open",
     "build": "webpack --mode production",
-    "start": "webpack --config ./webpack.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Timetherewere",
@@ -26,8 +25,10 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "monero-javascript": "^0.4.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-router-dom": "^5.2.0"
+    "react-router-dom": "^5.2.0",
+    "memfs": "^3.1.2"
   }
 }

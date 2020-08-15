@@ -10,6 +10,10 @@ const htmlPlugin = new HtmlWebPackPlugin({
 });
 
 let configBase = {
+  devServer: {
+	contentBase: './browser_build',  
+	writeToDisk: true,
+  },
   module: {
     rules: [
       {
@@ -19,7 +23,17 @@ let configBase = {
         use: {
           loader: "babel-loader",
           options: {
-            cacheDirectory: false
+            cacheDirectory: false,
+            presets: [
+              [
+                '@babel/preset-env',
+                {
+                  targets: {
+                    esmodules: true,
+                  },
+                },
+              ],
+            ],
           }
         }
       },
@@ -59,16 +73,18 @@ let configBase = {
   },
   cache: true,
   context: __dirname,
+  devServer: {
+    contentBase: './browser_build',
+    writeToDisk: true,
+  },
   plugins: [
     htmlPlugin,
-    /*
     new CopyPlugin({
       patterns: [
-        { from: "src/main/img", to: path.resolve("browser_build/img") },
+        { from: path.resolve("node_modules/monero-javascript/dist"), to: path.resolve("browser_build") },
       ],
     }),
-    */
-  ]
+  ],
 };
 
 let configStressTester = Object.assign({}, configBase, {

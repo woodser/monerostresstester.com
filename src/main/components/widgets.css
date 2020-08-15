@@ -1,3 +1,11 @@
+:root {
+  --progress-bar-height: 66px;
+  --progress-bar-color: #29dc10;
+  --progress-bar-container-color: #017b76;
+  --progress-bar-text-color: white;
+  --progress-bar-text-size: 28px;
+}
+
 .page_box > div {
   margin: 0 auto;
 }
@@ -69,4 +77,34 @@
 .enter_phrase_box {
   background-color: #dddddd;
   line-height: 41px;
+}
+
+.progress_bar_container {
+  position: relative;
+  background-color: var(--progress-bar-container-color);
+  height: var(--progress-bar-height);
+  width: 800px;
+}
+
+.progress_bar, .progress_percentage {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+.progress_bar {
+  background-color: var(--progress-bar-color);
+  top: 0;
+  left: 0;
+}
+.progress_percentage {
+  width: 100%;
+  color: var(--progress-bar-text-color);
+  text-align: center;
+  margin: 0 auto;
+  z-index: 10;
+  font-size: var(--progress-bar-text-size);
+  font-weight: bold;
+  padding-top: calc(var(--progress-bar-height)/2 - var(--progress-bar-text-size)/2);
+  padding-bottom: calc(var(--progress-bar-height)/2 - var(--proress-bar-text-size)/2);
 }

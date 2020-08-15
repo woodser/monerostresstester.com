@@ -2,6 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './widgets.css';
 
+export function Progress_Bar(props) {
+  const progressStyle = {
+    width: `${props.progress}%`
+  }
+  return(
+    <div className="progress_bar_container main_content">
+      <div className="progress_bar" style={progressStyle}></div>
+      <div className="progress_percentage">{`${props.progress}%`}</div>
+    </div>
+  );
+}
+
 // A generic container for the common "box format" of most of the home sub-pages
 export function Page_Box(props) {
   return (
@@ -33,12 +45,13 @@ export class Page_Text_Entry extends React.Component {
     }
   }
 
-handleChange(e){
-  this.setState({
-    isDefault: false,
-    enteredPhrase: e.target.value
-  })
-}
+	handleChange(e){
+	  this.setState({
+	    isDefault: false,
+	    enteredPhrase: e.target.value,
+	  });
+	  this.props.handleTextChange(e.target.value);
+	}
 
   render() {
     return (
