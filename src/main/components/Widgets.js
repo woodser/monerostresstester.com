@@ -63,6 +63,14 @@ export class Page_Text_Entry extends React.Component {
   }
 }
 
+export function Restore_Height(props){
+  return(
+    <div className="restore_height_entry">
+      <div>Restore height:</div>
+      <input type="number" onChange={props.onChange} />
+    </div>
+  );
+}
 
 export function Header(props) {
   return (

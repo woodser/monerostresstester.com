@@ -30,8 +30,17 @@ class App extends React.Component {
       enteredPhrase: "", // The mnemonic phrase (or portion thereof) that
       wallet: null,
       phraseIsConfirmed: false,
-      walletSyncProgress: 0
+      walletSyncProgress: 0,
+      restoreHeight: 0
     };
+  }
+  
+  setRestoreHeight(e){
+	  this.setState(
+        {
+          restoreHeight: e.target.value
+        }
+	  )
   }
   
   setEnteredPhrase(mnemonic){
@@ -70,7 +79,8 @@ class App extends React.Component {
 		    serverUri: "http://localhost:38081",
 		    serverUsername: "superuser",
 		    serverPassword: "abctesting123",
-		    mnemonic: this.state.enteredPhrase
+		    mnemonic: this.state.enteredPhrase,
+		    restoreHeight: this.state.restoreHeight
 		  });
 	    } catch(e) {
 	      alert("Invalid mnemonic!");
@@ -159,6 +169,7 @@ class App extends React.Component {
               setEnteredPhrase={this.setEnteredPhrase.bind(this)}
               deleteWallet={this.deleteWallet.bind(this)}
               walletSyncProgress = {Math.trunc(this.state.walletSyncProgress)}
+              setRestoreHeight = {this.setRestoreHeight.bind(this)}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}
@@ -201,7 +212,7 @@ class WalletSyncPrinter extends MoneroWalletListener {
 	console.log("Running onSyncProgress...");
     //let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
     //$("#progressBar").width(percentString);
-	this.callingComponent.setCurrentSyncProgress(percentDone); 
+	this.callingComponent.setCurrentSyncProgress(percentDone*100); 
     if (percentDone >= this.lastIncrement + this.syncResolution) {
       console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone  + ", " + message + ")");
       this.lastIncrement += this.syncResolution;

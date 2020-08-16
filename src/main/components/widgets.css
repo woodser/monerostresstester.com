@@ -10,6 +10,11 @@
   margin: 0 auto;
 }
 
+.restore_height_entry {
+  display: flex;
+  flex-direction: row;
+}
+
 .save_phrase_box_bottom_margin {
   height: 28px;
 }
