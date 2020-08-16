@@ -10,11 +10,6 @@
   margin: 0 auto;
 }
 
-.restore_height_entry {
-  display: flex;
-  flex-direction: row;
-}
-
 .save_phrase_box_bottom_margin {
   height: 28px;
 }
@@ -65,9 +60,9 @@
 .text_box {
   font-size: 31px;
   font-family: var(--font);
-  line-height: 41px;
+  line-height: 30px;
   border: 4px solid black;
-  height: 180px;
+  width: 800px;
   margin: 0 auto;
 }
 
@@ -81,7 +76,16 @@
 
 .enter_phrase_box {
   background-color: #dddddd;
-  line-height: 41px;
+  height: 180px;
+}
+
+.enter_restore_height_box {
+  background-color: #dddddd;
+  height: 40px;
+}
+
+textarea {
+  resize: none;
 }
 
 .progress_bar_container {

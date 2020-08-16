@@ -7,7 +7,7 @@ export function Progress_Bar(props) {
     width: `${props.progress}%`
   }
   return(
-    <div className="progress_bar_container main_content">
+    <div className="progress_bar_container">
       <div className="progress_bar" style={progressStyle}></div>
       <div className="progress_percentage">{`${props.progress}%`}</div>
     </div>
@@ -45,29 +45,29 @@ export class Page_Text_Entry extends React.Component {
     }
   }
 
-	handleChange(e){
-	  this.setState({
-	    isDefault: false,
-	    enteredPhrase: e.target.value,
-	  });
-	  this.props.handleTextChange(e.target.value);
-	}
+  handleChange(e){
+    this.setState({
+    isDefault: false,
+    enteredPhrase: e.target.value,
+  });
+  this.props.handleTextChange(e.target.value);
+  }
 
   render() {
     return (
       <textarea
-        className={"text_box enter_phrase_box main_content" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+        className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
         defaultValue={this.props.value}
-        onChange={this.handleChange.bind(this)} />
+        onChange={this.handleChange.bind(this)} 
+      />
     );
   }
 }
 
-export function Restore_Height(props){
+export function Main_Content(props) {
   return(
-    <div className="restore_height_entry">
-      <div>Restore height:</div>
-      <input type="number" onChange={props.onChange} />
+    <div className="main_content">
+      {props.children}
     </div>
   );
 }

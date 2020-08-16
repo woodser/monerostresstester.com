@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './home.css';
 import {Route, Switch, Link, useRouteMatch} from "react-router-dom";
 import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Restore_Height} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
@@ -32,12 +32,17 @@ export default function Home(props){
         />} />
         <Route path={`${path}/import_wallet`} render={(props) => <Enter_Phrase_Page
           {...props}
-          header="Enter your backup phrase" 
+          header="Import existing wallet" 
           back_destination='/home' 
           handleTextChange={setEnteredPhrase} 
           handleContinue={() => restoreWallet(props.history)}
         >
-          <Restore_Height onChange={setRestoreHeight}/>
+          <Page_Text_Entry 
+            isDefault={true} 
+            className="enter_restore_height_box"
+      	    value="Enter restore height or date (YYYY/MM/DD)" 
+      	    handleTextChange={setRestoreHeight}
+          />
         </Enter_Phrase_Page> } />
         <Route path={`${path}/confirm_phrase`} render={(props) => <Enter_Phrase_Page
           {...props} 
@@ -74,7 +79,9 @@ function New_Wallet(props) {
   return(
     <Page_Box>
       <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>/>
-      <Page_Text_Box box_text={props.text} />
+      <Main_Content>
+      	<Page_Text_Box box_text={props.text} />
+      </Main_Content>
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link link_text="Continue" destination={`confirm_phrase`} />
       <UI_Text_Link link_text="Or Go Back" destination='/home' handleClick={props.handleBack}/>
@@ -85,14 +92,16 @@ function New_Wallet(props) {
 function Sync_Wallet_Page(props) {
   return (
     <Page_Box>
-    <Header text="Synchronizing Wallet" />
-    <Progress_Bar progress={props.progress}/>
-    <UI_Text_Link link_text="Go Back"
-      handleClick={() => {
-        props.history.goBack();
-      }}
-      destination=''
-    />
+      <Header text="Synchronizing Wallet" />
+      <Main_Content>
+        <Progress_Bar progress={props.progress}/>
+      </Main_Content>
+      <UI_Text_Link link_text="Go Back"
+        handleClick={() => {
+          props.history.goBack();
+        }}
+        destination=''
+      />
     </Page_Box>
   );
 }
@@ -102,12 +111,15 @@ function Enter_Phrase_Page(props) {
   return(
     <Page_Box>
       <Header text={props.header}/>
-      <Page_Text_Entry 
-        isDefault={true} 
-        value="Enter backup phrase..." 
-        handleTextChange={props.handleTextChange}
-      />
-      {props.children}
+      <Main_Content>
+      	<Page_Text_Entry 
+      	  isDefault={true} 
+      	  className="enter_phrase_box "
+	  value="Enter backup phrase..." 
+	  handleTextChange={props.handleTextChange}
+	/>
+	{props.children}
+      </Main_Content>
       <div className="save_phrase_box_bottom_margin"></div>
       <UI_Button_Link link_text="Continue" destination={"/home/synchronize_wallet"} handleClick={props.handleContinue}/>
       <UI_Text_Link link_text="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />

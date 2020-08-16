@@ -35,17 +35,16 @@ class App extends React.Component {
     };
   }
   
-  setRestoreHeight(e){
-	  this.setState(
-        {
-          restoreHeight: e.target.value
-        }
-	  )
+  setRestoreHeight(height){
+    this.setState({
+      restoreHeight: Number(height)
+    });
+    console.log("entered restore height: " + height)
   }
   
   setEnteredPhrase(mnemonic){
     this.setState({
-	  enteredPhrase: mnemonic
+      enteredPhrase: mnemonic
     });
     console.log("entered phrase: " + mnemonic);
   }
@@ -84,6 +83,7 @@ class App extends React.Component {
 		  });
 	    } catch(e) {
 	      alert("Invalid mnemonic!");
+	      alert("Error: " + e);
 	      return;
 	    }
 	    this.setState ({
