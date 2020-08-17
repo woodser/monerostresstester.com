@@ -83,8 +83,10 @@ function New_Wallet(props) {
       	<Page_Text_Box box_text={props.text} />
       </Main_Content>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link link_text="Continue" destination={`confirm_phrase`} />
-      <UI_Text_Link link_text="Or Go Back" destination='/home' handleClick={props.handleBack}/>
+      <div className="home_button_links">
+        <UI_Button_Link link_text="Continue" destination={`confirm_phrase`} />
+        <UI_Text_Link link_text="Or Go Back" destination='/home' handleClick={props.handleBack}/>
+      </div>
     </Page_Box>
   );
 }
@@ -96,12 +98,14 @@ function Sync_Wallet_Page(props) {
       <Main_Content>
         <Progress_Bar progress={props.progress}/>
       </Main_Content>
-      <UI_Text_Link link_text="Go Back"
-        handleClick={() => {
-          props.history.goBack();
-        }}
-        destination=''
-      />
+      <div className="home_button_links">
+        <UI_Text_Link link_text="Go Back"
+          handleClick={() => {
+            props.history.goBack();
+          }}
+          destination=''
+        />
+      </div>
     </Page_Box>
   );
 }
@@ -121,8 +125,10 @@ function Enter_Phrase_Page(props) {
 	{props.children}
       </Main_Content>
       <div className="save_phrase_box_bottom_margin"></div>
-      <UI_Button_Link link_text="Continue" destination={"/home/synchronize_wallet"} handleClick={props.handleContinue}/>
-      <UI_Text_Link link_text="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
+      <div className="home_button_links">
+      	<UI_Button_Link link_text="Continue" destination={"/home/synchronize_wallet"} handleClick={props.handleContinue}/>
+      	<UI_Text_Link link_text="Or Go Back" destination={props.back_destination} handleClick={props.handleBack} />
+      </div>
     </Page_Box>
   );
 }

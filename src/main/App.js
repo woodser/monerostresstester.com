@@ -71,16 +71,16 @@ class App extends React.Component {
 	    alert("Attempting to restore wallet");
 	    let walletWasm = null;
 	    try {
-		  walletWasm = await monerojs.createWalletWasm({
-		    password: "supersecretpassword123",
-		    networkType: "stagenet",
-		    path: "",
-		    serverUri: "http://localhost:38081",
-		    serverUsername: "superuser",
-		    serverPassword: "abctesting123",
-		    mnemonic: this.state.enteredPhrase,
-		    restoreHeight: this.state.restoreHeight
-		  });
+	      walletWasm = await monerojs.createWalletWasm({
+	        password: "supersecretpassword123",
+	        networkType: "stagenet",
+	        path: "",
+	        serverUri: "http://localhost:38081",
+	        serverUsername: "superuser",
+	        serverPassword: "abctesting123",
+	        mnemonic: this.state.enteredPhrase,
+	        restoreHeight: this.state.restoreHeight
+	      });
 	    } catch(e) {
 	      alert("Invalid mnemonic!");
 	      alert("Error: " + e);
