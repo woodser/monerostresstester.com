@@ -17,7 +17,7 @@ export function Progress_Bar(props) {
 // A generic container for the common "box format" of most of the home sub-pages
 export function Page_Box(props) {
   return (
-    <div className="page_box">
+    <div className={"page_box " + props.className}>
       {props.children}
     </div>
   );

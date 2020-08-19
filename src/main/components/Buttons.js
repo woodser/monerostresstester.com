@@ -10,7 +10,7 @@ import './buttons.css';
 // Component for the common "button link" used in the bottom of the page_box home pages
 export function UI_Button_Link(props) {
   return(
-    <Link to={props.destination} className="ui_link_container ui_button_link" onClick={props.handleClick}>
+    <Link to={props.destination} className={"ui_link_container ui_button_link " + props.className} onClick={props.handleClick}>
       <div className="button_text">
         {props.link_text}
       </div>

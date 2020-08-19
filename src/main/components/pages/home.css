@@ -1,6 +1,4 @@
 :root {
-  --item-width: 860px;
-  --page-box-width: 900px;
   --app-content-bg-color: #ece4d4;
 }
 
@@ -12,11 +10,8 @@
   height: 100%;
 }
 
-.page_box {
+.home_subpage_box {
   grid-row-gap: 0px;
-  width: var(--page-box-width);
-  height: 100%;
-  margin: 0 auto;
   display: grid;
   grid-template:
   "title"

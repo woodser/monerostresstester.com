@@ -24,12 +24,12 @@
   font-family: var(--banner-font);
 }
 
-a {
-  font-weight: normal;
-  text-decoration: none;
-  margin-right:5px;
+.link {
+  margin-right: 5px;
   margin-left: 5px;
+  text-decoration: none;
 }
+
 a:hover{
   text-decoration: underline;
 }
@@ -47,10 +47,6 @@ a:hover{
 
 #title {
   display: flex;
-}
-
-#monero_muscle_logo {
-
 }
 
 #nav {
@@ -72,6 +68,10 @@ h1 {
 
 .nav_link {
   color: white;
+}
+
+.disabled_nav_link {
+  color: gray;
 }
 
 .current_nav {

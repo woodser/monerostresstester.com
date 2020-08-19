@@ -63,11 +63,13 @@ export default function Home(props){
 // The initial home page
 function Welcome(props) {
   return (
-    <Page_Box>
+    <Page_Box className = "home_subpage_box">
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
-      <UI_Button_Link link_text="Create New Wallet" destination={`${props.match.url}/new_wallet`} handleClick={props.handleContinue}/>
-      <UI_Text_Link link_text="Or Import Existing Wallet" destination={`${props.match.url}/import_wallet`} />
+      <div className="home_button_links">
+      	<UI_Button_Link link_text="Create New Wallet" destination={`${props.match.url}/new_wallet`} handleClick={props.handleContinue}/>
+      	<UI_Text_Link link_text="Or Import Existing Wallet" destination={`${props.match.url}/import_wallet`} />
+      </div>
     </Page_Box>
   );
 }
@@ -77,7 +79,7 @@ function Welcome(props) {
  */
 function New_Wallet(props) {
   return(
-    <Page_Box>
+    <Page_Box className = "home_subpage_box">
       <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>/>
       <Main_Content>
       	<Page_Text_Box box_text={props.text} />
@@ -93,7 +95,7 @@ function New_Wallet(props) {
 
 function Sync_Wallet_Page(props) {
   return (
-    <Page_Box>
+    <Page_Box className="home_subpage_box">
       <Header text="Synchronizing Wallet" />
       <Main_Content>
         <Progress_Bar progress={props.progress}/>
@@ -113,7 +115,7 @@ function Sync_Wallet_Page(props) {
 function Enter_Phrase_Page(props) {
   //Save your backup phrase
   return(
-    <Page_Box>
+    <Page_Box className="home_subpage_box">
       <Header text={props.header}/>
       <Main_Content>
       	<Page_Text_Entry 

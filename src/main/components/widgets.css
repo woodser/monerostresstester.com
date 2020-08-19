@@ -12,6 +12,12 @@
   margin: 0 auto;
 }
 
+.page_box {
+  width: var(--page-box-width);
+  height: 100%;
+  margin: 0 auto;
+}
+
 .save_phrase_box_bottom_margin {
   height: 28px;
 }
