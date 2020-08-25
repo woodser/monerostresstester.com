@@ -27,7 +27,6 @@ export default function Banner(props) {
     alert("test link url: " + convertLinkNameToUrl(links[0]));
     links = links.map(link => <NavLink key={link} to={convertLinkNameToUrl(link)} className="link nav_link" activeClassName="current_nav">{link + (link==="Sign Out" ? "" : "   ")}</NavLink>);
   } else {
-    if (links[0] == "Home") console.log("This is the home link");
     console.log("Home link: " + links[0]);
     links = links.map(link => <span key={link} className={"link " + (link==="Home" ? "current_nav" : "inactive_nav_link")}>{link + (link==="Sign Out" ? "" : "   ")}</span>);
   }

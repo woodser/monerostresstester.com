@@ -14,6 +14,8 @@ import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 const monerojs = require("monero-javascript");
 const MoneroWalletListener = monerojs.MoneroWalletListener;
 
+const XMR_AU_RATIO = 0.000000000001;
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -35,32 +37,29 @@ class App extends React.Component {
       
     };
   }
-      
   
   setBalances(balance, availableBalance){
+    alert("Balance before conversion: " + balance);
     this.setState({
-      balance: balance,
-      availableBalance: availableBalance
+      balance: balance * XMR_AU_RATIO,
+      availableBalance: availableBalance * XMR_AU_RATIO
     });
+    alert("Balance after conversion: " + balance * XMR_AU_RATIO);
   }
   
   setRestoreHeight(height){
     this.setState({
       restoreHeight: Number(height)
     });
-    console.log("entered restore height: " + height)
   }
   
   setEnteredPhrase(mnemonic){
     this.setState({
       enteredPhrase: mnemonic
     });
-    console.log("entered phrase: " + mnemonic);
   }
 
   async generateWallet(){
-    
-    console.log("Generating wallet");
     let walletWasm = await monerojs.createWalletWasm({
       password: "supersecretpassword123",
       networkType: "stagenet",
@@ -69,7 +68,6 @@ class App extends React.Component {
       serverUsername: "superuser",
       serverPassword: "abctesting123",
     });
-    console.log("Wallet generated!");
     let newPhrase = await walletWasm.getMnemonic();
     this.setState ({
       wallet: walletWasm,
@@ -104,7 +102,6 @@ class App extends React.Component {
   
   setCurrentSyncProgress(percentDone){
     this.setState({walletSyncProgress: percentDone});
-    console.log("Updating sync progress: " + percentDone)
   }
 
   deleteWallet() {
@@ -120,7 +117,6 @@ class App extends React.Component {
   }
   
   async confirmWallet(browserHistory) {
-    console.log("Entered phrase: " + this.state.enteredPhrase);
     let walletPhrase = await this.state.wallet.getMnemonic();
     if (this.state.enteredPhrase === walletPhrase) {
       this.setState ({
@@ -136,16 +132,18 @@ class App extends React.Component {
   
   //Called when the user clicks "continue" after entering a valid new (for restore) or confirm (for create new) seed phrase.
   async synchronizeWallet(wallet) {
-	console.log("Attempting to synchronize wallet");
-	let result = await wallet.sync(new WalletSyncPrinter(this));  // synchronize and print progress
-	console.log("\"finished\" synchronizing wallet");
-	let balance = await wallet.getBalance();
-	let availableBalance = await wallet.getUnlockedBalance();
-	this.setState({
-	  walletIsSynced: true,
-	  balance: balance,
-	  availableBalance: availableBalance
-	})
+    this.walletUpdater = new walletListener(this);
+    let result = await wallet.sync(this.walletUpdater);  // synchronize and print progress
+    this.walletUpdater.setWalletIsSynchronized(true);
+    alert("Balance before conversion: " + await wallet.getBalance);
+    let balance = await wallet.getBalance() * XMR_AU_RATIO;
+    let availableBalance = await wallet.getUnlockedBalance() * XMR_AU_RATIO;
+    alert("Balance after conversion: " + balance);
+    this.setState({
+      walletIsSynced: true,
+      balance: balance,
+      availableBalance: availableBalance
+    })
   }
 
 
@@ -205,29 +203,31 @@ function default_page(){
 /**
  * Print sync progress every X blocks.
  */
-class WalletSyncPrinter extends MoneroWalletListener {
+class walletListener extends MoneroWalletListener {
               
   constructor(callingComponent) { // callingComponent is "App" in this case
     super();
     this.callingComponent = callingComponent;
     this.syncResolution = 0.05;
     this.lastIncrement = 0;
-    console.log("Creating wallet sync printer");
+    this.walletIsSynchronized = false;
   }
               
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
-	console.log("Running onSyncProgress...");
     //let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
     //$("#progressBar").width(percentString);
     this.callingComponent.setCurrentSyncProgress(percentDone*100); 
     if (percentDone >= this.lastIncrement + this.syncResolution) {
-      console.log("onSyncProgress(" + height + ", " + startHeight + ", " + endHeight + ", " + percentDone  + ", " + message + ")");
       this.lastIncrement += this.syncResolution;
     }
   }
   onBalancesChanged(newBalance, newUnlockedBalance){
-    console.log("Calling onBalancesChanged");  
-    this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
+    if (this.walletIsSynchronized)
+      this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
+  }
+  
+  setWalletIsSynchronized(value) {
+    this.walletIsSynchronized = value;
   }
 }
 
