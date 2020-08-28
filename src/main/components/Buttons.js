@@ -29,11 +29,9 @@ export function UI_Text_Link(props) {
 // Component for the unique "Regenerate" button in the wallet generation sub-page
 export function Regenerate_Phrase_Button(props) {
   return(
-    <div className="regenerate_button_container" onClick={props.handleClick}>
+    <div className="regenerate_button_container">
       <div className="regenerate_button_left_spacer"></div>
-      <div className="regenerate_button">
-        Regenerate
-      </div>
+      <a className="regenerate_button" onClick={props.handleClick}>Regenerate</a>
     </div>
   );
 }

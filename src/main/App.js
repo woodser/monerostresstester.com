@@ -33,12 +33,10 @@ class App extends React.Component {
     LibraryUtils.loadKeysModule().then(
       function() {
 	that.keysModuleLoaded = true;
-	alert("Keys module loaded!");
 	// Load the core module
 	LibraryUtils.loadCoreModule().then(
 	  function() {
 	    that.coreModuleLoaded = true;
-	    alert("Core module loaded!");
 	    // Load the core module
 	  }
 	).catch(
@@ -146,7 +144,7 @@ class App extends React.Component {
 	// Attempt to convert date into a monero blockchain height:
 	height = await walletWasm.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
       } catch(e) {
-	alertMessage = "Well poop!\n" + e;
+	alertMessage = e;
       }
     } 
     
@@ -229,7 +227,7 @@ this.setState({walletSyncProgress: percentDone});
         phraseIsConfirmed: true
       });
       browserHistory.push("/home/synchronize_wallet");
-      await this.synchronizeWallet(wallet);
+      await this.synchronizeWallet(this.state.wallet);
     } else {
       alert("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
     }
@@ -241,10 +239,8 @@ this.setState({walletSyncProgress: percentDone});
     this.walletUpdater = new walletListener(this);
     let result = await wallet.sync(this.walletUpdater);  // synchronize and print progress
     this.walletUpdater.setWalletIsSynchronized(true);
-    alert("Balance before conversion: " + await wallet.getBalance);
     let balance = await wallet.getBalance() * XMR_AU_RATIO;
     let availableBalance = await wallet.getUnlockedBalance() * XMR_AU_RATIO;
-    alert("Balance after conversion: " + balance);
     this.setState({
       walletIsSynced: true,
       balance: balance,

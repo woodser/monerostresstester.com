@@ -67,10 +67,12 @@
 
 .text_box {
   font-size: 31px;
+  background-color: #fffefe;
   font-family: var(--font);
-  line-height: 30px;
+  line-height: 42px;
   border: var(--text-box-border-width) solid black;
   width: calc(100% - var(--text-box-border-width)*3);
+  height: 180px;
 }
 
 .default_value {
@@ -83,7 +85,6 @@
 
 .enter_phrase_box {
   background-color: #dddddd;
-  height: 180px;
 }
 
 .enter_restore_height_box {
@@ -96,10 +97,12 @@ textarea {
 }
 
 .progress_bar_container {
+  display: block;
   position: relative;
   background-color: var(--progress-bar-container-color);
   height: var(--progress-bar-height);
-  width: 800px;
+  margin: 0 auto;
+  width: 840px;
 }
 
 .progress_bar, .progress_percentage {

@@ -3,10 +3,11 @@
   --wallet-button-width: calc(var(--item-width)*0.8);
   --wallet-button-active-color: green;
   --wallet-button-inactive-color: gray;
+  --button-height: 95px;
 }
 
 .ui_link_container {
-  height: 95px;
+  height: var(--button-height);
   display: block;
   width: calc(var(--item-width) - (var(--button-border-width)*2));
   position: relative;
@@ -15,7 +16,7 @@
 }
 
 .ui_link_text_container {
-  padding-top: 34px;
+  height: var(--button-height);
   margin: 0 auto;
   width: 100%;
 }
@@ -58,12 +59,14 @@
 
 .ui_text_link {
   text-decoration: none;
-  display: block;
-  width: 18%;
+  text-align: center;
+  width: auto;
   margin: 0 auto;
   text-align: center;
   font-size: 26px;
   color: black;
+  display: block;
+  margin-top: 34px;
 }
 
 .ui_text_link:hover {
@@ -73,6 +76,7 @@
 .regenerate_button {
   right: 0px;
   font-size: 22px;
+  cursor: pointer;
 }
 
 .regenerate_button_left_spacer {

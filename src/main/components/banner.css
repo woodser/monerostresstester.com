@@ -15,6 +15,9 @@
 }
 
 #banner-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   color: var(--text-color);
   background-color: var(--banner-color);
   width: 100%;
@@ -22,6 +25,10 @@
   height: var(--banner-height);
   position: relative;
   font-family: var(--banner-font);
+}
+
+#logo_container {
+  margin: 0 auto;
 }
 
 .link {
@@ -36,34 +43,20 @@ a:hover{
 
 .header_link {
   color: var(--text-color);
-}
-.vertical_center {
-  position: absolute;
-  margin: 0;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-}
-
-#title {
-  display: flex;
+  text-decoration: none;
+  font-size: var(--title-size);
+  font-family: var(--banner-font);
+  font-weight: bold;
+  margin-right: 25px;
+  margin-left: var(--h1-horizontal-offset);
 }
 
 #nav {
-  position: absolute;
   color: var(--nav-text-color);
   right: 0px;
   margin-right: var(--nav-horizontal-offset);
   top: var(--nav-vertical-displacement);
   font-size: var(--nav-font-size);
-}
-
-h1 {
-  font-size: var(--title-size);
-  font-family: var(--banner-font);
-  color: var(--font-color);
-  margin-right: 25px;
-  margin-left: var(--h1-horizontal-offset);
 }
 
 .nav_link {

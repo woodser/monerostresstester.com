@@ -32,15 +32,13 @@ export default function Banner(props) {
   }
   return(
     <div id="banner-container">
-      <NavLink to="/home" className="header_link">
-        <div id="title" className="vertical_center">
-          <h1>MoneroStressTester.com</h1>
-          <div>
-            <img id="monero_muscle_logo" className="vertical_center" src={logo} alt="Monero Muscle Logo"></img>
-          </div>
-        </div>
+      <NavLink to="/home" className="header_link vertical_center">
+        MoneroStressTester.com
       </NavLink>
-      <div id="nav">
+      <div id="logo_container" className="vertical_center">
+        <img id="monero_muscle_logo" className="vertical_center" src={logo} alt="Monero Muscle Logo"></img>
+      </div>
+      <div id="nav" className="vertical_center">
         {links}
       </div>
     </div>
