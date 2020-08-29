@@ -5,7 +5,10 @@ import logo from "../img/monero_muscle_logo.gif";
 import { BrowserRouter as Link, NavLink } from "react-router-dom";
 
 function convertLinkNameToUrl(name){
-  return "/" + name.toLowerCase().split(' ').join('_');
+  if (name=="Home")
+    return "";
+  else
+    return "/" + name.toLowerCase().split(' ').join('_');
 }
 
 export default function Banner(props) {
@@ -24,15 +27,13 @@ export default function Banner(props) {
    * based on props.className
    */
   if (props.walletIsSynced){
-    alert("test link url: " + convertLinkNameToUrl(links[0]));
     links = links.map(link => <NavLink key={link} to={convertLinkNameToUrl(link)} className="link nav_link" activeClassName="current_nav">{link + (link==="Sign Out" ? "" : "   ")}</NavLink>);
   } else {
-    console.log("Home link: " + links[0]);
     links = links.map(link => <span key={link} className={"link " + (link==="Home" ? "current_nav" : "inactive_nav_link")}>{link + (link==="Sign Out" ? "" : "   ")}</span>);
   }
   return(
     <div id="banner-container">
-      <NavLink to="/home" className="header_link vertical_center">
+      <NavLink to="/" className="header_link vertical_center">
         MoneroStressTester.com
       </NavLink>
       <div id="logo_container" className="vertical_center">
