@@ -1,0 +1,30 @@
+.wallet_page_section {
+  display: grid;
+  grid-template-areas:
+  '      .                .                 .     ' 
+  'section_label          .          section_value'
+  'horizontal_line horizontal_line horizontal_line'
+  '      .                .                 .     ';
+  grid-template-rows: 36px auto auto 36px;
+  grid-template-columns: auto 1fr auto;
+}
+.wallet_page_box {
+  background-color: white;
+}
+.horizontal_rule {
+  grid-area: horizontal_line;
+}
+.wallet_page_text {
+  width: inherit;
+  font-size: 24px;
+}
+.wallet_page_sections_container {
+  width: 80%;
+  padding-top: 38px;
+}
+.wallet_page_section_label {
+  grid-area: section_label;
+}
+.wallet_page_section_value {
+  grid-area: section_value;
+}

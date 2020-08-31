@@ -10,7 +10,7 @@ import './buttons.css';
 // Component for the common "button link" used in the bottom of the page_box home pages
 export function UI_Button_Link(props) {
   return(
-    <Link to={props.destination} className="ui_link_container ui_button_link" onClick={props.handleClick}>
+    <Link to={props.destination} className={"ui_link_container ui_button_link " + props.className} onClick={props.handleClick}>
       <div className="button_text">
         {props.link_text}
       </div>
@@ -29,11 +29,9 @@ export function UI_Text_Link(props) {
 // Component for the unique "Regenerate" button in the wallet generation sub-page
 export function Regenerate_Phrase_Button(props) {
   return(
-    <div className="regenerate_button_container" onClick={props.handleClick}>
+    <div className="regenerate_button_container">
       <div className="regenerate_button_left_spacer"></div>
-      <div className="regenerate_button">
-        Regenerate
-      </div>
+      <a className="regenerate_button" onClick={props.handleClick}>Regenerate</a>
     </div>
   );
 }

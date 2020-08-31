@@ -15,6 +15,9 @@
 }
 
 #banner-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   color: var(--text-color);
   background-color: var(--banner-color);
   width: 100%;
@@ -24,37 +27,31 @@
   font-family: var(--banner-font);
 }
 
-a {
-  font-weight: normal;
-  text-decoration: none;
-  margin-right:5px;
-  margin-left: 5px;
+#logo_container {
+  margin: 0 auto;
 }
+
+.link {
+  margin-right: 5px;
+  margin-left: 5px;
+  text-decoration: none;
+}
+
 a:hover{
   text-decoration: underline;
 }
 
 .header_link {
   color: var(--text-color);
-}
-.vertical_center {
-  position: absolute;
-  margin: 0;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-}
-
-#title {
-  display: flex;
-}
-
-#monero_muscle_logo {
-
+  text-decoration: none;
+  font-size: var(--title-size);
+  font-family: var(--banner-font);
+  font-weight: bold;
+  margin-right: 25px;
+  margin-left: var(--h1-horizontal-offset);
 }
 
 #nav {
-  position: absolute;
   color: var(--nav-text-color);
   right: 0px;
   margin-right: var(--nav-horizontal-offset);
@@ -62,16 +59,12 @@ a:hover{
   font-size: var(--nav-font-size);
 }
 
-h1 {
-  font-size: var(--title-size);
-  font-family: var(--banner-font);
-  color: var(--font-color);
-  margin-right: 25px;
-  margin-left: var(--h1-horizontal-offset);
-}
-
 .nav_link {
   color: white;
+}
+
+.disabled_nav_link {
+  color: gray;
 }
 
 .current_nav {

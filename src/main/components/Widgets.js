@@ -7,7 +7,7 @@ export function Progress_Bar(props) {
     width: `${props.progress}%`
   }
   return(
-    <div className="progress_bar_container main_content">
+    <div className="progress_bar_container">
       <div className="progress_bar" style={progressStyle}></div>
       <div className="progress_percentage">{`${props.progress}%`}</div>
     </div>
@@ -17,7 +17,7 @@ export function Progress_Bar(props) {
 // A generic container for the common "box format" of most of the home sub-pages
 export function Page_Box(props) {
   return (
-    <div className="page_box">
+    <div className={"page_box " + props.className}>
       {props.children}
     </div>
   );
@@ -45,24 +45,32 @@ export class Page_Text_Entry extends React.Component {
     }
   }
 
-	handleChange(e){
-	  this.setState({
-	    isDefault: false,
-	    enteredPhrase: e.target.value,
-	  });
-	  this.props.handleTextChange(e.target.value);
-	}
+  handleChange(e){
+    this.setState({
+    isDefault: false,
+    enteredPhrase: e.target.value,
+  });
+  this.props.handleTextChange(e.target.value);
+  }
 
   render() {
     return (
       <textarea
-        className={"text_box enter_phrase_box main_content" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+        className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
         defaultValue={this.props.value}
-        onChange={this.handleChange.bind(this)} />
+        onChange={this.handleChange.bind(this)} 
+      />
     );
   }
 }
 
+export function Main_Content(props) {
+  return(
+    <div className="main_content">
+      {props.children}
+    </div>
+  );
+}
 
 export function Header(props) {
   return (

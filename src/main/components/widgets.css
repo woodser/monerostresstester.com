@@ -4,9 +4,17 @@
   --progress-bar-container-color: #017b76;
   --progress-bar-text-color: white;
   --progress-bar-text-size: 28px;
+  
+  --text-box-border-width: 4px;
 }
 
 .page_box > div {
+  margin: 0 auto;
+}
+
+.page_box {
+  width: var(--page-box-width);
+  height: 100%;
   margin: 0 auto;
 }
 
@@ -59,11 +67,12 @@
 
 .text_box {
   font-size: 31px;
+  background-color: #fffefe;
   font-family: var(--font);
-  line-height: 41px;
-  border: 4px solid black;
+  line-height: 42px;
+  border: var(--text-box-border-width) solid black;
+  width: calc(100% - var(--text-box-border-width)*3);
   height: 180px;
-  margin: 0 auto;
 }
 
 .default_value {
@@ -76,14 +85,24 @@
 
 .enter_phrase_box {
   background-color: #dddddd;
-  line-height: 41px;
+}
+
+.enter_restore_height_box {
+  background-color: #dddddd;
+  height: 40px;
+}
+
+textarea {
+  resize: none;
 }
 
 .progress_bar_container {
+  display: block;
   position: relative;
   background-color: var(--progress-bar-container-color);
   height: var(--progress-bar-height);
-  width: 800px;
+  margin: 0 auto;
+  width: 840px;
 }
 
 .progress_bar, .progress_percentage {

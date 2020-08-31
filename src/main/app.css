@@ -1,6 +1,8 @@
 :root {
   --bg-color: #eaf0f0;
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --page-box-width: 900px;
+  --item-width: 860px;
 }
 
 body {

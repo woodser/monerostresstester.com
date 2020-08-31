@@ -1,5 +1,4 @@
 :root {
-  --item-width: 860px;
   --app-content-bg-color: #ece4d4;
 }
 
@@ -11,11 +10,8 @@
   height: 100%;
 }
 
-.page_box {
+.home_subpage_box {
   grid-row-gap: 0px;
-  width: 900px;
-  height: 100%;
-  margin: 0 auto;
   display: grid;
   grid-template:
   "title"
@@ -23,9 +19,9 @@
   "header"
   "main_content"
   "save_phrase_box_bottom_margin"
-  "ui_button_link"
-  "ui_text_link"
+  "home_button_links"
   "." 1fr;
+  grid-template-columns: calc((var(--page-box-width) - var(--item-width))/2), var(--item-width), calc((var(--page-box-width) - var(--item-width))/2);
   background-color: var(--app-content-bg-color);
 }
 
@@ -49,10 +45,6 @@
   grid-area: main_content;
 }
 
-.ui_button_link {
-  grid-area: ui_button_link;
-}
-
-.ui_link_text_container {
-  grid-area: ui_text_link;
+.home_button_links {
+  grid-area: home_button_links;
 }
