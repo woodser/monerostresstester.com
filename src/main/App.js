@@ -8,7 +8,6 @@ import Deposit from "./components/pages/Deposit.js";
 import SignOut from "./components/pages/SignOut.js";
 import Backup from "./components/pages/Backup.js";
 import Withdraw from "./components/pages/Withdraw.js";
-import Wallet from "./components/pages/Wallet.js";
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 
 const monerojs = require("monero-javascript");
@@ -33,10 +32,12 @@ class App extends React.Component {
     LibraryUtils.loadKeysModule().then(
       function() {
 	that.keysModuleLoaded = true;
+	console.log("keys module loaded");
 	// Load the core module
 	LibraryUtils.loadCoreModule().then(
 	  function() {
 	    that.coreModuleLoaded = true;
+	    console.log("core module loaded");
 	    // Load the core module
 	  }
 	).catch(
@@ -53,7 +54,6 @@ class App extends React.Component {
     );
     
     LibraryUtils.loadCoreModule();
-
     this.state = {
       /*
        * The mnemonic phrase (or portion thereof) that the user has typed into
@@ -67,18 +67,17 @@ class App extends React.Component {
       restoreHeight: 0,
       walletIsSynced: false,
       balance: 0,
-      availableBalance: 0
-      
+      availableBalance: 0,
+      currentHomePage: "Welcome",
+      lastHomePage: ""
     };
   }
   
   setBalances(balance, availableBalance){
-    alert("Balance before conversion: " + balance);
     this.setState({
       balance: balance * XMR_AU_RATIO,
       availableBalance: availableBalance * XMR_AU_RATIO
     });
-    alert("Balance after conversion: " + balance * XMR_AU_RATIO);
   }
   
   convertStringToRestoreDate(str){
@@ -89,7 +88,6 @@ class App extends React.Component {
     if(str.length === 10){
       //Attempt to divide the string into its constituent parts
       var dateParts = str.split("/");
-      alert("This is dateparts: " + dateParts);
       // If the result yields three strings
       if (dateParts.length === 3){
 	// Attempt to convert each string to an integer
@@ -103,7 +101,6 @@ class App extends React.Component {
 	    throw "Invalid date: " + e;
 	  }
 	}
-	alert("returning dateparts as: " + dateParts);
 	return dateParts;
       } else throw "Invalid date; date should contain three numbers separated by two slashes";
     }
@@ -116,7 +113,7 @@ class App extends React.Component {
     });
   }
   
-  async restoreWallet(browserHistory){
+  async restoreWallet(){
     
     let alertMessage = "";  
     
@@ -173,7 +170,12 @@ class App extends React.Component {
       alert("Error: " + e);
       return;
     }
-    browserHistory.push("/home/synchronize_wallet");
+    this.setState({
+      currentHomePage: "Sync_Wallet_Page",
+      lastHomePage: "Import_Wallet"
+    });
+    this.setCurrentHomePage("Sync_Wallet_Page");
+    this.setLastHomePage
     await this.synchronizeWallet(walletWasm);
     this.setState ({
       wallet: walletWasm
@@ -206,8 +208,6 @@ this.setState({walletSyncProgress: percentDone});
     });
   }
   
-
-
   deleteWallet() {
     this.setState ({
       wallet: null,
@@ -220,13 +220,16 @@ this.setState({walletSyncProgress: percentDone});
     })
   }
   
-  async confirmWallet(browserHistory) {
+  async confirmWallet() {
     let walletPhrase = await this.state.wallet.getMnemonic();
     if (this.state.enteredPhrase === walletPhrase) {
       this.setState ({
         phraseIsConfirmed: true
       });
-      browserHistory.push("/home/synchronize_wallet");
+      this.setState({
+	currentHomePage: "Sync_Wallet_Page",
+	lastHomePage: "Confirm_Wallet"
+      });
       await this.synchronizeWallet(this.state.wallet);
     } else {
       alert("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
@@ -244,40 +247,39 @@ this.setState({walletSyncProgress: percentDone});
     this.setState({
       walletIsSynced: true,
       balance: balance,
-      availableBalance: availableBalance
-    })
+      availableBalance: availableBalance,
+      currentHomePage: "Wallet"
+    });
+    
   }
-
-
+  
+  setCurrentHomePage(pageName){
+    this.setState({
+      currentHomePage: pageName
+    });
+  }
+  
   render(){
-    const homeRoute = this.state.walletIsSynced ? 
-      <Route path="/home" render={() => <Wallet
-        balance={this.state.balance}
-        availableBalance={this.state.availableBalance}
-      />} />
-    :
-      <Route path="/home" render={() => <Home
-        generateWallet={this.generateWallet.bind(this)}
-        confirmWallet={this.confirmWallet.bind(this)}
-        restoreWallet={this.restoreWallet.bind(this)}
-        setEnteredPhrase={this.setEnteredPhrase.bind(this)}
-        deleteWallet={this.deleteWallet.bind(this)}
-        walletSyncProgress = {Math.trunc(this.state.walletSyncProgress)}
-        setRestoreHeight = {this.setRestoreHeight.bind(this)}
-        walletPhrase = {this.state.walletPhrase}
-      />} />
-      
     return(
       <div id="app_container">
         <Router>
           <Banner walletIsSynced={this.state.walletIsSynced}/>
           <Switch>
-            <Route exact path="/" render={() => {
-              return(
-                <Redirect to="/home" />
-              );
-            }} />
-            {homeRoute}
+            <Route exact path="/" render={() => <Home
+              generateWallet={this.generateWallet.bind(this)}
+              confirmWallet={this.confirmWallet.bind(this)}
+              restoreWallet={this.restoreWallet.bind(this)}
+              setEnteredPhrase={this.setEnteredPhrase.bind(this)}
+              deleteWallet={this.deleteWallet.bind(this)}
+              walletSyncProgress = {Math.trunc(this.state.walletSyncProgress)}
+              setRestoreHeight = {this.setRestoreHeight.bind(this)}
+              walletPhrase = {this.state.walletPhrase}
+              currentHomePage = {this.state.currentHomePage}
+              balance = {this.state.balance}
+              setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
+              lastHomePage = {this.state.lastHomePage}
+              availableBalance = {this.state.availableBalance}
+            />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}
             />} />

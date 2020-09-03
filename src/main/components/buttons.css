@@ -13,6 +13,7 @@
   position: relative;
   margin: 0 auto;
   text-align: center;
+  cursor: pointer;
 }
 
 .ui_link_text_container {
@@ -67,6 +68,11 @@
   color: black;
   display: block;
   margin-top: 34px;
+  cursor: pointer;
+}
+
+a.ui_text_link:hover {
+	text-decoration: underline;
 }
 
 .ui_text_link:hover {

@@ -5,6 +5,7 @@ var webpack = require('webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 const htmlPlugin = new HtmlWebPackPlugin({
+  inject: false,
   template: "./src/main/index.html",
   filename: "./index.html"
 });

@@ -10,18 +10,38 @@ import './buttons.css';
 // Component for the common "button link" used in the bottom of the page_box home pages
 export function UI_Button_Link(props) {
   return(
-    <Link to={props.destination} className={"ui_link_container ui_button_link " + props.className} onClick={props.handleClick}>
+    <a
+      className={"ui_link_container ui_button_link " + props.className} 
+      onClick = {function () {
+	if(props.handleClick){
+	  props.handleClick();
+	}
+	props.setCurrentHomePage(props.destination);
+      }}
+    >
       <div className="button_text">
         {props.link_text}
       </div>
-    </Link>
+    </a>
   );
 }
 
 export function UI_Text_Link(props) {
   return(
     <div className="ui_link_text_container">
-      <Link to={props.destination} className="ui_text_link" onClick={props.handleClick}>{props.link_text}</Link>
+      <a 
+        className="ui_text_link" 
+	onClick={function () {
+	  if(props.handleClick) {
+	    props.handleClick();
+	  }
+	  props.setCurrentHomePage(props.destination);
+	}}
+      >
+        <div>
+          {props.link_text}
+        </div>
+      </a>
     </div>
   )
 }
