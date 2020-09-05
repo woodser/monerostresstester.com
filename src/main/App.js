@@ -237,6 +237,15 @@ this.setState({walletSyncProgress: percentDone});
 
   }
   
+  confirmAbortWalletSynchronization(backDestination) {
+    let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
+    
+    if (doAbort){
+      await this.state.wallet.stopSyncing();
+      this.setState({currentHomePage: backDestination});
+    }
+  }
+  
   //Called when the user clicks "continue" after entering a valid new (for restore) or confirm (for create new) seed phrase.
   async synchronizeWallet(wallet) {
     this.walletUpdater = new walletListener(this);
@@ -279,6 +288,7 @@ this.setState({walletSyncProgress: percentDone});
               setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
               lastHomePage = {this.state.lastHomePage}
               availableBalance = {this.state.availableBalance}
+              confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}

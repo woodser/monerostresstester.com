@@ -37,6 +37,7 @@ class Home extends React.Component {
     let balance = this.props.balance;
     let availableBalance = this.props.availableBalance;
     let lastHomePage = this.props.lastHomePage;
+    let confirmAbortWalletSynchronization = this.props.confirmAbortWalletSynchronization;
     
     let renderItem = null;
     
@@ -97,7 +98,7 @@ class Home extends React.Component {
   	<Sync_Wallet_Page
             progress={walletSyncProgress}
             backDestination={lastHomePage}
-            setCurrentHomePage={setCurrentHomePage}
+            setCurrentHomePage={confirmAbortWalletSynchronization}
           />;
         break;
       case "Wallet":
