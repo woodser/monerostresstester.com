@@ -3,27 +3,35 @@ import ReactDOM from 'react-dom';
 import {Link} from 'react-router-dom';
 import './buttons.css';
 
-/*
- * home page box buttons
- */
-
 // Component for the common "button link" used in the bottom of the page_box home pages
 export function UI_Button_Link(props) {
-  return(
-    <a
-      className={"ui_link_container ui_button_link " + props.className} 
-      onClick = {function () {
-	if(props.handleClick){
-	  props.handleClick();
-	}
-	props.setCurrentHomePage(props.destination);
-      }}
-    >
-      <div className="button_text">
-        {props.link_text}
+  if(props.isActive || props.isActive == null) {
+    return(
+      <a
+        className={"ui_link_container ui_button_link " + props.className} 
+        onClick = {function () {
+  	if(props.handleClick){
+  	  props.handleClick();
+  	}
+  	if(props.setCurrentHomePage){
+  	  props.setCurrentHomePage(props.destination);
+  	}
+        }}
+      >
+        <div className="button_text">
+          {props.link_text}
+        </div>
+      </a>
+    );
+  } else {
+    return(
+      <div className={"ui_link_container ui_button_link_inactive " + props.className}>
+        <div className="button_text">
+          {props.link_text}
+        </div>
       </div>
-    </a>
-  );
+    );
+  }
 }
 
 export function UI_Text_Link(props) {

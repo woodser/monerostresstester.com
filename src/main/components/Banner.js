@@ -12,8 +12,6 @@ function convertLinkNameToUrl(name){
 }
 
 export default function Banner(props) {
-  console.log("Rendering banner");
-  console.log("props.walletIsSynced: " + props.walletIsSynced);
   let links = [
     "Home",
     "Backup",
@@ -33,13 +31,13 @@ export default function Banner(props) {
   }
   return(
     <div id="banner-container">
-      <NavLink to="/" className="header_link vertical_center">
+      <NavLink to="/" className="header_link">
         MoneroStressTester.com
       </NavLink>
-      <div id="logo_container" className="vertical_center">
-        <img id="monero_muscle_logo" className="vertical_center" src={logo} alt="Monero Muscle Logo"></img>
+      <div id="logo_container">
+        <img src={logo} alt="Monero Muscle Logo"></img>
       </div>
-      <div id="nav" className="vertical_center">
+      <div id="nav">
         {links}
       </div>
     </div>

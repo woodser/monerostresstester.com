@@ -3,6 +3,8 @@ import {Page_Box} from "../Widgets.js";
 import "./wallet.css";
 import {UI_Button_Link} from "../Buttons.js";
 
+const XMR_AU_RATIO = 0.000000000001;
+
 export default function Wallet(props){
   /*
    * PROPS:
@@ -10,19 +12,55 @@ export default function Wallet(props){
    *   available_balance
    *   transactions
    *   fees
+   *   isGeneratingTxs
+   *   walletIsFunded
+   *   startGeneratingTxs
+   *   stopGeneratingTxs
    */
+  
+  let buttonHandleContinue = null;
+  let buttonText = null;
+  let buttonIsActive = false;
+  
+  if(props.walletIsFunded){
+    buttonIsActive = true;
+    if(props.isGeneratingTxs){
+      buttonText = "Stop generating transactions";
+      buttonHandleContinue = props.stopGeneratingTxs;
+    } else {
+      buttonText = "Start generating transactions";
+      buttonHandleContinue = props.startGeneratingTxs;
+    }
+    
+  } else {
+    buttonText="Fund wallet before generating transactions"
+  }
+  
   return(
     <Page_Box className="wallet_page_box">
       <div className="wallet_page_sections_container">
-        <Wallet_Page_Section label = "Balance" value={props.balance + " XMR"} />
-        <Wallet_Page_Section label = "Available balance" value={props.availableBalance + " XMR"} />
-        <Wallet_Page_Section label = "Transactions generated" value="0" />
-        <Wallet_Page_Section label = "Total fees" value="0 XMR" />
-        <UI_Button_Link link_text="Start generating transactions" destination="/" className="ui_wallet_button_link ui_inactive_wallet_button" />
+        <Wallet_Page_Section label = "Balance" value={props.balance * XMR_AU_RATIO + " XMR"} />
+        <Wallet_Page_Section label = "Available balance" value={props.availableBalance * XMR_AU_RATIO + " XMR"} />
+        <Wallet_Page_Section label = "Transactions generated" value={props.transactionsGenerated} />
+        <Wallet_Page_Section label = "Total fees" value={props.totalFee * XMR_AU_RATIO + " XMR"} />
+        <UI_Button_Link 
+          link_text={buttonText}
+          handleClick = {buttonHandleContinue}
+          destination="/" 
+          className={"ui_wallet_button_link"} 
+          isActive={buttonIsActive}
+        />
       </div>
     </Page_Box>
   );
 }
+
+/*
+ *           isGeneratingTxs = {this.state.isGeneratingTxs}
+          walletIsFunded = {this.state.walletIsFunded}
+          startGeneratingTxs = {this.startGeneratingTxs}
+          stopGeneratingTxs = {this.stopGeneratingTxs}
+ */
 
 function Wallet_Page_Section(props) {
   return(
