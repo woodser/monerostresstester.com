@@ -10,18 +10,53 @@ import Backup from "./components/pages/Backup.js";
 import Withdraw from "./components/pages/Withdraw.js";
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 
+import loadingAnimation from "./img/loadingAnimation.gif";
+
+const DEBUG = true;
+
 const monerojs = require("monero-javascript");
 const LibraryUtils = monerojs.LibraryUtils;
 const MoneroWalletListener = monerojs.MoneroWalletListener;
 const MoneroWallet = monerojs.MoneroWallet;
 
 const XMR_AU_RATIO = 0.000000000001;
+/*
+ * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
+ * in order to create a new, random keys-only wallet
+ * It is also used as the base to create configuration objects for the WASM wallets that will follow
+ * by copying then adding an empty path ("") property and, in the case of a generated wallet,
+ * the mnemonic from the generated keys-only wallet.
+ */
+const WALLET_INFO = {
+    password: "supersecretpassword123",
+    networkType: "stagenet",
+    serverUri: "http://localhost:38081",
+    serverUsername: "superuser",
+    serverPassword: "abctesting123"
+}
+
+function copyObject(object){
+  var copy = {};
+  for(var attribute in object){
+    copy[attribute] = object[attribute];
+  }
+  return copy;
+}
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     
     // Class vars
+    
+    /*
+     * keysModuleLoaded and wasmModuleLoaded keep track of whether the monero-javascript modules
+     * that handle keys-only and Wasm wallet functionality have finished loading.
+     * 
+     * This is necessary because the user must be prevented from proceeding beyond certain
+     * points in the stress tester setup process until these operations have completed.
+     * For example, the wallet can't synchronize until 
+     */
     this.keysModuleLoaded = false;
     this.wasmModuleLoaded = false;
     
@@ -29,16 +64,38 @@ class App extends React.Component {
     let that = this;
     
     //Start loading the Keys-only and Wasm wallet modules
+    
+    //First, load the keys-only wallet module
+    if (DEBUG) {
+      var date = new Date();
+      var startTime = performance.now();
+      console.log("initial start time: " + startTime);
+    }
+      
     LibraryUtils.loadKeysModule().then(
       function() {
-	that.keysModuleLoaded = true;
+	if(DEBUG){
+	  console.log("Keys module loaded at: " + performance.now());
+	  console.log("Keys module took " + (performance.now() - startTime) + " ms to load.");
+	}
+	that.setState({
+	  keysModuleLoaded: true
+	});
 	console.log("keys module loaded");
-	// Load the core module
+	if(DEBUG) {
+	  startTime = performance.now(); 
+	}
+	// Load the core (Wasm wallet) module
 	LibraryUtils.loadCoreModule().then(
 	  function() {
-	    that.coreModuleLoaded = true;
+	    if(DEBUG){
+	      console.log("Core module loaded at " + performance.now());
+	      console.log("Core module took " + (performance.now() - startTime) + " ms to load."); 
+	    }
+	    that.setState({
+	      coreModuleLoaded: true
+	    })
 	    console.log("core module loaded");
-	    // Load the core module
 	  }
 	).catch(
 	  function(error) {
@@ -61,6 +118,7 @@ class App extends React.Component {
        */
       enteredPhrase: "",
       wallet: null,
+      keysOnlyWallet: null,
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
@@ -69,7 +127,9 @@ class App extends React.Component {
       balance: 0,
       availableBalance: 0,
       currentHomePage: "Welcome",
-      lastHomePage: ""
+      lastHomePage: "",
+      keysModuleLoaded: false,
+      wasmModuleLoaded: false
     };
   }
   
@@ -155,16 +215,10 @@ class App extends React.Component {
     
     let walletWasm = null;
     try {
-      walletWasm = await monerojs.createWalletWasm({
-        password: "supersecretpassword123",
-        networkType: "stagenet",
-        path: "",
-        serverUri: "http://localhost:38081",
-        serverUsername: "superuser",
-        serverPassword: "abctesting123",
-        mnemonic: this.state.enteredPhrase,
-        restoreHeight: height
-      });
+      let wasmWalletInfo = WALLET_INFO;
+      wasmWalletInfo.path = "";
+      wasmWalletInfo.mnemonic = this.state.enteredPhrase;
+      walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
     } catch(e) {
       alert("Invalid mnemonic!");
       alert("Error: " + e);
@@ -175,7 +229,7 @@ class App extends React.Component {
       lastHomePage: "Import_Wallet"
     });
     this.setCurrentHomePage("Sync_Wallet_Page");
-    this.setLastHomePage
+    this.setLastHomePage;
     await this.synchronizeWallet(walletWasm);
     this.setState ({
       wallet: walletWasm
@@ -186,31 +240,51 @@ setCurrentSyncProgress(percentDone){
 this.setState({walletSyncProgress: percentDone});
 }
   
-  setEnteredPhrase(mnemonic){
-    this.setState({
-      enteredPhrase: mnemonic
-    });
-  }
+setEnteredPhrase(mnemonic){
+  this.setState({
+    enteredPhrase: mnemonic
+  });
+}
 
-  async generateWallet(){
-    let walletWasm = await monerojs.createWalletWasm({
-      password: "supersecretpassword123",
-      networkType: "stagenet",
-      path: "",
-      serverUri: "http://localhost:38081",
-      serverUsername: "superuser",
-      serverPassword: "abctesting123",
-    });
-    let newPhrase = await walletWasm.getMnemonic();
-    this.setState ({
-      wallet: walletWasm,
-      walletPhrase: newPhrase
-    });
+async generateWallet(){
+  
+  console.log("Generating new wallet");
+  console.log("Wallet info: " + JSON.stringify(WALLET_INFO));
+  
+  let walletKeys = null
+  try {
+    walletKeys = await monerojs.createWalletKeys(WALLET_INFO);
+  } catch(error) {
+    console.log("failed to create keys-only wallet with error: " + error);
+    return;
   }
+  let newPhrase = await walletKeys.getMnemonic();
+  
+  console.log("New phrase: " + newPhrase);
+  
+  this.setState({
+    keysOnlyWallet: walletKeys,
+    walletPhrase: newPhrase
+  });
+  let wasmWalletInfo = copyObject(WALLET_INFO);
+  wasmWalletInfo.mnemonic = newPhrase;
+  wasmWalletInfo.path = "";
+  let walletWasm = null;
+  try{
+    walletWasm = await monerojs.createWalletWasm(WALLET_INFO);
+  } catch(error) {
+    console.log("Wasm wallet creation failed with error: " + error);
+    return;
+  }
+  this.setState({
+    wallet: walletWasm
+  });
+}
   
   deleteWallet() {
     this.setState ({
       wallet: null,
+      keysOnlyWallet: null,
       walletPhrase: "",
       enteredPhrase: "",
       phraseIsConfirmed: false,
@@ -221,7 +295,7 @@ this.setState({walletSyncProgress: percentDone});
   }
   
   async confirmWallet() {
-    let walletPhrase = await this.state.wallet.getMnemonic();
+    let walletPhrase = await this.state.walletPhrase;
     if (this.state.enteredPhrase === walletPhrase) {
       this.setState ({
         phraseIsConfirmed: true
@@ -237,7 +311,7 @@ this.setState({walletSyncProgress: percentDone});
 
   }
   
-  confirmAbortWalletSynchronization(backDestination) {
+  async confirmAbortWalletSynchronization(backDestination) {
     let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
     
     if (doAbort){
@@ -289,6 +363,9 @@ this.setState({walletSyncProgress: percentDone});
               lastHomePage = {this.state.lastHomePage}
               availableBalance = {this.state.availableBalance}
               confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
+              coreModuleLoaded = {this.state.coreModuleLoaded}
+              keysModuleLoaded = {this.state.keysModuleLoaded}
+              loadingAnimation = {loadingAnimation}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}

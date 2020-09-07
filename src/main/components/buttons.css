@@ -47,6 +47,13 @@
   color: white;
 }
 
+.ui_button_link_inactive {
+  background-color: #666666;
+  font-size: 34px;
+  border: var(--button-border-width) solid black;
+  color: white;
+}
+
 .ui_wallet_button_link {
 	width: var(--wallet-button-width);
 }

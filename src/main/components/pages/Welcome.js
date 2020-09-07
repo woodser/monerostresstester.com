@@ -15,11 +15,13 @@ export default function Welcome(props) {
       	  link_text="Create New Wallet" 
       	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
-      	  setCurrentHomePage={props.setCurrentHomePage}/>
+      	  setCurrentHomePage={props.setCurrentHomePage}
+      	/>
       	<UI_Text_Link 
       	  link_text="Or Import Existing Wallet"
       	  destination={props.backDestination}
-      	  setCurrentHomePage={props.setCurrentHomePage}/>
+      	  setCurrentHomePage={props.setCurrentHomePage}
+      	/>
       </div>
     </Page_Box>
   );

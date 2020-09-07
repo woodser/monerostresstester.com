@@ -10,7 +10,7 @@ import Enter_Phrase_Page from './Enter_Phrase_Page.js';
 import Wallet from "./Wallet.js";
 
 import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content, Loading_Animation} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
@@ -41,17 +41,15 @@ class Home extends React.Component {
     
     let renderItem = null;
     
-    console.log("According to Home.js's render function, currentHomePage = " + currentHomePage);
-    
     switch(currentHomePage){
       case "Welcome":
         renderItem =
   	<Welcome
-  	  handleContinue={generateWallet}
-            setCurrentHomePage={setCurrentHomePage}
-            continueDestination="New_Wallet"
-            backDestination="Import_Wallet"
-          />;
+  	  handleContinue={this.props.generateWallet}
+          setCurrentHomePage={this.props.setCurrentHomePage}
+          continueDestination="New_Wallet"
+          backDestination="Import_Wallet"
+        />;
         break;
       case "New_Wallet":
         renderItem =
@@ -62,6 +60,8 @@ class Home extends React.Component {
             setCurrentHomePage={setCurrentHomePage}
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
+            keysModuleLoaded = {this.props.keysModuleLoaded}
+            loadingAnimation = {this.props.loadingAnimation}
           />;
         break;
       case "Confirm_Wallet":

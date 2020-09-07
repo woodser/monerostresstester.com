@@ -23,6 +23,14 @@ export function Page_Box(props) {
   );
 }
 
+export function Loading_Animation(props) {
+  return ( 
+    <div className={"loading_animation_container"}>
+      <img className="loading_animation" src={props.loadingAnimation} alt="Spinny wheel animation"></img>
+    </div>
+  );
+}
+
 export function Page_Text_Box(props) {
   return(
     <div className="text_box save_phrase_box main_content">
