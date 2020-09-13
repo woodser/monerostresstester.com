@@ -336,16 +336,26 @@ async generateWallet(){
   });
 }
   
-  deleteWallet() {
+  logout() {
     this.setState ({
+      enteredPhrase: "",
       wallet: null,
       keysOnlyWallet: null,
       walletPhrase: "",
-      enteredPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
+      restoreHeight: 0,
+      walletIsSynced: false,
       balance: 0,
-      availableBalance: 0
+      availableBalance: 0,
+      currentHomePage: "Welcome",
+      lastHomePage: "",
+      keysModuleLoaded: false,
+      wasmModuleLoaded: false,
+      isGeneratingTxs: false,
+      walletIsFunded: false,
+      transactionsGenerated: 0,
+      totalFee: 0
     })
   }
   
@@ -410,7 +420,7 @@ async generateWallet(){
               confirmWallet={this.confirmWallet.bind(this)}
               restoreWallet={this.restoreWallet.bind(this)}
               setEnteredPhrase={this.setEnteredPhrase.bind(this)}
-              deleteWallet={this.deleteWallet.bind(this)}
+              logout={this.logout.bind(this)}
               walletSyncProgress = {this.state.walletSyncProgress}
               setRestoreHeight = {this.setRestoreHeight.bind(this)}
               walletPhrase = {this.state.walletPhrase}

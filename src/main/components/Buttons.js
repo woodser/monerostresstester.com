@@ -41,9 +41,12 @@ export function UI_Text_Link(props) {
         className="ui_text_link" 
 	onClick={function () {
 	  if(props.handleClick) {
+	    console.log("Handling click");
 	    props.handleClick();
 	  }
-	  props.setCurrentHomePage(props.destination);
+	  if(props.setCurrentHomePage){
+	    props.setCurrentHomePage(props.destination);
+	  }
 	}}
       >
         <div>

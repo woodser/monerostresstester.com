@@ -41,8 +41,7 @@ class Home extends React.Component {
   	<New_Wallet 
             text={this.props.walletPhrase}
             handleRegenerate={this.props.generateWallet}
-            handleBack={this.props.deleteWallet}
-            setCurrentHomePage={this.props.setCurrentHomePage}
+            handleBack={this.props.logout}
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
             keysModuleLoaded = {this.props.keysModuleLoaded}
@@ -65,7 +64,7 @@ class Home extends React.Component {
           header="Import existing wallet" 
           handleTextChange={this.props.setEnteredPhrase} 
           handleContinue={this.props.restoreWallet}
-          setCurrentHomePage={this.props.setCurrentHomePage}
+          handleBack={this.props.logout}
           continueDestination="Sync_Wallet_Page"
           backDestination="Welcome"
         >
