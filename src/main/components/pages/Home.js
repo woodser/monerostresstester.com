@@ -56,6 +56,7 @@ class Home extends React.Component {
             handleTextChange={this.props.setEnteredPhrase} 
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
+            setCurrentHomePage={this.props.setCurrentHomePage}
           />;
         break;
       case "Import_Wallet": 
