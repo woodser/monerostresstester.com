@@ -75,6 +75,22 @@
   height: 180px;
 }
 
+.loading_animation_container {
+  display: grid;
+  height: 180px;
+  width: 100%;
+  grid-template-areas:
+    ".     .     ."
+    ". animation ." 
+    ".     .     .";
+  grid-template-rows: 1fr auto 1fr;
+}
+
+.loading_animation {
+  grid-area: animation;
+  margin: 0 auto;
+}
+
 .default_value {
   color: gray;
 }
@@ -89,7 +105,7 @@
 
 .enter_restore_height_box {
   background-color: #dddddd;
-  height: 40px;
+  height: 42px;
 }
 
 textarea {

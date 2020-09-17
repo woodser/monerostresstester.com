@@ -47,15 +47,19 @@
   color: white;
 }
 
-.ui_wallet_button_link {
-	width: var(--wallet-button-width);
+.ui_button_link_inactive {
+  background-color: #666666;
+  font-size: 34px;
+  border: var(--button-border-width) solid black;
+  color: white;
 }
 
-.ui_active_wallet_button {
-	background-color: var(--wallet-button-active-color);
+a.ui_button_link_inactive:hover {
+	cursor: initial;
 }
-.ui_inactive_wallet_button {
-	background-color: var(--wallet-button-inactive-color);
+
+.ui_wallet_button_link {
+	width: var(--wallet-button-width);
 }
 
 .ui_text_link {

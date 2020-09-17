@@ -9,7 +9,7 @@ export function Progress_Bar(props) {
   return(
     <div className="progress_bar_container">
       <div className="progress_bar" style={progressStyle}></div>
-      <div className="progress_percentage">{`${props.progress}%`}</div>
+      <div className="progress_percentage">{`${Math.trunc(props.progress)}%`}</div>
     </div>
   );
 }
@@ -19,6 +19,14 @@ export function Page_Box(props) {
   return (
     <div className={"page_box " + props.className}>
       {props.children}
+    </div>
+  );
+}
+
+export function Loading_Animation(props) {
+  return ( 
+    <div className={"loading_animation_container"}>
+      <img className="loading_animation" src={props.loadingAnimation} alt="Spinny wheel animation"></img>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import Enter_Phrase_Page from './Enter_Phrase_Page.js';
 import Wallet from "./Wallet.js";
 
 import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content, Loading_Animation} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
@@ -24,63 +24,48 @@ class Home extends React.Component {
   }
   
   render() {
-    let generateWallet = this.props.generateWallet;
-    let deleteWallet = this.props.deleteWallet;
-    let walletPhrase = this.props.walletPhrase;
-    let confirmWallet = this.props.confirmWallet;
-    let walletSyncProgress = this.props.walletSyncProgress;
-    let setEnteredPhrase = this.props.setEnteredPhrase;
-    let restoreWallet = this.props.restoreWallet;
-    let setRestoreHeight = this.props.setRestoreHeight;
-    let currentHomePage = this.props.currentHomePage;
-    let setCurrentHomePage = this.props.setCurrentHomePage;
-    let balance = this.props.balance;
-    let availableBalance = this.props.availableBalance;
-    let lastHomePage = this.props.lastHomePage;
-    
     let renderItem = null;
     
-    console.log("According to Home.js's render function, currentHomePage = " + currentHomePage);
-    
-    switch(currentHomePage){
+    switch(this.props.currentHomePage){
       case "Welcome":
         renderItem =
   	<Welcome
-  	  handleContinue={generateWallet}
-            setCurrentHomePage={setCurrentHomePage}
-            continueDestination="New_Wallet"
-            backDestination="Import_Wallet"
-          />;
+  	  handleContinue={this.props.generateWallet}
+          setCurrentHomePage={this.props.setCurrentHomePage}
+          continueDestination="New_Wallet"
+          backDestination="Import_Wallet"
+        />;
         break;
       case "New_Wallet":
         renderItem =
   	<New_Wallet 
-            text={walletPhrase}
-            handleRegenerate={generateWallet}
-            handleBack={deleteWallet}
-            setCurrentHomePage={setCurrentHomePage}
+            text={this.props.walletPhrase}
+            handleRegenerate={this.props.generateWallet}
+            handleBack={this.props.resetState}
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
+            keysModuleLoaded = {this.props.keysModuleLoaded}
+            loadingAnimation = {this.props.loadingAnimation}
+            setCurrentHomePage = {this.props.setCurrentHomePage}
           />;
         break;
       case "Confirm_Wallet":
         renderItem = 
   	<Enter_Phrase_Page
             header="Confirm your backup phrase" 
-            handleTextChange={setEnteredPhrase} 
-            handleContinue={confirmWallet}
-            setCurrentHomePage={setCurrentHomePage}
-            continueDestination="Sync_Wallet_Page"
+            handleTextChange={this.props.setEnteredPhrase} 
+            handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
+            setCurrentHomePage={this.props.setCurrentHomePage}
           />;
         break;
       case "Import_Wallet": 
         renderItem = 
   	<Enter_Phrase_Page
           header="Import existing wallet" 
-          handleTextChange={setEnteredPhrase} 
-          handleContinue={restoreWallet}
-          setCurrentHomePage={setCurrentHomePage}
+          handleTextChange={this.props.setEnteredPhrase} 
+          handleContinue={this.props.restoreWallet}
+          handleBack={this.props.resetState}
           continueDestination="Sync_Wallet_Page"
           backDestination="Welcome"
         >
@@ -88,25 +73,33 @@ class Home extends React.Component {
             isDefault={true} 
             className="enter_restore_height_box"
               value="Enter restore height or date (YYYY/MM/DD)" 
-              handleTextChange={setRestoreHeight}
+              handleTextChange={this.props.setRestoreHeight}
           />
         </Enter_Phrase_Page>;
         break;
       case "Sync_Wallet_Page":
         renderItem =
   	<Sync_Wallet_Page
-            progress={walletSyncProgress}
-            backDestination={lastHomePage}
-            setCurrentHomePage={setCurrentHomePage}
+            progress={this.props.walletSyncProgress}
+            backDestination={this.props.lastHomePage}
+            setCurrentHomePage={this.props.confirmAbortWalletSynchronization}
+            isCancellingSync={this.props.isCancellingSync}
+            loadingAnimation = {this.props.loadingAnimation}
           />;
         break;
       case "Wallet":
         renderItem =
   	<Wallet
-  	  balance={balance}
-            availableBalance={availableBalance}
-          />;
-         break;
+  	  balance={this.props.balance}
+          availableBalance={this.props.availableBalance}
+          isGeneratingTxs = {this.props.isGeneratingTxs}
+          walletIsFunded = {this.props.walletIsFunded}
+          startGeneratingTxs = {this.props.startGeneratingTxs}
+          stopGeneratingTxs = {this.props.stopGeneratingTxs}
+          transactionsGenerated = {this.props.transactionsGenerated}
+          totalFee = {this.props.totalFee}
+        />;
+        break;
     }
     return (
       <div id="home">   

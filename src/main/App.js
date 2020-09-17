@@ -9,36 +9,89 @@ import SignOut from "./components/pages/SignOut.js";
 import Backup from "./components/pages/Backup.js";
 import Withdraw from "./components/pages/Withdraw.js";
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
+import MoneroTxGenerator from './MoneroTxGenerator.js';
+
+import loadingAnimation from "./img/loadingAnimation.gif";
+
+const DEBUG = true;
 
 const monerojs = require("monero-javascript");
 const LibraryUtils = monerojs.LibraryUtils;
 const MoneroWalletListener = monerojs.MoneroWalletListener;
 const MoneroWallet = monerojs.MoneroWallet;
+const MoneroRpcConnection = monerojs.MoneroRpcConnection;
 
-const XMR_AU_RATIO = 0.000000000001;
+/* 
+ * A wallet must contain at least this many atomic units to be considered "funded" 
+ * and thus allowed to generate transactions
+ */
+const FUNDED_WALLET_MINIMUM_BALANCE = 0.0000001;
+
+/*
+ * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
+ * in order to create a new, random keys-only wallet
+ * It is also used as the base to create configuration objects for the WASM wallets that will follow
+ * by copying then adding an empty path ("") property and, in the case of a generated wallet,
+ * the mnemonic from the generated keys-only wallet.
+ */
+const WALLET_INFO = {
+    password: "supersecretpassword123",
+    networkType: "stagenet",
+    serverUri: "http://localhost:38081",
+    serverUsername: "superuser",
+    serverPassword: "abctesting123"
+}
+
+function copyObject(object){
+  var copy = {};
+  for(var attribute in object){
+    copy[attribute] = object[attribute];
+  }
+  return copy;
+}
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     
-    // Class vars
-    this.keysModuleLoaded = false;
-    this.wasmModuleLoaded = false;
+    // print current version of monero-javascript
+    console.log("monero-javascript version: " + monerojs.getVersion());
+    
+    this.txGenerator = null;
+    this.walletUpdater = null;
     
     // In order to pass "this" into the nested functions...
     let that = this;
     
     //Start loading the Keys-only and Wasm wallet modules
+    
+    //First, load the keys-only wallet module
+    if (DEBUG) {
+      var date = new Date();
+      var startTime = performance.now();
+      console.log("initial start time: " + startTime);
+    }
+      
     LibraryUtils.loadKeysModule().then(
       function() {
-	that.keysModuleLoaded = true;
+	if(DEBUG){
+	  console.log("Keys module loaded at: " + performance.now());
+	  console.log("Keys module took " + (performance.now() - startTime) + " ms to load.");
+	}
+	that.setState({
+	  keysModuleLoaded: true
+	});
 	console.log("keys module loaded");
-	// Load the core module
+	if(DEBUG) {
+	  startTime = performance.now(); 
+	}
+	// Load the core (Wasm wallet) module
 	LibraryUtils.loadCoreModule().then(
 	  function() {
-	    that.coreModuleLoaded = true;
+	    that.setState({
+	      coreModuleLoaded: true
+	    })
 	    console.log("core module loaded");
-	    // Load the core module
 	  }
 	).catch(
 	  function(error) {
@@ -53,7 +106,6 @@ class App extends React.Component {
       } 
     );
     
-    LibraryUtils.loadCoreModule();
     this.state = {
       /*
        * The mnemonic phrase (or portion thereof) that the user has typed into
@@ -61,6 +113,7 @@ class App extends React.Component {
        */
       enteredPhrase: "",
       wallet: null,
+      keysOnlyWallet: null,
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
@@ -69,14 +122,48 @@ class App extends React.Component {
       balance: 0,
       availableBalance: 0,
       currentHomePage: "Welcome",
-      lastHomePage: ""
+      lastHomePage: "",
+      keysModuleLoaded: false,
+      wasmModuleLoaded: false,
+      isGeneratingTxs: false,
+      walletIsFunded: false,
+      transactionsGenerated: 0,
+      totalFee: 0
+/*
+ *  $("#txTotal").html(txGenerator.getNumTxsGenerated());
+    $("#walletBalance").html(atomicUnitsToDecimalString(await wallet.getBalance()) + " XMR");
+    $("#walletAvailableBalance").html(atomicUnitsToDecimalString(await wallet.getUnlockedBalance()) + " XMR");
+    $("#feeTotal").html(atomicUnitsToDecimalString(txGenerator.getTotalFee()) + " XMR");
+ */
     };
+  }
+  
+  async transactionListener(tx){
+    console.log("Tx generated: " + tx);
+    let balance = await this.state.wallet.getBalance();
+    let availableBalance = await this.state.wallet.getUnlockedBalance();
+    this.setState({
+      transactionsGenerated: this.txGenerator.getNumTxsGenerated(),
+      balance: balance,
+      availableBalane: availableBalance,
+      totalFee: this.txGenerator.getTotalFee()
+    });
+  }
+  
+  createTxGenerator(wallet){
+    let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
+    let daemon = monerojs.connectToDaemonRpc({
+      server: daemonConnection,
+      proxyToWorker: true
+    });
+    this.txGenerator = new MoneroTxGenerator(daemon, wallet);
+    this.txGenerator.addTransactionListener(this.transactionListener.bind(this));
   }
   
   setBalances(balance, availableBalance){
     this.setState({
-      balance: balance * XMR_AU_RATIO,
-      availableBalance: availableBalance * XMR_AU_RATIO
+      balance: balance,
+      availableBalance: availableBalance
     });
   }
   
@@ -155,102 +242,186 @@ class App extends React.Component {
     
     let walletWasm = null;
     try {
-      walletWasm = await monerojs.createWalletWasm({
-        password: "supersecretpassword123",
-        networkType: "stagenet",
-        path: "",
-        serverUri: "http://localhost:38081",
-        serverUsername: "superuser",
-        serverPassword: "abctesting123",
-        mnemonic: this.state.enteredPhrase,
-        restoreHeight: height
-      });
+      let wasmWalletInfo = WALLET_INFO;
+      wasmWalletInfo.path = "";
+      wasmWalletInfo.mnemonic = this.state.enteredPhrase;
+      wasmWalletInfo.restoreHeight = height;
+      walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
     } catch(e) {
-      alert("Invalid mnemonic!");
       alert("Error: " + e);
       return;
     }
+    
+    // create the transaction generator
+    this.createTxGenerator(walletWasm);
+    
     this.setState({
       currentHomePage: "Sync_Wallet_Page",
-      lastHomePage: "Import_Wallet"
-    });
-    this.setCurrentHomePage("Sync_Wallet_Page");
-    this.setLastHomePage
-    await this.synchronizeWallet(walletWasm);
-    this.setState ({
+      lastHomePage: "Import_Wallet",
       wallet: walletWasm
     });
+    
+    // Create a wallet listener to keep app.js updated on the wallet's balance etc.
+    this.walletUpdater = new walletListener(this);
+    let that=this;
+    walletWasm.sync(this.walletUpdater).then(async () => {
+      if(!that.userCancelledWalletSync){
+        console.log("supposedly, the wallet finished syncing");
+        // This code should only run if wallet.sync finished because hte wallet finished syncing
+        // And not because the user cancelled the sync
+        that.walletUpdater.setWalletIsSynchronized(true);
+        let balance = await walletWasm.getBalance();
+        let availableBalance = await walletWasm.getUnlockedBalance();
+        that.setState({
+          walletIsSynced: true,
+          balance: balance,
+          availableBalance: availableBalance,
+          currentHomePage: "Wallet"
+        });
+        let walletIsFunded = availableBalance >= FUNDED_WALLET_MINIMUM_BALANCE;
+        console.log("Setting walletIsFunded to " + walletIsFunded);
+        that.setState ({
+          walletIsFunded: walletIsFunded
+        });
+      } else {
+        console.log("It appears the user cancelled wallet synchronization");
+        // Reset state variables
+        that.logout(true);
+        // Reset the wallet sync cancellation indicator variable so that any completed
+        // syncs in the future are not misinterpretted as cancelled syncs by default
+        that.userCancelledWalletSync = false;
+      }
+    });
+    
+
   }
+  
 
 setCurrentSyncProgress(percentDone){
-this.setState({walletSyncProgress: percentDone});
+  this.setState({walletSyncProgress: percentDone});
 }
   
-  setEnteredPhrase(mnemonic){
-    this.setState({
-      enteredPhrase: mnemonic
-    });
-  }
+setEnteredPhrase(mnemonic){
+  this.setState({
+    enteredPhrase: mnemonic
+  });
+}
 
-  async generateWallet(){
-    let walletWasm = await monerojs.createWalletWasm({
-      password: "supersecretpassword123",
-      networkType: "stagenet",
-      path: "",
-      serverUri: "http://localhost:38081",
-      serverUsername: "superuser",
-      serverPassword: "abctesting123",
-    });
-    let newPhrase = await walletWasm.getMnemonic();
-    this.setState ({
-      wallet: walletWasm,
-      walletPhrase: newPhrase
-    });
+startGeneratingTxs(){
+  console.log("Starting to generate TXs");
+  this.setState({
+    isGeneratingTxs: true
+  })
+  this.txGenerator.start();
+}
+
+stopGeneratingTxs(){
+  
+  console.log("Stopping TX generation");
+  this.setState({
+    isGeneratingTxs: false
+  })
+
+  this.txGenerator.stop();
+}
+
+async generateWallet(){
+  
+  console.log("Generating new wallet");
+  console.log("Wallet info: " + JSON.stringify(WALLET_INFO));
+  
+  let walletKeys = null
+  try {
+    walletKeys = await monerojs.createWalletKeys(WALLET_INFO);
+  } catch(error) {
+    console.log("failed to create keys-only wallet with error: " + error);
+    return;
+  }
+  let newPhrase = await walletKeys.getMnemonic();
+  
+  console.log("New phrase: " + newPhrase);
+  
+  this.setState({
+    keysOnlyWallet: walletKeys,
+    walletPhrase: newPhrase
+  });
+  let wasmWalletInfo = copyObject(WALLET_INFO);
+  wasmWalletInfo.mnemonic = newPhrase;
+  wasmWalletInfo.path = "";
+  let walletWasm = null;
+  try{
+    walletWasm = await monerojs.createWalletWasm(WALLET_INFO);
+  } catch(error) {
+    console.log("Wasm wallet creation failed with error: " + error);
+    return;
   }
   
-  deleteWallet() {
+  this.setState({
+    wallet: walletWasm
+  });
+}
+  
+  logout(cancelledSync) {
     this.setState ({
-      wallet: null,
-      walletPhrase: "",
       enteredPhrase: "",
+      wallet: null,
+      keysOnlyWallet: null,
+      walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
+      restoreHeight: 0,
+      walletIsSynced: false,
       balance: 0,
-      availableBalance: 0
-    })
+      availableBalance: 0,
+      currentHomePage: cancelledSync ? "Import_Wallet" : "Welcome",
+      lastHomePage: cancelledSync ? "Welcome" : "",
+      keysModuleLoaded: false,
+      wasmModuleLoaded: false,
+      isGeneratingTxs: false,
+      walletIsFunded: false,
+      transactionsGenerated: 0,
+      totalFee: 0,
+      isCancellingSync: false
+    });
+    this.txGenerator = null;
+    this.walletUpdater = null;
   }
   
   async confirmWallet() {
-    let walletPhrase = await this.state.wallet.getMnemonic();
+    let walletPhrase = await this.state.walletPhrase;
     if (this.state.enteredPhrase === walletPhrase) {
+      
+      // create the transaction generator
+      this.createTxGenerator(this.state.wallet);
+      
       this.setState ({
-        phraseIsConfirmed: true
+        phraseIsConfirmed: true,
+        lastHomePage: "Confirm_Wallet",
+        walletIsSynced: true,
+        currentHomePage: "Wallet"
       });
-      this.setState({
-	currentHomePage: "Sync_Wallet_Page",
-	lastHomePage: "Confirm_Wallet"
-      });
-      await this.synchronizeWallet(this.state.wallet);
     } else {
       alert("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
     }
 
   }
   
-  //Called when the user clicks "continue" after entering a valid new (for restore) or confirm (for create new) seed phrase.
-  async synchronizeWallet(wallet) {
-    this.walletUpdater = new walletListener(this);
-    let result = await wallet.sync(this.walletUpdater);  // synchronize and print progress
-    this.walletUpdater.setWalletIsSynchronized(true);
-    let balance = await wallet.getBalance() * XMR_AU_RATIO;
-    let availableBalance = await wallet.getUnlockedBalance() * XMR_AU_RATIO;
-    this.setState({
-      walletIsSynced: true,
-      balance: balance,
-      availableBalance: availableBalance,
-      currentHomePage: "Wallet"
-    });
+  async confirmAbortWalletSynchronization() {
+    let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
     
+    if (doAbort){
+      this.setState({
+	isCancellingSync: true
+      });
+      /*
+       * First, set a class variable so that the importWallet function 
+       * can know that the wallet sync function finished because it was cancelled
+       * and not because the wallet actually finished syncing
+       */
+      this.userCancelledWalletSync = true;      
+      await this.state.wallet.stopSyncing();
+      console.log("wallet.stopSyncing() finished");
+    }
   }
   
   setCurrentHomePage(pageName){
@@ -270,8 +441,8 @@ this.setState({walletSyncProgress: percentDone});
               confirmWallet={this.confirmWallet.bind(this)}
               restoreWallet={this.restoreWallet.bind(this)}
               setEnteredPhrase={this.setEnteredPhrase.bind(this)}
-              deleteWallet={this.deleteWallet.bind(this)}
-              walletSyncProgress = {Math.trunc(this.state.walletSyncProgress)}
+              logout={this.logout.bind(this)}
+              walletSyncProgress = {this.state.walletSyncProgress}
               setRestoreHeight = {this.setRestoreHeight.bind(this)}
               walletPhrase = {this.state.walletPhrase}
               currentHomePage = {this.state.currentHomePage}
@@ -279,6 +450,17 @@ this.setState({walletSyncProgress: percentDone});
               setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
               lastHomePage = {this.state.lastHomePage}
               availableBalance = {this.state.availableBalance}
+              confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
+              coreModuleLoaded = {this.state.coreModuleLoaded}
+              keysModuleLoaded = {this.state.keysModuleLoaded}
+              loadingAnimation = {loadingAnimation}
+              isGeneratingTxs = {this.state.isGeneratingTxs}
+              walletIsFunded = {this.state.walletIsFunded}
+              startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
+              stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
+              transactionsGenerated = {this.state.transactionsGenerated}
+              totalFee = {this.state.totalFee}
+              isCancellingSync = {this.state.isCancellingSync}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}
@@ -318,16 +500,26 @@ class walletListener extends MoneroWalletListener {
   }
               
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
-    //let percentString = Math.floor(parseFloat(percentDone) * 100).toString() + "%";
-    //$("#progressBar").width(percentString);
     this.callingComponent.setCurrentSyncProgress(percentDone*100); 
     if (percentDone >= this.lastIncrement + this.syncResolution) {
       this.lastIncrement += this.syncResolution;
     }
   }
+  
   onBalancesChanged(newBalance, newUnlockedBalance){
-    if (this.walletIsSynchronized)
+    console.log("Balances Changed! new Balance: " + newBalance + "; new unlocked balance: " + newUnlockedBalance);
+    if (this.walletIsSynchronized) {
       this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
+      if (newUnlockedBalance >= FUNDED_WALLET_MINIMUM_BALANCE && !callingComponent.state.walletIsFunded){
+	callingComponent.setState({
+	  walletIsFunded: true
+	});
+      } else if (newUnlockedBalance < FUNDED_WALLET_MINIMUM_BALANCE && callingComponent.state.walletIsFunded){
+	callingComponent.setState({
+	  walletIsFunded: false
+	});
+      }
+    }
   }
   
   setWalletIsSynchronized(value) {
