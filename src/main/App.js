@@ -88,10 +88,6 @@ class App extends React.Component {
 	// Load the core (Wasm wallet) module
 	LibraryUtils.loadCoreModule().then(
 	  function() {
-	    if(DEBUG){
-	      console.log("Core module loaded at " + performance.now());
-	      console.log("Core module took " + (performance.now() - startTime) + " ms to load."); 
-	    }
 	    that.setState({
 	      coreModuleLoaded: true
 	    })
@@ -384,7 +380,8 @@ async generateWallet(){
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
-      totalFee: 0
+      totalFee: 0,
+      isCancellingSync: false
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -413,15 +410,15 @@ async generateWallet(){
     let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
     
     if (doAbort){
+      this.setState({
+	isCancellingSync: true
+      });
       /*
        * First, set a class variable so that the importWallet function 
        * can know that the wallet sync function finished because it was cancelled
        * and not because the wallet actually finished syncing
        */
-      this.userCancelledWalletSync = true;
-      
-      console.log(this.state.wallet.stopSyncing);
-      
+      this.userCancelledWalletSync = true;      
       await this.state.wallet.stopSyncing();
       console.log("wallet.stopSyncing() finished");
     }
@@ -463,6 +460,7 @@ async generateWallet(){
               stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
               transactionsGenerated = {this.state.transactionsGenerated}
               totalFee = {this.state.totalFee}
+              isCancellingSync = {this.state.isCancellingSync}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}

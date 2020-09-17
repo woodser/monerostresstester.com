@@ -83,6 +83,8 @@ class Home extends React.Component {
             progress={this.props.walletSyncProgress}
             backDestination={this.props.lastHomePage}
             setCurrentHomePage={this.props.confirmAbortWalletSynchronization}
+            isCancellingSync={this.props.isCancellingSync}
+            loadingAnimation = {this.props.loadingAnimation}
           />;
         break;
       case "Wallet":
