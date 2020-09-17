@@ -41,11 +41,12 @@ class Home extends React.Component {
   	<New_Wallet 
             text={this.props.walletPhrase}
             handleRegenerate={this.props.generateWallet}
-            handleBack={this.props.logout}
+            handleBack={this.props.resetState}
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
             keysModuleLoaded = {this.props.keysModuleLoaded}
             loadingAnimation = {this.props.loadingAnimation}
+            setCurrentHomePage = {this.props.setCurrentHomePage}
           />;
         break;
       case "Confirm_Wallet":
@@ -64,7 +65,7 @@ class Home extends React.Component {
           header="Import existing wallet" 
           handleTextChange={this.props.setEnteredPhrase} 
           handleContinue={this.props.restoreWallet}
-          handleBack={this.props.logout}
+          handleBack={this.props.resetState}
           continueDestination="Sync_Wallet_Page"
           backDestination="Welcome"
         >

@@ -54,7 +54,11 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     
+    // print current version of monero-javascript
+    console.log("monero-javascript version: " + monerojs.getVersion());
+    
     this.txGenerator = null;
+    this.walletUpdater = null;
     
     // In order to pass "this" into the nested functions...
     let that = this;
@@ -106,7 +110,6 @@ class App extends React.Component {
       } 
     );
     
-    LibraryUtils.loadCoreModule();
     this.state = {
       /*
        * The mnemonic phrase (or portion thereof) that the user has typed into
@@ -258,19 +261,45 @@ class App extends React.Component {
     
     this.setState({
       currentHomePage: "Sync_Wallet_Page",
-      lastHomePage: "Import_Wallet"
+      lastHomePage: "Import_Wallet",
+      wallet: walletWasm
     });
-    this.setCurrentHomePage("Sync_Wallet_Page");
-    this.setLastHomePage;
-    await this.synchronizeWallet(walletWasm);
-    let balance = await walletWasm.getUnlockedBalance();
-    let walletIsFunded = balance >= FUNDED_WALLET_MINIMUM_BALANCE ? true : false;
-    console.log("Setting walletIsFunded to " + walletIsFunded);
-    this.setState ({
-      wallet: walletWasm,
-      walletIsFunded: walletIsFunded
+    
+    // Create a wallet listener to keep app.js updated on the wallet's balance etc.
+    this.walletUpdater = new walletListener(this);
+    let that=this;
+    walletWasm.sync(this.walletUpdater).then(async () => {
+      if(!that.userCancelledWalletSync){
+        console.log("supposedly, the wallet finished syncing");
+        // This code should only run if wallet.sync finished because hte wallet finished syncing
+        // And not because the user cancelled the sync
+        that.walletUpdater.setWalletIsSynchronized(true);
+        let balance = await walletWasm.getBalance();
+        let availableBalance = await walletWasm.getUnlockedBalance();
+        that.setState({
+          walletIsSynced: true,
+          balance: balance,
+          availableBalance: availableBalance,
+          currentHomePage: "Wallet"
+        });
+        let walletIsFunded = availableBalance >= FUNDED_WALLET_MINIMUM_BALANCE;
+        console.log("Setting walletIsFunded to " + walletIsFunded);
+        that.setState ({
+          walletIsFunded: walletIsFunded
+        });
+      } else {
+        console.log("It appears the user cancelled wallet synchronization");
+        // Reset state variables
+        that.logout(true);
+        // Reset the wallet sync cancellation indicator variable so that any completed
+        // syncs in the future are not misinterpretted as cancelled syncs by default
+        that.userCancelledWalletSync = false;
+      }
     });
+    
+
   }
+  
 
 setCurrentSyncProgress(percentDone){
   this.setState({walletSyncProgress: percentDone});
@@ -336,7 +365,7 @@ async generateWallet(){
   });
 }
   
-  logout() {
+  logout(cancelledSync) {
     this.setState ({
       enteredPhrase: "",
       wallet: null,
@@ -348,15 +377,17 @@ async generateWallet(){
       walletIsSynced: false,
       balance: 0,
       availableBalance: 0,
-      currentHomePage: "Welcome",
-      lastHomePage: "",
+      currentHomePage: cancelledSync ? "Import_Wallet" : "Welcome",
+      lastHomePage: cancelledSync ? "Welcome" : "",
       keysModuleLoaded: false,
       wasmModuleLoaded: false,
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFee: 0
-    })
+    });
+    this.txGenerator = null;
+    this.walletUpdater = null;
   }
   
   async confirmWallet() {
@@ -378,29 +409,22 @@ async generateWallet(){
 
   }
   
-  async confirmAbortWalletSynchronization(backDestination) {
+  async confirmAbortWalletSynchronization() {
     let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
     
     if (doAbort){
+      /*
+       * First, set a class variable so that the importWallet function 
+       * can know that the wallet sync function finished because it was cancelled
+       * and not because the wallet actually finished syncing
+       */
+      this.userCancelledWalletSync = true;
+      
+      console.log(this.state.wallet.stopSyncing);
+      
       await this.state.wallet.stopSyncing();
-      this.setState({currentHomePage: backDestination});
+      console.log("wallet.stopSyncing() finished");
     }
-  }
-  
-  //Called when the user clicks "continue" after entering a valid new (for restore) or confirm (for create new) seed phrase.
-  async synchronizeWallet(wallet) {
-    this.walletUpdater = new walletListener(this);
-    let result = await wallet.sync(this.walletUpdater);  // synchronize and print progress
-    this.walletUpdater.setWalletIsSynchronized(true);
-    let balance = await wallet.getBalance();
-    let availableBalance = await wallet.getUnlockedBalance();
-    this.setState({
-      walletIsSynced: true,
-      balance: balance,
-      availableBalance: availableBalance,
-      currentHomePage: "Wallet"
-    });
-    
   }
   
   setCurrentHomePage(pageName){
