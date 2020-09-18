@@ -68,6 +68,7 @@ class Home extends React.Component {
           handleBack={this.props.resetState}
           continueDestination="Sync_Wallet_Page"
           backDestination="Welcome"
+          setCurrentHomePage={this.props.setCurrentHomePage}
         >
           <Page_Text_Entry 
             isDefault={true} 
