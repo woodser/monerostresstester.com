@@ -302,6 +302,7 @@ setCurrentSyncProgress(percentDone){
 }
   
 setEnteredPhrase(mnemonic){
+  console.log("Setting entered phrase to " + mnemonic);
   this.setState({
     enteredPhrase: mnemonic
   });

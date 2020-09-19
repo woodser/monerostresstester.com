@@ -49,24 +49,32 @@ export class Page_Text_Entry extends React.Component {
     super(props);
     this.state={
       isDefault: true,
-      enteredPhrase: ""
+      enteredPhrase: this.props.value
     }
   }
 
   handleChange(e){
     this.setState({
-    isDefault: false,
-    enteredPhrase: e.target.value,
-  });
-  this.props.handleTextChange(e.target.value);
+      enteredPhrase: e.target.value
+    });
+    this.props.handleTextChange(e.target.value);
+  }
+  
+  handleFocus(){
+    this.setState({
+      isDefault: false,
+      enteredPhrase: ""
+    });
+    this.props.handleTextChange("");
   }
 
   render() {
     return (
       <textarea
         className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
-        defaultValue={this.props.value}
+        value={this.state.enteredPhrase}
         onChange={this.handleChange.bind(this)} 
+        onFocus={this.handleFocus.bind(this)}
       />
     );
   }
