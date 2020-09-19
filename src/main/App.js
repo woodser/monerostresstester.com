@@ -174,7 +174,7 @@ class App extends React.Component {
     console.log(str + " has " + str.length + " chars; should be 10!");
     if(str.length === 10){
       //Attempt to divide the string into its constituent parts
-      var dateParts = str.split("/");
+      var dateParts = str.split("-");
       // If the result yields three strings
       if (dateParts.length === 3){
 	// Attempt to convert each string to an integer
@@ -208,7 +208,7 @@ class App extends React.Component {
     let height=Number(this.state.restoreHeight);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
     if(!(height != NaN && height%10 === 0)) {
-      // Attempt to convert the string to a date in the format "YYYY/MM/DD"
+      // Attempt to convert the string to a date in the format "YYYY-MM-DD"
       try{
 	var dateParts = this.convertStringToRestoreDate(this.state.restoreHeight);
 	

@@ -72,8 +72,9 @@ class Home extends React.Component {
         >
           <Page_Text_Entry 
             isDefault={true} 
+            isSingleLineEntry={true}
             className="enter_restore_height_box"
-              value="Enter restore height or date (YYYY/MM/DD)" 
+              placeholder="Enter restore height or date (YYYY-MM-DD)" 
               handleTextChange={this.props.setRestoreHeight}
           />
         </Enter_Phrase_Page>;

@@ -33,9 +33,7 @@ export function Loading_Animation(props) {
 
 export function Page_Text_Box(props) {
   return(
-    <div className="text_box save_phrase_box main_content">
-      {props.box_text}
-    </div>
+    <textarea className="text_box save_phrase_box main_content" value={props.box_text} disabled />
   );
 }
 
@@ -55,27 +53,38 @@ export class Page_Text_Entry extends React.Component {
 
   handleChange(e){
     this.setState({
-      enteredPhrase: e.target.value
+      enteredPhrase: e.target.value,
+      isDefault: e.target.value === "" ? true : false
     });
     this.props.handleTextChange(e.target.value);
   }
-  
-  handleFocus(){
-    this.setState({
-      isDefault: false,
-      enteredPhrase: ""
-    });
-    this.props.handleTextChange("");
-  }
 
   render() {
+    
+    let element = null;
+    
+    if (this.props.isSingleLineEntry){
+      element = (
+        <input
+          type="text"
+          className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+          onChange={this.handleChange.bind(this)}
+          placeholder={this.props.placeholder}
+        />
+      );
+    } else {
+      element = (
+        <textarea
+          className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+          value={this.state.enteredPhrase}
+          onChange={this.handleChange.bind(this)} 
+          placeholder={this.props.placeholder}
+        />
+      );
+    }
+    
     return (
-      <textarea
-        className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
-        value={this.state.enteredPhrase}
-        onChange={this.handleChange.bind(this)} 
-        onFocus={this.handleFocus.bind(this)}
-      />
+      element
     );
   }
 }
