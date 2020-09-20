@@ -14,7 +14,7 @@ export default function Enter_Phrase_Page(props) {
       	<Page_Text_Entry 
       	  isDefault={true} 
       	  className="enter_phrase_box "
-	  value="Enter backup phrase..." 
+	  placeholder="Enter backup phrase..." 
 	  handleTextChange={props.handleTextChange}
 	/>
 	{props.children}

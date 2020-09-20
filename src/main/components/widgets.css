@@ -6,6 +6,8 @@
   --progress-bar-text-size: 28px;
   
   --text-box-border-width: 4px;
+  --text-entry-background-color: white;
+  --text-box-background-color: grey;
 }
 
 .page_box > div {
@@ -67,7 +69,7 @@
 
 .text_box {
   font-size: 31px;
-  background-color: #fffefe;
+  background-color: var(--text-box-background-color);
   font-family: var(--font);
   line-height: 42px;
   border: var(--text-box-border-width) solid black;
@@ -100,11 +102,11 @@
 }
 
 .enter_phrase_box {
-  background-color: #dddddd;
+  background-color: var(--text-entry-background-color);
 }
 
 .enter_restore_height_box {
-  background-color: #dddddd;
+  background-color: var(--text-entry-background-color);
   height: 42px;
 }
 
