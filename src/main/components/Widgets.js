@@ -61,24 +61,37 @@ export class Page_Text_Entry extends React.Component {
 
   render() {
     
+    console.log("text entry isactive: " + this.props.isactive);
+    
     let element = null;
     
     if (this.props.isSingleLineEntry){
       element = (
         <input
           type="text"
-          className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+          className={this.props.className + 
+            " text_box" + 
+            ((this.state.isDefault) ? " default_value" : " new_value") +
+            ((this.props.isactive ? " active_border" : " inactive_border"))
+          }
           onChange={this.handleChange.bind(this)}
           placeholder={this.props.placeholder}
+          disabled={!this.props.isactive}
         />
       );
     } else {
       element = (
         <textarea
-          className={this.props.className + " text_box" + ((this.state.isDefault === true) ? " default_value" : " new_value")}
+          className={
+            this.props.className + 
+            " text_box" + 
+            ((this.state.isDefault) ? " default_value" : " new_value") + 
+            ((this.props.isactive) ? " active_border" : " inactive_border")
+          }
           value={this.state.enteredPhrase}
           onChange={this.handleChange.bind(this)} 
           placeholder={this.props.placeholder}
+          disabled={!this.props.isactive}
         />
       );
     }

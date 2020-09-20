@@ -20,6 +20,7 @@ export default function Welcome(props) {
       	<UI_Text_Link 
       	  link_text="Or Import Existing Wallet"
       	  destination={props.backDestination}
+      	  handleClick={props.handleBack}
       	  setCurrentHomePage={props.setCurrentHomePage}
       	/>
       </div>

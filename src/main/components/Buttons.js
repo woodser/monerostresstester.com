@@ -13,7 +13,7 @@ export function UI_Button_Link(props) {
   	if(props.handleClick){
   	  props.handleClick();
   	}
-  	if(props.setCurrentHomePage){
+  	if(props.destination && props.setCurrentHomePage){
   	  props.setCurrentHomePage(props.destination);
   	}
         }}
