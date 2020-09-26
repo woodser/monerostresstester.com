@@ -1,9 +1,12 @@
 :root {
   --button-border-width: 4px;
   --wallet-button-width: calc(var(--item-width)*0.8);
-  --wallet-button-active-color: green;
-  --wallet-button-inactive-color: gray;
   --button-height: 95px;
+  
+  --wallet-button-active-color: #56c1ff;
+  --wallet-button-hover-color: #78e3ff;
+  --wallet-button-click-color: #34a0dd;
+  --wallet-button-inactive-color: gray;
 }
 
 .ui_link_container {
@@ -41,14 +44,22 @@
 }
 
 .ui_button_link {
-  background-color: #56c1ff;
+  background-color: var(--wallet-button-active-color);
   font-size: 34px;
   border: var(--button-border-width) solid black;
   color: white;
 }
 
+a.ui_button_link:hover {
+  background-color: var(--wallet-button-hover-color);
+}
+
+a.ui_button_link:active{
+  background-color: var(--wallet-button-click-color);
+}
+
 .ui_button_link_inactive {
-  background-color: #666666;
+  background-color: var(--wallet-button-inactive-color);
   font-size: 34px;
   border: var(--button-border-width) solid black;
   color: white;
