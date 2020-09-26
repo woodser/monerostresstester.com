@@ -31,6 +31,7 @@ class Home extends React.Component {
         renderItem =
   	<Welcome
   	  handleContinue={this.props.generateWallet}
+          handleBack={this.props.createDateConversionWallet}
           setCurrentHomePage={this.props.setCurrentHomePage}
           continueDestination="New_Wallet"
           backDestination="Import_Wallet"
@@ -57,6 +58,7 @@ class Home extends React.Component {
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
             setCurrentHomePage={this.props.setCurrentHomePage}
+            isactive={true}
           />;
         break;
       case "Import_Wallet": 
@@ -66,9 +68,9 @@ class Home extends React.Component {
           handleTextChange={this.props.setEnteredPhrase} 
           handleContinue={this.props.restoreWallet}
           handleBack={this.props.resetState}
-          continueDestination="Sync_Wallet_Page"
           backDestination="Welcome"
-          setCurrentHomePage={this.props.setCurrentHomePage}
+          isactive={this.props.pageButtonsAreActive}
+          setCurrentHomePage = {this.props.setCurrentHomePage}
         >
           <Page_Text_Entry 
             isDefault={true} 
@@ -76,6 +78,7 @@ class Home extends React.Component {
             className="enter_restore_height_box"
               placeholder="Enter restore height or date (YYYY-MM-DD)" 
               handleTextChange={this.props.setRestoreHeight}
+              isactive={this.props.pageButtonsAreActive}
           />
         </Enter_Phrase_Page>;
         break;

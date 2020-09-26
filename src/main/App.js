@@ -65,37 +65,24 @@ class App extends React.Component {
     
     //Start loading the Keys-only and Wasm wallet modules
     
-    //First, load the keys-only wallet module
-    if (DEBUG) {
-      var date = new Date();
-      var startTime = performance.now();
-      console.log("initial start time: " + startTime);
-    }
-      
+    //First, load the keys-only wallet module  
     LibraryUtils.loadKeysModule().then(
       function() {
-	if(DEBUG){
-	  console.log("Keys module loaded at: " + performance.now());
-	  console.log("Keys module took " + (performance.now() - startTime) + " ms to load.");
-	}
 	that.setState({
 	  keysModuleLoaded: true
 	});
-	console.log("keys module loaded");
-	if(DEBUG) {
-	  startTime = performance.now(); 
-	}
+
 	// Load the core (Wasm wallet) module
 	LibraryUtils.loadCoreModule().then(
 	  function() {
 	    that.setState({
 	      coreModuleLoaded: true
 	    })
-	    console.log("core module loaded");
 	  }
 	).catch(
 	  function(error) {
 	    alert("Failed to load core wallet module!");
+	    alert("Error: " + error);
 	  } 
 	);
       }
@@ -128,7 +115,8 @@ class App extends React.Component {
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
-      totalFee: 0
+      totalFee: 0,
+      pageButtonsAreActive: true
 /*
  *  $("#txTotal").html(txGenerator.getNumTxsGenerated());
     $("#walletBalance").html(atomicUnitsToDecimalString(await wallet.getBalance()) + " XMR");
@@ -136,6 +124,32 @@ class App extends React.Component {
     $("#feeTotal").html(atomicUnitsToDecimalString(txGenerator.getTotalFee()) + " XMR");
  */
     };
+  }
+  
+  /*
+  async componentDidMount(){
+    if(this.scheduledFunction){
+      await this.scheduledFunction();
+      this.scheduledFunction = null;
+    }
+  }
+  */
+  
+  createDateConversionWallet(){
+    console.log("Creating a date conversion wallet");
+    // Create a disposable,random wallet to prepare for the possibility that the user will attempt to restore from a date
+    // At present, getRestoreHeightFromDate() is (erroneously) an instance method; thus, a wallet instance is
+    // required to use it.
+    
+    this.dateRestoreWalletPromise = monerojs.createWalletWasm({
+      password: "supersecretpassword123",
+      networkType: "stagenet",
+      path: "",
+      serverUri: "http://localhost:38081",
+      serverUsername: "superuser",
+      serverPassword: "abctesting123",
+    });
+
   }
   
   async transactionListener(tx){
@@ -202,31 +216,26 @@ class App extends React.Component {
   
   async restoreWallet(){
     
+    console.log("Running restoreWallet");
+    
+    this.setState({
+      pageButtonsAreActive: false
+    });
+    
     let alertMessage = "";  
     
     //First, determine whether the user has typed at height, a date, or something else(invalid)
     let height=Number(this.state.restoreHeight);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
-    if(!(height != NaN && height%10 === 0)) {
+    if(!(height != NaN && height%1 === 0)) {
       // Attempt to convert the string to a date in the format "YYYY-MM-DD"
       try{
 	var dateParts = this.convertStringToRestoreDate(this.state.restoreHeight);
 	
-	// THIS IS TEMPORARY
-	// getHeightByDate is an instance function but should be a CLASS function
-	// Until this is fixed, the only way to run the function is to create a 
-	// temporary dummy wallet
-	let walletWasm = await monerojs.createWalletWasm({
-	  password: "supersecretpassword123",
-	  networkType: "stagenet",
-	  path: "",
-	  serverUri: "http://localhost:38081",
-	  serverUsername: "superuser",
-	  serverPassword: "abctesting123",
-	});
-	
 	// Attempt to convert date into a monero blockchain height:
-	height = await walletWasm.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
+	let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
+	height = await dateRestoreHeightWallet.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
+	console.log("Converted the date " + dateParts[0] + "-" + dateParts[1] + "-" + dateParts[2] + " to the height " + height)
       } catch(e) {
 	alertMessage = e;
       }
@@ -235,6 +244,7 @@ class App extends React.Component {
     // If no errors were thrown, "height" is a valid restore height.
     if(alertMessage !== "") {
       alert(alertMessage);
+      this.logout(true);
       return;
     } else {
       alert("Valid restore height!");
@@ -249,11 +259,20 @@ class App extends React.Component {
       walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
     } catch(e) {
       alert("Error: " + e);
+      this.logout(true);
       return;
     }
     
+    // Both the mnemonic and restore height were valid; thus, we can remove the disposable date-conversion
+    // Wallet from memory
+    this.dateRestoreWasmWallet = null;
+    
+    alert("Created Wasm wallet");
+    
     // create the transaction generator
     this.createTxGenerator(walletWasm);
+    
+    alert("Created Tx Gen");
     
     this.setState({
       currentHomePage: "Sync_Wallet_Page",
@@ -261,10 +280,13 @@ class App extends React.Component {
       wallet: walletWasm
     });
     
+    alert("Set the home page to Sync_Wallet_Page");
+    
     // Create a wallet listener to keep app.js updated on the wallet's balance etc.
     this.walletUpdater = new walletListener(this);
     let that=this;
     walletWasm.sync(this.walletUpdater).then(async () => {
+      
       if(!that.userCancelledWalletSync){
         console.log("supposedly, the wallet finished syncing");
         // This code should only run if wallet.sync finished because hte wallet finished syncing
@@ -272,17 +294,16 @@ class App extends React.Component {
         that.walletUpdater.setWalletIsSynchronized(true);
         let balance = await walletWasm.getBalance();
         let availableBalance = await walletWasm.getUnlockedBalance();
+        let walletIsFunded = availableBalance >= FUNDED_WALLET_MINIMUM_BALANCE;
         that.setState({
           walletIsSynced: true,
           balance: balance,
           availableBalance: availableBalance,
-          currentHomePage: "Wallet"
+          currentHomePage: "Wallet",
+          walletIsFunded: walletIsFunded,
+          pageButtonsAreActive: true
         });
-        let walletIsFunded = availableBalance >= FUNDED_WALLET_MINIMUM_BALANCE;
-        console.log("Setting walletIsFunded to " + walletIsFunded);
-        that.setState ({
-          walletIsFunded: walletIsFunded
-        });
+
       } else {
         console.log("It appears the user cancelled wallet synchronization");
         // Reset state variables
@@ -295,7 +316,6 @@ class App extends React.Component {
     
 
   }
-  
 
 setCurrentSyncProgress(percentDone){
   this.setState({walletSyncProgress: percentDone});
@@ -382,7 +402,8 @@ async generateWallet(){
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFee: 0,
-      isCancellingSync: false
+      isCancellingSync: false,
+      pageButtonsAreActive: true
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -426,6 +447,7 @@ async generateWallet(){
   }
   
   setCurrentHomePage(pageName){
+    console.log("Setting current home page to " + pageName);
     this.setState({
       currentHomePage: pageName
     });
@@ -462,6 +484,8 @@ async generateWallet(){
               transactionsGenerated = {this.state.transactionsGenerated}
               totalFee = {this.state.totalFee}
               isCancellingSync = {this.state.isCancellingSync}
+              pageButtonsAreActive = {this.state.pageButtonsAreActive}
+              createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}

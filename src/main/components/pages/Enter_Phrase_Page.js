@@ -6,7 +6,6 @@ import {UI_Button_Link, UI_Text_Link} from '../Buttons.js';
 import './home.css';
 
 export default function Enter_Phrase_Page(props) {
-  //Save your backup phrase
   return(
     <Page_Box className="home_subpage_box">
       <Header text={props.header}/>
@@ -16,6 +15,7 @@ export default function Enter_Phrase_Page(props) {
       	  className="enter_phrase_box "
 	  placeholder="Enter backup phrase..." 
 	  handleTextChange={props.handleTextChange}
+      	  isactive={props.isactive}
 	/>
 	{props.children}
       </Main_Content>
@@ -26,12 +26,14 @@ export default function Enter_Phrase_Page(props) {
       	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
       	  setCurrentHomePage={props.setCurrentHomePage}
+      	  isactive={props.isactive}
       	/>
       	<UI_Text_Link 
       	  link_text="Or Go Back" 
       	  destination={props.backDestination} 
       	  handleClick={props.handleBack} 
       	  setCurrentHomePage={props.setCurrentHomePage}
+      	  isActive={props.isactive}
       	/>
       </div>
     </Page_Box>
