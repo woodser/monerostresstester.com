@@ -33,7 +33,7 @@ export function Loading_Animation(props) {
 
 export function Page_Text_Box(props) {
   return(
-    <textarea className="text_box save_phrase_box main_content" value={props.box_text} disabled />
+    <textarea className="text_box save_phrase_box main_content active_border" value={props.box_text} disabled />
   );
 }
 
@@ -63,17 +63,17 @@ export class Page_Text_Entry extends React.Component {
     
     console.log("text entry isactive: " + this.props.isactive);
     
+    let className = this.props.className + 
+      " text_box" + 
+      ((this.state.isDefault) ? " default_value" : " new_value") +
+      ((this.props.isactive ? " active_border" : " inactive_border"));
     let element = null;
     
     if (this.props.isSingleLineEntry){
       element = (
         <input
           type="text"
-          className={this.props.className + 
-            " text_box" + 
-            ((this.state.isDefault) ? " default_value" : " new_value") +
-            ((this.props.isactive ? " active_border" : " inactive_border"))
-          }
+          className={className}
           onChange={this.handleChange.bind(this)}
           placeholder={this.props.placeholder}
           disabled={!this.props.isactive}
@@ -82,12 +82,7 @@ export class Page_Text_Entry extends React.Component {
     } else {
       element = (
         <textarea
-          className={
-            this.props.className + 
-            " text_box" + 
-            ((this.state.isDefault) ? " default_value" : " new_value") + 
-            ((this.props.isactive) ? " active_border" : " inactive_border")
-          }
+          className={className}
           value={this.state.enteredPhrase}
           onChange={this.handleChange.bind(this)} 
           placeholder={this.props.placeholder}
