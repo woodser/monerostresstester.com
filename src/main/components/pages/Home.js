@@ -69,7 +69,8 @@ class Home extends React.Component {
           handleContinue={this.props.restoreWallet}
           handleBack={this.props.resetState}
           backDestination="Welcome"
-          isactive={this.props.pageButtonsAreActive}
+          isactive={this.props.textEntriesAreActive}
+          isValid={this.props.enteredMnemonicIsValid}
           setCurrentHomePage = {this.props.setCurrentHomePage}
         >
           <Page_Text_Entry 
@@ -78,7 +79,8 @@ class Home extends React.Component {
             className="enter_restore_height_box"
               placeholder="Enter restore height or date (YYYY-MM-DD)" 
               handleTextChange={this.props.setRestoreHeight}
-              isactive={this.props.pageButtonsAreActive}
+              isactive={this.props.textEntriesAreActive}
+              isValid={this.props.enteredHeightIsValid}
           />
         </Enter_Phrase_Page>;
         break;

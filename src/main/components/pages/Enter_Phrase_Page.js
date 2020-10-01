@@ -16,6 +16,7 @@ export default function Enter_Phrase_Page(props) {
 	  placeholder="Enter backup phrase..." 
 	  handleTextChange={props.handleTextChange}
       	  isactive={props.isactive}
+      	  isValid={props.isValid}
 	/>
 	{props.children}
       </Main_Content>

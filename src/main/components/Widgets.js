@@ -66,7 +66,7 @@ export class Page_Text_Entry extends React.Component {
     let className = this.props.className + 
       " text_box" + 
       ((this.state.isDefault) ? " default_value" : " new_value") +
-      ((this.props.isactive ? " active_border" : " inactive_border"));
+      ((this.props.isValid ? " active_border" : " inactive_border"));
     let element = null;
     
     if (this.props.isSingleLineEntry){

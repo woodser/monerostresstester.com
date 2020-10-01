@@ -42,14 +42,6 @@ const WALLET_INFO = {
     serverPassword: "abctesting123"
 }
 
-function copyObject(object){
-  var copy = {};
-  for(var attribute in object){
-    copy[attribute] = object[attribute];
-  }
-  return copy;
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -81,15 +73,15 @@ class App extends React.Component {
 	  }
 	).catch(
 	  function(error) {
-	    alert("Failed to load core wallet module!");
-	    alert("Error: " + error);
+	    console.log("Failed to load core wallet module!");
+	    console.log("Error: " + error);
 	  } 
 	);
       }
     ).catch(
       function(error) {
-	alert("Failed to load keys-only wallet module!");
-	alert("Error: " + error);
+	console.log("Failed to load keys-only wallet module!");
+	console.log("Error: " + error);
       } 
     );
     
@@ -116,24 +108,11 @@ class App extends React.Component {
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFee: 0,
-      pageButtonsAreActive: true
-/*
- *  $("#txTotal").html(txGenerator.getNumTxsGenerated());
-    $("#walletBalance").html(atomicUnitsToDecimalString(await wallet.getBalance()) + " XMR");
-    $("#walletAvailableBalance").html(atomicUnitsToDecimalString(await wallet.getUnlockedBalance()) + " XMR");
-    $("#feeTotal").html(atomicUnitsToDecimalString(txGenerator.getTotalFee()) + " XMR");
- */
+      pageButtonsAreActive: true,
+      enteredMnemonicIsValid: true,
+      enteredHeightIsValid: true
     };
   }
-  
-  /*
-  async componentDidMount(){
-    if(this.scheduledFunction){
-      await this.scheduledFunction();
-      this.scheduledFunction = null;
-    }
-  }
-  */
   
   createDateConversionWallet(){
     console.log("Creating a date conversion wallet");
@@ -210,7 +189,8 @@ class App extends React.Component {
   
   setRestoreHeight(height){
     this.setState({
-      restoreHeight: height
+      restoreHeight: height,
+      enteredHeightIsValid: true
     });
   }
   
@@ -243,23 +223,28 @@ class App extends React.Component {
     
     // If no errors were thrown, "height" is a valid restore height.
     if(alertMessage !== "") {
-      alert(alertMessage);
-      this.logout(true);
+      //If height was invalid:
+      console.log(alertMessage);
+      this.setState({
+	enteredHeightIsValid: false
+      });
       return;
     } else {
-      alert("Valid restore height!");
+      console.log("Valid restore height!");
     }
     
     let walletWasm = null;
     try {
-      let wasmWalletInfo = WALLET_INFO;
+      let wasmWalletInfo = Object.assign({}, WALLET_INFO);
       wasmWalletInfo.path = "";
       wasmWalletInfo.mnemonic = this.state.enteredPhrase;
       wasmWalletInfo.restoreHeight = height;
       walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
     } catch(e) {
-      alert("Error: " + e);
-      this.logout(true);
+      console.log("Error: " + e);
+      this.setState({
+	enteredMnemonicIsValid: false
+      });
       return;
     }
     
@@ -267,12 +252,12 @@ class App extends React.Component {
     // Wallet from memory
     this.dateRestoreWasmWallet = null;
     
-    alert("Created Wasm wallet");
+    console.log("Created Wasm wallet");
     
     // create the transaction generator
     this.createTxGenerator(walletWasm);
     
-    alert("Created Tx Gen");
+    console.log("Created Tx Gen");
     
     this.setState({
       currentHomePage: "Sync_Wallet_Page",
@@ -280,7 +265,7 @@ class App extends React.Component {
       wallet: walletWasm
     });
     
-    alert("Set the home page to Sync_Wallet_Page");
+    console.log("Set the home page to Sync_Wallet_Page");
     
     // Create a wallet listener to keep app.js updated on the wallet's balance etc.
     this.walletUpdater = new walletListener(this);
@@ -324,7 +309,8 @@ setCurrentSyncProgress(percentDone){
 setEnteredPhrase(mnemonic){
   console.log("Setting entered phrase to " + mnemonic);
   this.setState({
-    enteredPhrase: mnemonic
+    enteredPhrase: mnemonic,
+    enteredMnemonicIsValid: true
   });
 }
 
@@ -366,7 +352,7 @@ async generateWallet(){
     keysOnlyWallet: walletKeys,
     walletPhrase: newPhrase
   });
-  let wasmWalletInfo = copyObject(WALLET_INFO);
+  let wasmWalletInfo = Object.assign({}, WALLET_INFO);
   wasmWalletInfo.mnemonic = newPhrase;
   wasmWalletInfo.path = "";
   let walletWasm = null;
@@ -403,7 +389,9 @@ async generateWallet(){
       transactionsGenerated: 0,
       totalFee: 0,
       isCancellingSync: false,
-      pageButtonsAreActive: true
+      pageButtonsAreActive: true,
+      enteredMnemonicIsValid: true,
+      enteredHeightIsValid: true
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -423,7 +411,7 @@ async generateWallet(){
         currentHomePage: "Wallet"
       });
     } else {
-      alert("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
+      console.log("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
     }
 
   }
@@ -486,6 +474,10 @@ async generateWallet(){
               isCancellingSync = {this.state.isCancellingSync}
               pageButtonsAreActive = {this.state.pageButtonsAreActive}
               createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
+              enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
+              enteredHeightIsValid = {this.state.enteredHeightIsValid}
+              textEntriesAreActive = {true}
+              resetState = {this.logout.bind(this, false)}
             />} />
             <Route path="/backup" render={(props) => <Backup
               {...props}
