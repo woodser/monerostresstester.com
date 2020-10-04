@@ -8,10 +8,10 @@ import Deposit from "./components/pages/Deposit.js";
 import SignOut from "./components/pages/SignOut.js";
 import Backup from "./components/pages/Backup.js";
 import Withdraw from "./components/pages/Withdraw.js";
+import {Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.js";
+
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 import MoneroTxGenerator from './MoneroTxGenerator.js';
-
-import loadingAnimation from "./img/loadingAnimation.gif";
 
 const DEBUG = true;
 
@@ -45,6 +45,11 @@ const WALLET_INFO = {
 class App extends React.Component {
   constructor(props) {
     super(props);
+    
+    // Force the loading animation to preload
+    const img = new Image();
+    img.src = getLoadingAnimationFile();
+    
     
     // print current version of monero-javascript
     console.log("monero-javascript version: " + monerojs.getVersion());
@@ -110,7 +115,8 @@ class App extends React.Component {
       totalFee: 0,
       pageButtonsAreActive: true,
       enteredMnemonicIsValid: true,
-      enteredHeightIsValid: true
+      enteredHeightIsValid: true,
+      animationIsLoaded: false
     };
   }
   
@@ -444,61 +450,84 @@ async generateWallet(){
     });
   }
   
+  confirmAnimationLoaded(){
+    /*
+     * For reasons I don't entirely understand, it is necessary to separate the <img>'s "onLoad" function
+     * call from the change in state with a timeout delay - even if the delay is set to zero!
+     * Otherwise, the imagine will not ACTUALLY finish loading 
+     */
+    setTimeout(() => {
+      this.setState({
+	animationIsLoaded: true
+      });
+	    
+    }, 0);
+    console.log("Spinny wheel loaded");
+  }
+  
   render(){
-    return(
-      <div id="app_container">
-        <Router>
-          <Banner walletIsSynced={this.state.walletIsSynced}/>
-          <Switch>
-            <Route exact path="/" render={() => <Home
-              generateWallet={this.generateWallet.bind(this)}
-              confirmWallet={this.confirmWallet.bind(this)}
-              restoreWallet={this.restoreWallet.bind(this)}
-              setEnteredPhrase={this.setEnteredPhrase.bind(this)}
-              logout={this.logout.bind(this)}
-              walletSyncProgress = {this.state.walletSyncProgress}
-              setRestoreHeight = {this.setRestoreHeight.bind(this)}
-              walletPhrase = {this.state.walletPhrase}
-              currentHomePage = {this.state.currentHomePage}
-              balance = {this.state.balance}
-              setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
-              lastHomePage = {this.state.lastHomePage}
-              availableBalance = {this.state.availableBalance}
-              confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
-              coreModuleLoaded = {this.state.coreModuleLoaded}
-              keysModuleLoaded = {this.state.keysModuleLoaded}
-              loadingAnimation = {loadingAnimation}
-              isGeneratingTxs = {this.state.isGeneratingTxs}
-              walletIsFunded = {this.state.walletIsFunded}
-              startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
-              stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
-              transactionsGenerated = {this.state.transactionsGenerated}
-              totalFee = {this.state.totalFee}
-              isCancellingSync = {this.state.isCancellingSync}
-              pageButtonsAreActive = {this.state.pageButtonsAreActive}
-              createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
-              enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
-              enteredHeightIsValid = {this.state.enteredHeightIsValid}
-              textEntriesAreActive = {true}
-              resetState = {this.logout.bind(this, false)}
-            />} />
-            <Route path="/backup" render={(props) => <Backup
-              {...props}
-            />} />
-            <Route path="/deposit" render={(props) => <Deposit
-              {...props}
-            />} />
-            <Route path="/sign_out" render={(props) => <SignOut
-              {...props}
-            />} />
-            <Route path="/withdraw" render={(props) => <Withdraw
-              {...props}
-            />} />
-            <Route component={default_page} />
-          </Switch>
-        </Router>
-      </div>
-    );
+    
+    if(this.state.animationIsLoaded){
+      return(
+        <div id="app_container">
+          <Router>
+            <Banner walletIsSynced={this.state.walletIsSynced}/>
+            <Switch>
+              <Route exact path="/" render={() => <Home
+                generateWallet={this.generateWallet.bind(this)}
+                confirmWallet={this.confirmWallet.bind(this)}
+                restoreWallet={this.restoreWallet.bind(this)}
+                setEnteredPhrase={this.setEnteredPhrase.bind(this)}
+                logout={this.logout.bind(this)}
+                walletSyncProgress = {this.state.walletSyncProgress}
+                setRestoreHeight = {this.setRestoreHeight.bind(this)}
+                walletPhrase = {this.state.walletPhrase}
+                currentHomePage = {this.state.currentHomePage}
+                balance = {this.state.balance}
+                setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
+                lastHomePage = {this.state.lastHomePage}
+                availableBalance = {this.state.availableBalance}
+                confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
+                coreModuleLoaded = {this.state.coreModuleLoaded}
+                keysModuleLoaded = {this.state.keysModuleLoaded}
+                isGeneratingTxs = {this.state.isGeneratingTxs}
+                walletIsFunded = {this.state.walletIsFunded}
+                startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
+                stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
+                transactionsGenerated = {this.state.transactionsGenerated}
+                totalFee = {this.state.totalFee}
+                isCancellingSync = {this.state.isCancellingSync}
+                pageButtonsAreActive = {this.state.pageButtonsAreActive}
+                createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
+                enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
+                enteredHeightIsValid = {this.state.enteredHeightIsValid}
+                textEntriesAreActive = {true}
+                resetState = {this.logout.bind(this, false)}
+              />} />
+              <Route path="/backup" render={(props) => <Backup
+                {...props}
+              />} />
+              <Route path="/deposit" render={(props) => <Deposit
+                {...props}
+              />} />
+              <Route path="/sign_out" render={(props) => <SignOut
+                {...props}
+              />} />
+              <Route path="/withdraw" render={(props) => <Withdraw 
+                {...props}
+              />} />
+              <Route component={default_page} />
+            </Switch>
+          </Router>
+        </div>
+      );
+    } else {
+      return (
+	<div id="spinner_loader">
+	  <Loading_Animation notifySpinnerLoaded = {this.confirmAnimationLoaded.bind(this)} hide={true} />
+	</div>
+      );
+    }
   }
 }
 

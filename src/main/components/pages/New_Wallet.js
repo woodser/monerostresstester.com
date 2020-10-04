@@ -18,7 +18,7 @@ export default function New_Wallet(props) {
   
     mainContent = (
       <Main_Content>
-        <Loading_Animation loadingAnimation = {props.loadingAnimation}/>
+        <Loading_Animation />
       </Main_Content>
     );
   }

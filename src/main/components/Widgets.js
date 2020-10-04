@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './widgets.css';
 
+import loadingAnimation from '../img/loadingAnimation.gif';
+
 export function Progress_Bar(props) {
   const progressStyle = {
     width: `${props.progress}%`
@@ -23,12 +25,27 @@ export function Page_Box(props) {
   );
 }
 
+export function getLoadingAnimationFile(){
+  return loadingAnimation;
+}
+
 export function Loading_Animation(props) {
-  return ( 
-    <div className={"loading_animation_container"}>
-      <img className="loading_animation" src={props.loadingAnimation} alt="Spinny wheel animation"></img>
-    </div>
-  );
+  
+  // Remove the "onLoad" attribute if no notification function is provided - this will avoid errors
+  if(props.notifySpinnerLoaded) {
+    let className = props.hide === true ? "loading_animation hidden" : "loading_animation";
+    return ( 
+      <div className={"loading_animation_container"}>
+        <img className={className} src={loadingAnimation} onLoad={props.notifySpinnerLoaded} alt="Spinny wheel animation"></img>
+      </div>
+    );
+  } else {
+    return ( 
+      <div className={"loading_animation_container"}>
+	<img className="loading_animation" src={loadingAnimation} alt="Spinny wheel animation"></img>
+      </div>
+    );
+  }
 }
 
 export function Page_Text_Box(props) {

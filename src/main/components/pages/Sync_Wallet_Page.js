@@ -14,7 +14,7 @@ export default function Sync_Wallet_Page(props) {
       <Page_Box className="home_subpage_box">	
         <Header text="Cancelling wallet synchronization" />
         <Main_Content>
-          <Loading_Animation loadingAnimation = {props.loadingAnimation} />
+          <Loading_Animation />
         </Main_Content>
       </Page_Box>
     );

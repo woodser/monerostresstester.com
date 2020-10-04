@@ -10,7 +10,7 @@ import Enter_Phrase_Page from './Enter_Phrase_Page.js';
 import Wallet from "./Wallet.js";
 
 import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content, Loading_Animation} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
@@ -46,7 +46,6 @@ class Home extends React.Component {
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
             keysModuleLoaded = {this.props.keysModuleLoaded}
-            loadingAnimation = {this.props.loadingAnimation}
             setCurrentHomePage = {this.props.setCurrentHomePage}
           />;
         break;
@@ -93,7 +92,6 @@ class Home extends React.Component {
             backDestination={this.props.lastHomePage}
             setCurrentHomePage={this.props.confirmAbortWalletSynchronization}
             isCancellingSync={this.props.isCancellingSync}
-            loadingAnimation = {this.props.loadingAnimation}
           />;
         break;
       case "Wallet":
