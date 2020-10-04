@@ -412,6 +412,9 @@ async generateWallet(){
       });
     } else {
       console.log("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
+      this.setState({
+	enteredMnemonicIsValid: false
+      });
     }
 
   }

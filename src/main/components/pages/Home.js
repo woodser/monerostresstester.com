@@ -58,6 +58,8 @@ class Home extends React.Component {
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
             setCurrentHomePage={this.props.setCurrentHomePage}
+            isactive={this.props.textEntriesAreActive}
+            isValid={this.props.enteredMnemonicIsValid}
             isactive={true}
           />;
         break;
