@@ -243,7 +243,7 @@ class App extends React.Component {
     try {
       let wasmWalletInfo = Object.assign({}, WALLET_INFO);
       wasmWalletInfo.path = "";
-      wasmWalletInfo.mnemonic = this.state.enteredPhrase;
+      wasmWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
       wasmWalletInfo.restoreHeight = height;
       walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
     } catch(e) {
@@ -403,9 +403,16 @@ async generateWallet(){
     this.walletUpdater = null;
   }
   
+  delimitEnteredWalletPhrase(){
+    // Remove any extra whitespaces
+    let enteredPhraseCopy = this.state.enteredPhrase;
+    enteredPhraseCopy = enteredPhraseCopy.replace(/ +(?= )/g,'').trim();
+    return(enteredPhraseCopy);
+  }
+  
   async confirmWallet() {
     let walletPhrase = await this.state.walletPhrase;
-    if (this.state.enteredPhrase === walletPhrase) {
+    if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       
       // create the transaction generator
       this.createTxGenerator(this.state.wallet);
