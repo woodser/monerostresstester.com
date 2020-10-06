@@ -5,7 +5,7 @@ import './buttons.css';
 
 // Component for the common "button link" used in the bottom of the page_box home pages
 export function UI_Button_Link(props) {
-  if(props.isActive || props.isActive == null) {
+  if(props.isactive || props.isactive == null) {
     return(
       <a
         className={"ui_link_container ui_button_link " + props.className} 
@@ -18,16 +18,16 @@ export function UI_Button_Link(props) {
   	}
         }}
       >
-        <div className="button_text">
-          {props.link_text}
+        <div className="button_contents_container">
+          {props.children}
         </div>
       </a>
     );
   } else {
     return(
       <div className={"ui_link_container ui_button_link_inactive " + props.className}>
-        <div className="button_text">
-          {props.link_text}
+        <div className="button_contents_container">
+          {props.children}
         </div>
       </div>
     );
@@ -41,7 +41,6 @@ export function UI_Text_Link(props) {
         className="ui_text_link" 
 	onClick={function () {
 	  if(props.handleClick) {
-	    console.log("Handling click");
 	    props.handleClick();
 	  }
 	  if(props.setCurrentHomePage){

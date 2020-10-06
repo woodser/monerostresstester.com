@@ -11,12 +11,13 @@ export default function Welcome(props) {
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
       <div className="home_button_links">
-      	<UI_Button_Link 
-      	  link_text="Create New Wallet" 
+      	<UI_Button_Link
       	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
       	  setCurrentHomePage={props.setCurrentHomePage}
-      	/>
+      	>
+      	  Create New Wallet
+      	</UI_Button_Link>
       	<UI_Text_Link 
       	  link_text="Or Import Existing Wallet"
       	  destination={props.backDestination}

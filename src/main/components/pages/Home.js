@@ -10,7 +10,7 @@ import Enter_Phrase_Page from './Enter_Phrase_Page.js';
 import Wallet from "./Wallet.js";
 
 import {UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
-import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content} from '../Widgets.js';
+import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content, Loading_Animation} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
@@ -57,12 +57,18 @@ class Home extends React.Component {
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
             setCurrentHomePage={this.props.setCurrentHomePage}
-            isactive={this.props.textEntriesAreActive}
+            buttonsAreActive={this.props.enteredMnemonicIsValid}
             isValid={this.props.enteredMnemonicIsValid}
-            isactive={true}
+            buttonContents = {<>Continue</>}
           />;
         break;
       case "Import_Wallet": 
+	let buttonContents = null;
+	if(this.props.importPageForceWait){
+	  buttonContents = <Loading_Animation />
+	} else {
+	  buttonContents = <>Continue</>
+	}
         renderItem = 
   	<Enter_Phrase_Page
           header="Import existing wallet" 
@@ -70,18 +76,20 @@ class Home extends React.Component {
           handleContinue={this.props.restoreWallet}
           handleBack={this.props.resetState}
           backDestination="Welcome"
-          isactive={this.props.textEntriesAreActive}
+          textEntryIsActive={!this.props.importPageForceWait}
+          buttonsAreActive={!this.props.importPageForceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
           isValid={this.props.enteredMnemonicIsValid}
           setCurrentHomePage = {this.props.setCurrentHomePage}
+          buttonContents={buttonContents}
         >
           <Page_Text_Entry 
             isDefault={true} 
             isSingleLineEntry={true}
             className="enter_restore_height_box"
-              placeholder="Enter restore height or date (YYYY-MM-DD)" 
-              handleTextChange={this.props.setRestoreHeight}
-              isactive={this.props.textEntriesAreActive}
-              isValid={this.props.enteredHeightIsValid}
+            placeholder="Enter restore height or date (YYYY-MM-DD)" 
+            handleTextChange={this.props.setRestoreHeight}
+            isactive={!this.props.importPageForceWait}
+            isValid={this.props.enteredHeightIsValid}
           />
         </Enter_Phrase_Page>;
         break;
@@ -91,7 +99,6 @@ class Home extends React.Component {
             progress={this.props.walletSyncProgress}
             backDestination={this.props.lastHomePage}
             setCurrentHomePage={this.props.confirmAbortWalletSynchronization}
-            isCancellingSync={this.props.isCancellingSync}
           />;
         break;
       case "Wallet":

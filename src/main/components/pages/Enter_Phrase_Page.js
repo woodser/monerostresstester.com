@@ -15,7 +15,7 @@ export default function Enter_Phrase_Page(props) {
       	  className="enter_phrase_box "
 	  placeholder="Enter backup phrase..." 
 	  handleTextChange={props.handleTextChange}
-      	  isactive={props.isactive}
+      	  isactive={props.textEntryIsActive === undefined ? true : props.textEntryIsActive}
       	  isValid={props.isValid}
 	/>
 	{props.children}
@@ -23,18 +23,20 @@ export default function Enter_Phrase_Page(props) {
       <div className="save_phrase_box_bottom_margin"></div>
       <div className="home_button_links">
       	<UI_Button_Link 
-      	  link_text="Continue" 
       	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
       	  setCurrentHomePage={props.setCurrentHomePage}
-      	  isactive={props.isactive}
-      	/>
+      	  isactive={props.buttonsAreActive}
+      	>
+      	  {props.buttonContents}
+      	</UI_Button_Link>
+      	
       	<UI_Text_Link 
       	  link_text="Or Go Back" 
       	  destination={props.backDestination} 
       	  handleClick={props.handleBack} 
       	  setCurrentHomePage={props.setCurrentHomePage}
-      	  isActive={props.isactive}
+      	  isActive={props.buttonsAreActive}
       	/>
       </div>
     </Page_Box>

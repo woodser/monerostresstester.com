@@ -78,8 +78,6 @@ export class Page_Text_Entry extends React.Component {
 
   render() {
     
-    console.log("text entry isactive: " + this.props.isactive);
-    
     let className = this.props.className + 
       " text_box" + 
       ((this.state.isDefault) ? " default_value" : " new_value") +
