@@ -34,6 +34,7 @@ export default function Wallet(props){
     
   } else {
     buttonText="Fund wallet before generating transactions"
+    buttonIsActive=false;
   }
   
   return(
@@ -44,12 +45,13 @@ export default function Wallet(props){
         <Wallet_Page_Section label = "Transactions generated" value={props.transactionsGenerated} />
         <Wallet_Page_Section label = "Total fees" value={props.totalFee * XMR_AU_RATIO + " XMR"} />
         <UI_Button_Link 
-          link_text={buttonText}
           handleClick = {buttonHandleContinue}
           destination="/" 
           className={"ui_wallet_button_link"} 
-          isActive={buttonIsActive}
-        />
+          isactive={buttonIsActive}
+        >
+          {buttonText}
+        </UI_Button_Link>
       </div>
     </Page_Box>
   );

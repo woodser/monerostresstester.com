@@ -18,7 +18,7 @@ export default function New_Wallet(props) {
   
     mainContent = (
       <Main_Content>
-        <Loading_Animation loadingAnimation = {props.loadingAnimation}/>
+        <Loading_Animation />
       </Main_Content>
     );
   }
@@ -28,11 +28,15 @@ export default function New_Wallet(props) {
       {mainContent}
       <div className="save_phrase_box_bottom_margin"></div>
       <div className="home_button_links">
-        <UI_Button_Link 
-          link_text="Continue" 
+        <UI_Button_Link
           destination={props.continueDestination} 
           setCurrentHomePage = {props.setCurrentHomePage}
-          isActive = {props.text ? true : false}/>
+          isActive = {props.text ? true : false}
+        >
+          <>
+            Continue
+          </>
+        </UI_Button_Link>
         <UI_Text_Link 
           link_text="Or Go Back" 
           destination={props.backDestination} 

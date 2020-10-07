@@ -46,7 +46,6 @@ class Home extends React.Component {
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
             keysModuleLoaded = {this.props.keysModuleLoaded}
-            loadingAnimation = {this.props.loadingAnimation}
             setCurrentHomePage = {this.props.setCurrentHomePage}
           />;
         break;
@@ -58,10 +57,18 @@ class Home extends React.Component {
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
             setCurrentHomePage={this.props.setCurrentHomePage}
-            isactive={true}
+            buttonsAreActive={this.props.enteredMnemonicIsValid}
+            isValid={this.props.enteredMnemonicIsValid}
+            buttonContents = {<>Continue</>}
           />;
         break;
       case "Import_Wallet": 
+	let buttonContents = null;
+	if(this.props.importPageForceWait){
+	  buttonContents = <Loading_Animation />
+	} else {
+	  buttonContents = <>Continue</>
+	}
         renderItem = 
   	<Enter_Phrase_Page
           header="Import existing wallet" 
@@ -69,16 +76,20 @@ class Home extends React.Component {
           handleContinue={this.props.restoreWallet}
           handleBack={this.props.resetState}
           backDestination="Welcome"
-          isactive={this.props.pageButtonsAreActive}
+          textEntryIsActive={!this.props.importPageForceWait}
+          buttonsAreActive={!this.props.importPageForceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
+          isValid={this.props.enteredMnemonicIsValid}
           setCurrentHomePage = {this.props.setCurrentHomePage}
+          buttonContents={buttonContents}
         >
           <Page_Text_Entry 
             isDefault={true} 
             isSingleLineEntry={true}
             className="enter_restore_height_box"
-              placeholder="Enter restore height or date (YYYY-MM-DD)" 
-              handleTextChange={this.props.setRestoreHeight}
-              isactive={this.props.pageButtonsAreActive}
+            placeholder="Enter restore height or date (YYYY-MM-DD)" 
+            handleTextChange={this.props.setRestoreHeight}
+            isactive={!this.props.importPageForceWait}
+            isValid={this.props.enteredHeightIsValid}
           />
         </Enter_Phrase_Page>;
         break;
@@ -88,8 +99,6 @@ class Home extends React.Component {
             progress={this.props.walletSyncProgress}
             backDestination={this.props.lastHomePage}
             setCurrentHomePage={this.props.confirmAbortWalletSynchronization}
-            isCancellingSync={this.props.isCancellingSync}
-            loadingAnimation = {this.props.loadingAnimation}
           />;
         break;
       case "Wallet":

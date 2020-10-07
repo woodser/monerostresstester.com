@@ -8,10 +8,10 @@ import Deposit from "./components/pages/Deposit.js";
 import SignOut from "./components/pages/SignOut.js";
 import Backup from "./components/pages/Backup.js";
 import Withdraw from "./components/pages/Withdraw.js";
+import {Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.js";
+
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 import MoneroTxGenerator from './MoneroTxGenerator.js';
-
-import loadingAnimation from "./img/loadingAnimation.gif";
 
 const DEBUG = true;
 
@@ -42,20 +42,16 @@ const WALLET_INFO = {
     serverPassword: "abctesting123"
 }
 
-function copyObject(object){
-  var copy = {};
-  for(var attribute in object){
-    copy[attribute] = object[attribute];
-  }
-  return copy;
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
     
+    // Force the loading animation to preload
+    const img = new Image();
+    img.src = getLoadingAnimationFile();
+    
+    
     // print current version of monero-javascript
-    console.log("monero-javascript version: " + monerojs.getVersion());
     
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -81,15 +77,15 @@ class App extends React.Component {
 	  }
 	).catch(
 	  function(error) {
-	    alert("Failed to load core wallet module!");
-	    alert("Error: " + error);
+	    console.log("Failed to load core wallet module!");
+	    console.log("Error: " + error);
 	  } 
 	);
       }
     ).catch(
       function(error) {
-	alert("Failed to load keys-only wallet module!");
-	alert("Error: " + error);
+	console.log("Failed to load keys-only wallet module!");
+	console.log("Error: " + error);
       } 
     );
     
@@ -116,27 +112,15 @@ class App extends React.Component {
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFee: 0,
-      pageButtonsAreActive: true
-/*
- *  $("#txTotal").html(txGenerator.getNumTxsGenerated());
-    $("#walletBalance").html(atomicUnitsToDecimalString(await wallet.getBalance()) + " XMR");
-    $("#walletAvailableBalance").html(atomicUnitsToDecimalString(await wallet.getUnlockedBalance()) + " XMR");
-    $("#feeTotal").html(atomicUnitsToDecimalString(txGenerator.getTotalFee()) + " XMR");
- */
+      enteredMnemonicIsValid: true,
+      enteredHeightIsValid: true,
+      animationIsLoaded: false,
+      isVerifyingImportWallet: false
+      
     };
   }
   
-  /*
-  async componentDidMount(){
-    if(this.scheduledFunction){
-      await this.scheduledFunction();
-      this.scheduledFunction = null;
-    }
-  }
-  */
-  
   createDateConversionWallet(){
-    console.log("Creating a date conversion wallet");
     // Create a disposable,random wallet to prepare for the possibility that the user will attempt to restore from a date
     // At present, getRestoreHeightFromDate() is (erroneously) an instance method; thus, a wallet instance is
     // required to use it.
@@ -184,8 +168,6 @@ class App extends React.Component {
   convertStringToRestoreDate(str){
     // Make sure the string is of the format "####/##/##"
     // Does the date have the correct number of characters? (10):
-    console.log("attempting to convert " + str + " to a restore height");
-    console.log(str + " has " + str.length + " chars; should be 10!");
     if(str.length === 10){
       //Attempt to divide the string into its constituent parts
       var dateParts = str.split("-");
@@ -210,16 +192,15 @@ class App extends React.Component {
   
   setRestoreHeight(height){
     this.setState({
-      restoreHeight: height
+      restoreHeight: height,
+      enteredHeightIsValid: true
     });
   }
   
   async restoreWallet(){
     
-    console.log("Running restoreWallet");
-    
     this.setState({
-      pageButtonsAreActive: false
+      isVerifyingImportWallet: true
     });
     
     let alertMessage = "";  
@@ -243,36 +224,40 @@ class App extends React.Component {
     
     // If no errors were thrown, "height" is a valid restore height.
     if(alertMessage !== "") {
-      alert(alertMessage);
-      this.logout(true);
+      //If height was invalid:
+      console.log(alertMessage);
+      this.setState({
+	enteredHeightIsValid: false,
+	isVerifyingImportWallet: false
+      });
       return;
-    } else {
-      alert("Valid restore height!");
     }
     
     let walletWasm = null;
     try {
-      let wasmWalletInfo = WALLET_INFO;
+      let wasmWalletInfo = Object.assign({}, WALLET_INFO);
       wasmWalletInfo.path = "";
-      wasmWalletInfo.mnemonic = this.state.enteredPhrase;
+      wasmWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
       wasmWalletInfo.restoreHeight = height;
       walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
     } catch(e) {
-      alert("Error: " + e);
-      this.logout(true);
+      console.log("Error: " + e);
+      this.setState({
+	enteredMnemonicIsValid: false,
+	isVerifyingImportWallet: false
+      });
       return;
     }
     
     // Both the mnemonic and restore height were valid; thus, we can remove the disposable date-conversion
     // Wallet from memory
     this.dateRestoreWasmWallet = null;
-    
-    alert("Created Wasm wallet");
+    this.setState({
+      isVerifyingImportWallet: false
+    });
     
     // create the transaction generator
     this.createTxGenerator(walletWasm);
-    
-    alert("Created Tx Gen");
     
     this.setState({
       currentHomePage: "Sync_Wallet_Page",
@@ -280,15 +265,12 @@ class App extends React.Component {
       wallet: walletWasm
     });
     
-    alert("Set the home page to Sync_Wallet_Page");
-    
     // Create a wallet listener to keep app.js updated on the wallet's balance etc.
     this.walletUpdater = new walletListener(this);
     let that=this;
     walletWasm.sync(this.walletUpdater).then(async () => {
       
       if(!that.userCancelledWalletSync){
-        console.log("supposedly, the wallet finished syncing");
         // This code should only run if wallet.sync finished because hte wallet finished syncing
         // And not because the user cancelled the sync
         that.walletUpdater.setWalletIsSynchronized(true);
@@ -300,14 +282,20 @@ class App extends React.Component {
           balance: balance,
           availableBalance: availableBalance,
           currentHomePage: "Wallet",
-          walletIsFunded: walletIsFunded,
-          pageButtonsAreActive: true
+          walletIsFunded: walletIsFunded
         });
 
       } else {
-        console.log("It appears the user cancelled wallet synchronization");
         // Reset state variables
-        that.logout(true);
+        that.setState({
+          walletPhrase: "",
+          phraseIsConfirmed: false,
+          walletSyncProgress: 0,
+          balance: 0,
+          availableBalance: 0,
+          enteredMnemonicIsValid: true,
+          enteredHeightIsValid: true
+        });
         // Reset the wallet sync cancellation indicator variable so that any completed
         // syncs in the future are not misinterpretted as cancelled syncs by default
         that.userCancelledWalletSync = false;
@@ -322,14 +310,13 @@ setCurrentSyncProgress(percentDone){
 }
   
 setEnteredPhrase(mnemonic){
-  console.log("Setting entered phrase to " + mnemonic);
   this.setState({
-    enteredPhrase: mnemonic
+    enteredPhrase: mnemonic,
+    enteredMnemonicIsValid: true
   });
 }
 
 startGeneratingTxs(){
-  console.log("Starting to generate TXs");
   this.setState({
     isGeneratingTxs: true
   })
@@ -337,8 +324,6 @@ startGeneratingTxs(){
 }
 
 stopGeneratingTxs(){
-  
-  console.log("Stopping TX generation");
   this.setState({
     isGeneratingTxs: false
   })
@@ -347,9 +332,6 @@ stopGeneratingTxs(){
 }
 
 async generateWallet(){
-  
-  console.log("Generating new wallet");
-  console.log("Wallet info: " + JSON.stringify(WALLET_INFO));
   
   let walletKeys = null
   try {
@@ -360,13 +342,11 @@ async generateWallet(){
   }
   let newPhrase = await walletKeys.getMnemonic();
   
-  console.log("New phrase: " + newPhrase);
-  
   this.setState({
     keysOnlyWallet: walletKeys,
     walletPhrase: newPhrase
   });
-  let wasmWalletInfo = copyObject(WALLET_INFO);
+  let wasmWalletInfo = Object.assign({}, WALLET_INFO);
   wasmWalletInfo.mnemonic = newPhrase;
   wasmWalletInfo.path = "";
   let walletWasm = null;
@@ -382,8 +362,10 @@ async generateWallet(){
   });
 }
   
-  logout(cancelledSync) {
+  logout() {
+
     this.setState ({
+      currentHomePage: "Welcome",
       enteredPhrase: "",
       wallet: null,
       keysOnlyWallet: null,
@@ -394,24 +376,30 @@ async generateWallet(){
       walletIsSynced: false,
       balance: 0,
       availableBalance: 0,
-      currentHomePage: cancelledSync ? "Import_Wallet" : "Welcome",
-      lastHomePage: cancelledSync ? "Welcome" : "",
       keysModuleLoaded: false,
       wasmModuleLoaded: false,
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFee: 0,
-      isCancellingSync: false,
-      pageButtonsAreActive: true
+      isVerifyingImportWallet: false,
+      enteredMnemonicIsValid: true,
+      enteredHeightIsValid: true
     });
     this.txGenerator = null;
     this.walletUpdater = null;
   }
   
+  delimitEnteredWalletPhrase(){
+    // Remove any extra whitespaces
+    let enteredPhraseCopy = this.state.enteredPhrase;
+    enteredPhraseCopy = enteredPhraseCopy.replace(/ +(?= )/g,'').trim();
+    return(enteredPhraseCopy);
+  }
+  
   async confirmWallet() {
     let walletPhrase = await this.state.walletPhrase;
-    if (this.state.enteredPhrase === walletPhrase) {
+    if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       
       // create the transaction generator
       this.createTxGenerator(this.state.wallet);
@@ -423,7 +411,9 @@ async generateWallet(){
         currentHomePage: "Wallet"
       });
     } else {
-      alert("The phrase you entered does not match the generated mnemonic! Re-enter the phrase or go back to generate a new wallet.");
+      this.setState({
+	enteredMnemonicIsValid: false
+      });
     }
 
   }
@@ -433,7 +423,7 @@ async generateWallet(){
     
     if (doAbort){
       this.setState({
-	isCancellingSync: true
+	currentHomePage: "Import_Wallet"
       });
       /*
        * First, set a class variable so that the importWallet function 
@@ -442,68 +432,89 @@ async generateWallet(){
        */
       this.userCancelledWalletSync = true;      
       await this.state.wallet.stopSyncing();
-      console.log("wallet.stopSyncing() finished");
     }
   }
   
   setCurrentHomePage(pageName){
-    console.log("Setting current home page to " + pageName);
     this.setState({
       currentHomePage: pageName
     });
   }
   
+  confirmAnimationLoaded(){
+    /*
+     * For reasons I don't entirely understand, it is necessary to separate the <img>'s "onLoad" function
+     * call from the change in state with a timeout delay - even if the delay is set to zero!
+     * Otherwise, the imagine will not ACTUALLY finish loading 
+     */
+    setTimeout(() => {
+      this.setState({
+	animationIsLoaded: true
+      });
+	    
+    }, 0);
+  }
+  
   render(){
-    return(
-      <div id="app_container">
-        <Router>
-          <Banner walletIsSynced={this.state.walletIsSynced}/>
-          <Switch>
-            <Route exact path="/" render={() => <Home
-              generateWallet={this.generateWallet.bind(this)}
-              confirmWallet={this.confirmWallet.bind(this)}
-              restoreWallet={this.restoreWallet.bind(this)}
-              setEnteredPhrase={this.setEnteredPhrase.bind(this)}
-              logout={this.logout.bind(this)}
-              walletSyncProgress = {this.state.walletSyncProgress}
-              setRestoreHeight = {this.setRestoreHeight.bind(this)}
-              walletPhrase = {this.state.walletPhrase}
-              currentHomePage = {this.state.currentHomePage}
-              balance = {this.state.balance}
-              setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
-              lastHomePage = {this.state.lastHomePage}
-              availableBalance = {this.state.availableBalance}
-              confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
-              coreModuleLoaded = {this.state.coreModuleLoaded}
-              keysModuleLoaded = {this.state.keysModuleLoaded}
-              loadingAnimation = {loadingAnimation}
-              isGeneratingTxs = {this.state.isGeneratingTxs}
-              walletIsFunded = {this.state.walletIsFunded}
-              startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
-              stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
-              transactionsGenerated = {this.state.transactionsGenerated}
-              totalFee = {this.state.totalFee}
-              isCancellingSync = {this.state.isCancellingSync}
-              pageButtonsAreActive = {this.state.pageButtonsAreActive}
-              createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
-            />} />
-            <Route path="/backup" render={(props) => <Backup
-              {...props}
-            />} />
-            <Route path="/deposit" render={(props) => <Deposit
-              {...props}
-            />} />
-            <Route path="/sign_out" render={(props) => <SignOut
-              {...props}
-            />} />
-            <Route path="/withdraw" render={(props) => <Withdraw
-              {...props}
-            />} />
-            <Route component={default_page} />
-          </Switch>
-        </Router>
-      </div>
-    );
+    if(this.state.animationIsLoaded){
+      return(
+        <div id="app_container">
+          <Router>
+            <Banner walletIsSynced={this.state.walletIsSynced}/>
+            <Switch>
+              <Route exact path="/" render={() => <Home
+                generateWallet={this.generateWallet.bind(this)}
+                confirmWallet={this.confirmWallet.bind(this)}
+                restoreWallet={this.restoreWallet.bind(this)}
+                setEnteredPhrase={this.setEnteredPhrase.bind(this)}
+                logout={this.logout.bind(this)}
+                walletSyncProgress = {this.state.walletSyncProgress}
+                setRestoreHeight = {this.setRestoreHeight.bind(this)}
+                walletPhrase = {this.state.walletPhrase}
+                currentHomePage = {this.state.currentHomePage}
+                balance = {this.state.balance}
+                setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
+                lastHomePage = {this.state.lastHomePage}
+                availableBalance = {this.state.availableBalance}
+                confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
+                coreModuleLoaded = {this.state.coreModuleLoaded}
+                keysModuleLoaded = {this.state.keysModuleLoaded}
+                isGeneratingTxs = {this.state.isGeneratingTxs}
+                walletIsFunded = {this.state.walletIsFunded}
+                startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
+                stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
+                transactionsGenerated = {this.state.transactionsGenerated}
+                totalFee = {this.state.totalFee}
+                createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
+                enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
+                enteredHeightIsValid = {this.state.enteredHeightIsValid}
+                resetState = {this.logout.bind(this)}
+                importPageForceWait = {this.state.isVerifyingImportWallet}
+              />} />
+              <Route path="/backup" render={(props) => <Backup
+                {...props}
+              />} />
+              <Route path="/deposit" render={(props) => <Deposit
+                {...props}
+              />} />
+              <Route path="/sign_out" render={(props) => <SignOut
+                {...props}
+              />} />
+              <Route path="/withdraw" render={(props) => <Withdraw 
+                {...props}
+              />} />
+              <Route component={default_page} />
+            </Switch>
+          </Router>
+        </div>
+      );
+    } else {
+      return (
+	<div id="spinner_loader">
+	  <Loading_Animation notifySpinnerLoaded = {this.confirmAnimationLoaded.bind(this)} hide={true} />
+	</div>
+      );
+    }
   }
 }
 
@@ -532,7 +543,6 @@ class walletListener extends MoneroWalletListener {
   }
   
   onBalancesChanged(newBalance, newUnlockedBalance){
-    console.log("Balances Changed! new Balance: " + newBalance + "; new unlocked balance: " + newUnlockedBalance);
     if (this.walletIsSynchronized) {
       this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
       if (newUnlockedBalance >= FUNDED_WALLET_MINIMUM_BALANCE && !callingComponent.state.walletIsFunded){

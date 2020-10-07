@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './widgets.css';
 
+import loadingAnimation from '../img/loadingAnimation.gif';
+
 export function Progress_Bar(props) {
   const progressStyle = {
     width: `${props.progress}%`
@@ -23,17 +25,32 @@ export function Page_Box(props) {
   );
 }
 
+export function getLoadingAnimationFile(){
+  return loadingAnimation;
+}
+
 export function Loading_Animation(props) {
-  return ( 
-    <div className={"loading_animation_container"}>
-      <img className="loading_animation" src={props.loadingAnimation} alt="Spinny wheel animation"></img>
-    </div>
-  );
+  
+  // Remove the "onLoad" attribute if no notification function is provided - this will avoid errors
+  if(props.notifySpinnerLoaded) {
+    let className = props.hide === true ? "loading_animation hidden" : "loading_animation";
+    return ( 
+      <div className={"loading_animation_container"}>
+        <img className={className} src={loadingAnimation} onLoad={props.notifySpinnerLoaded} alt="Spinny wheel animation"></img>
+      </div>
+    );
+  } else {
+    return ( 
+      <div className={"loading_animation_container"}>
+	<img className="loading_animation" src={loadingAnimation} alt="Spinny wheel animation"></img>
+      </div>
+    );
+  }
 }
 
 export function Page_Text_Box(props) {
   return(
-    <textarea className="text_box save_phrase_box main_content" value={props.box_text} disabled />
+    <textarea className="text_box save_phrase_box main_content active_border" value={props.box_text} disabled />
   );
 }
 
@@ -61,19 +78,17 @@ export class Page_Text_Entry extends React.Component {
 
   render() {
     
-    console.log("text entry isactive: " + this.props.isactive);
-    
+    let className = this.props.className + 
+      " text_box" + 
+      ((this.state.isDefault) ? " default_value" : " new_value") +
+      ((this.props.isValid ? " active_border" : " inactive_border"));
     let element = null;
     
     if (this.props.isSingleLineEntry){
       element = (
         <input
           type="text"
-          className={this.props.className + 
-            " text_box" + 
-            ((this.state.isDefault) ? " default_value" : " new_value") +
-            ((this.props.isactive ? " active_border" : " inactive_border"))
-          }
+          className={className}
           onChange={this.handleChange.bind(this)}
           placeholder={this.props.placeholder}
           disabled={!this.props.isactive}
@@ -82,12 +97,7 @@ export class Page_Text_Entry extends React.Component {
     } else {
       element = (
         <textarea
-          className={
-            this.props.className + 
-            " text_box" + 
-            ((this.state.isDefault) ? " default_value" : " new_value") + 
-            ((this.props.isactive) ? " active_border" : " inactive_border")
-          }
+          className={className}
           value={this.state.enteredPhrase}
           onChange={this.handleChange.bind(this)} 
           placeholder={this.props.placeholder}

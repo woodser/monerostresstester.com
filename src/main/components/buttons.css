@@ -25,7 +25,7 @@
   width: 100%;
 }
 
-.button_text {
+.button_contents_container {
   position: absolute;
   margin: 0;
   top:50%;
@@ -65,8 +65,8 @@ a.ui_button_link:active{
   color: white;
 }
 
-a.ui_button_link_inactive:hover {
-	cursor: initial;
+div.ui_button_link_inactive:hover {
+	cursor: not-allowed;
 }
 
 .ui_wallet_button_link {
