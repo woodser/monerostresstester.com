@@ -1,0 +1,3 @@
+place restore height box according to ui design
+"or go back" should either disappear during button loady wheel, or clicking it should negate the effect of clicking the import button
+button hover effect confined to button boundaries
