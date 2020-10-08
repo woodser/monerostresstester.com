@@ -208,7 +208,7 @@ class App extends React.Component {
     //First, determine whether the user has typed at height, a date, or something else(invalid)
     let height=Number(this.state.restoreHeight);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
-    if(!(height != NaN && height%1 === 0)) {
+    if(!(height != NaN && height%1 === 0 && height >= 0)) {
       // Attempt to convert the string to a date in the format "YYYY-MM-DD"
       try{
 	var dateParts = this.convertStringToRestoreDate(this.state.restoreHeight);

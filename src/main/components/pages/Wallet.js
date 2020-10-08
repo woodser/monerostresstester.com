@@ -47,8 +47,8 @@ export default function Wallet(props){
         <UI_Button_Link 
           handleClick = {buttonHandleContinue}
           destination="/" 
-          className={"ui_wallet_button_link"} 
           isactive={buttonIsActive}
+          className={props.isGeneratingTxs ? "stop_tx_generation_color" : ""} 
         >
           {buttonText}
         </UI_Button_Link>
@@ -56,13 +56,6 @@ export default function Wallet(props){
     </Page_Box>
   );
 }
-
-/*
- *           isGeneratingTxs = {this.state.isGeneratingTxs}
-          walletIsFunded = {this.state.walletIsFunded}
-          startGeneratingTxs = {this.startGeneratingTxs}
-          stopGeneratingTxs = {this.stopGeneratingTxs}
- */
 
 function Wallet_Page_Section(props) {
   return(

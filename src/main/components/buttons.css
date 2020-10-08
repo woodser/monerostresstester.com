@@ -1,18 +1,22 @@
 :root {
   --button-border-width: 4px;
-  --wallet-button-width: calc(var(--item-width)*0.8);
-  --button-height: 95px;
+  --button-width: 100%;
+  --button-height: 88px;
   
   --wallet-button-active-color: #56c1ff;
   --wallet-button-hover-color: #78e3ff;
   --wallet-button-click-color: #34a0dd;
+  --alt-wallet-button-active-color: #ff0000;
+  --alt-wallet-button-hover-color: #ff2222;
+  --alt-wallet-button-click-color: #dd1144;
+  
   --wallet-button-inactive-color: gray;
 }
 
 .ui_link_container {
   height: var(--button-height);
   display: block;
-  width: calc(var(--item-width) - (var(--button-border-width)*2));
+  width: calc(var(--button-width) - var(--button-border-width)*2);
   position: relative;
   margin: 0 auto;
   text-align: center;
@@ -50,12 +54,24 @@
   color: white;
 }
 
+.ui_button_link.stop_tx_generation_color {
+	background-color: var(--alt-wallet-button-active-color);
+}
+
 a.ui_button_link:hover {
   background-color: var(--wallet-button-hover-color);
 }
 
+a.ui_button_link.stop_tx_generation_color:hover {
+	background-color: var(--alt-wallet-button-hover-color);
+}
+
 a.ui_button_link:active{
   background-color: var(--wallet-button-click-color);
+}
+
+a.ui_button_link.stop_tx_generation_color:active{
+  background-color: var(--alt-wallet-button-click-color);
 }
 
 .ui_button_link_inactive {
@@ -65,13 +81,15 @@ a.ui_button_link:active{
   color: white;
 }
 
+.stop_tx_generation_color: {
+  background-color: red;
+}
+
 div.ui_button_link_inactive:hover {
 	cursor: not-allowed;
 }
 
-.ui_wallet_button_link {
-	width: var(--wallet-button-width);
-}
+
 
 .ui_text_link {
   text-decoration: none;
