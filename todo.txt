@@ -1,3 +1,5 @@
+disabled textarea mnemonic black instead of grey
 place restore height box according to ui design
-"or go back" should either disappear during button loady wheel, or clicking it should negate the effect of clicking the import button
+"or go back" should abort and discard imported wallet and not jump to sync page
 button hover effect confined to button boundaries
+1 arm pump per tx
