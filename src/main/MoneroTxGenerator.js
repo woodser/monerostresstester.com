@@ -22,15 +22,6 @@ class MoneroTxGenerator {
     this.totalFee = new BigInteger(0);
     this.numSplitOutputs = 0;
     this.listeners = [];
-
-    // register wallet listener which notifies tx generator listeners on new blocks
-    let that = this;   
-    this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
-      async onNewBlock(height) {
-        await that._refreshNumBlocksToUnlock();
-        for (let listener of that.listeners) listener.onNewBlock(height);
-      }
-    });
   }
   
   async start() {
@@ -97,6 +88,21 @@ class MoneroTxGenerator {
    */
   addListener(listener) {
     console.log("Adding a tx generator listener");
+    
+    // register wallet listener which notifies tx generator listeners on new blocks
+    if (this.listeners.length === 0) {
+      let that = this;   
+      console.log("Listening to new blocks!!!");
+      this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
+        onNewBlock(height) {
+          console.log("NEW BLOCK!!!");
+          that._refreshNumBlocksToUnlock().then(function() {
+            for (let listener of that.listeners) listener.onNewBlock(height);
+          })
+        }
+      });
+    }
+    
     this.listeners.push(listener);
   }
 

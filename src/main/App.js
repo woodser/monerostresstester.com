@@ -148,33 +148,6 @@ class App extends React.Component {
     
     // create tx generator
     this.txGenerator = new MoneroTxGenerator(daemon, wallet);
-    
-    // handle notifications from tx generator
-    let that = this;
-    this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
-      async onTransaction(tx) {
-        console.log("MoneroTxGeneratorListener.onTransaction()");
-        console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
-        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
-        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
-        let balance = await that.state.wallet.getBalance();
-        let availableBalance = await that.state.wallet.getUnlockedBalance();
-        that.setState({
-          transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
-          balance: balance,
-          availableBalance: availableBalance,
-          totalFee: that.txGenerator.getTotalFee()
-        });
-      }
-      
-      async onNewBlock(height) {
-        console.log("MoneroTxGeneratorListener.onNewBlock()");
-        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
-        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
-      }
-    });
   }
   
   setBalances(balance, availableBalance){
@@ -292,6 +265,36 @@ class App extends React.Component {
       if(!that.userCancelledWalletSync){
         // This code should only run if wallet.sync finished because hte wallet finished syncing
         // And not because the user cancelled the sync
+        
+        // register listener to handle notifications from tx generator
+        that.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
+            
+          // handle transaction notifications
+          async onTransaction(tx) {
+            console.log("MoneroTxGeneratorListener.onTransaction()");
+            console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
+            console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
+            console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
+            console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
+            let balance = await that.state.wallet.getBalance();
+            let availableBalance = await that.state.wallet.getUnlockedBalance();
+            that.setState({
+              transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
+              balance: balance,
+              availableBalance: availableBalance,
+              totalFee: that.txGenerator.getTotalFee()
+            });
+          }
+          
+          // handle notifications of blocks added to the chain
+          async onNewBlock(height) {
+            console.log("MoneroTxGeneratorListener.onNewBlock()");
+            console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
+            console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
+            console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
+          }
+        });
+        
         that.walletUpdater.setWalletIsSynchronized(true);
         let balance = await walletWasm.getBalance();
         let availableBalance = await walletWasm.getUnlockedBalance();
