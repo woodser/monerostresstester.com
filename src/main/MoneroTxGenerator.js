@@ -22,8 +22,17 @@ class MoneroTxGenerator {
     this.totalFee = new BigInteger(0);
     this.numSplitOutputs = 0;
     this.listeners = [];
-  }
 
+    // register wallet listener which notifies tx generator listeners on new blocks
+    let that = this;   
+    this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
+      async onNewBlock(height) {
+        await that._refreshNumBlocksToUnlock();
+        for (let listener of that.listeners) listener.onNewBlock(height);
+      }
+    });
+  }
+  
   async start() {
     if (this._isGenerating) throw new Error("Transaction generation already in progress");
 
@@ -54,18 +63,38 @@ class MoneroTxGenerator {
 	return this.totalFee;
   }
   
-  getNumBlocksToBalanceUnlock() {
-    return this.numBlocksToBalanceUnlock;
-  }
-  
-  getNumBlocksToNextTx() {
-    return this.numBlocksToNextTx;
-  }
-  
+  /**
+   * Get the number of split outputs created as a result of running tx generation.
+   *
+   * @return {int} the number of blocks until the wallet has unlocked funds, 0 if wallet has unlocked funds
+   */
   getNumSplitOutputs() {
     return this.numSplitOutputs;
   }
   
+  /**
+   * Get the number of blocks until next funds available.
+   *
+   * @return {int} the number of blocks until the wallet has unlocked funds, 0 if wallet has unlocked funds
+   */
+  getNumBlocksToNextUnlock() {
+    return this.numBlocksToNextUnlock;
+  }
+  
+  /**
+   * Get the number of blocks until all funds available.
+   *
+   * @return {int} the number of blocks until all funds unlock, 0 if all funds are unlocked
+   */
+  getNumBlocksToLastUnlock() {
+    return this.numBlocksToLastUnlock;
+  }
+  
+  /**
+   * Register a listener with the tx generator.
+   *
+   * @param {MoneroTxGeneratorListener} listener - a listener to receive notifications about tx generation
+   */
   addListener(listener) {
     console.log("Adding a tx generator listener");
     this.listeners.push(listener);
@@ -96,8 +125,8 @@ class MoneroTxGenerator {
    * and to provide those classes with transaction data and total number of
    * transactions up to this point.
    */ 
-  _onTransaction(tx) {
-    console.log("_onTransaction() was called!");
+  async _onTransaction(tx) {
+    await this._refreshNumBlocksToUnlock();
     for(let i = 0; i < this.listeners.length; i++) {
       this.listeners[i].onTransaction(tx);
     }
@@ -110,7 +139,7 @@ class MoneroTxGenerator {
     // get available outputs
     let outputs = await this.wallet.getOutputs({isLocked: false, isSpent: false});
     console.log("Wallet has " + outputs.length + " available outputs");
-
+    
     // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
     let outputsToCreate = MAX_OUTPUT_GROWTH - outputs.length;
 
@@ -162,7 +191,7 @@ class MoneroTxGenerator {
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          this._onTransaction(tx);
+          await this._onTransaction(tx);
 
         } catch (e) {
           console.log("Error creating multi-output tx: " + e.message);
@@ -191,12 +220,36 @@ class MoneroTxGenerator {
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          this._onTransaction(tx);
+          await this._onTransaction(tx);
 
         } catch (e) {
           console.log("Error creating sweep tx: " + e.message);
         }
       }
+    }
+  }
+  
+  async _refreshNumBlocksToUnlock() {
+    
+    // compute number of blocks until next funds available
+    let txs;
+    if ((await this.wallet.getUnlockedBalance()).compare(new BigInteger(0)) >= 0) {
+      this.numBlocksToNextUnlock = 0;
+    } else {
+      txs = await this.wallet.getTxs({isLocked: true}); // get locked txs
+      let maxNumConfirmations = 0;
+      for (let tx of txs) maxNumConfirmations = Math.max(maxNumConfirmations, tx.getNumConfirmations());
+      this.numBlocksToNextUnlock = 10 - maxNumConfirmations;
+    }
+    
+    // compute number of blocks until all funds available
+    if ((await this.wallet.getBalance()).compare(await this.wallet.getUnlockedBalance()) === 0) {
+      if ((await this.wallet.getUnlockedBalance()).compare(new BigInteger(0)) >= 0) this.numBlocksToLastUnlock = 0;
+    } else {
+      txs = txs || await this.wallet.getTxs({isLocked: true});  // get locked txs
+      let minNumConfirmations;
+      for (let tx of txs) if (minNumConfirmations === undefined || minNumConfirmations > tx.getNumConfirmations()) minNumConfirmations = tx.getNumConfirmations();
+      this.numBlocksToLastUnlock = 10 - minNumConfirmations;
     }
   }
 }

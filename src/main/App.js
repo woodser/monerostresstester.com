@@ -156,14 +156,14 @@ class App extends React.Component {
         console.log("MoneroTxGeneratorListener.onTransaction()");
         console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
         console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-        console.log("MoneroTxGenerator numBlocksToBalanceUnlock: " + that.txGenerator.getNumBlocksToBalanceUnlock());
-        console.log("MoneroTxGenerator getNumBlocksToNextTx: " + that.txGenerator.getNumBlocksToNextTx());
+        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
+        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
         let balance = await that.state.wallet.getBalance();
         let availableBalance = await that.state.wallet.getUnlockedBalance();
         that.setState({
           transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
           balance: balance,
-          availableBalane: availableBalance,
+          availableBalance: availableBalance,
           totalFee: that.txGenerator.getTotalFee()
         });
       }
@@ -171,8 +171,8 @@ class App extends React.Component {
       async onNewBlock(height) {
         console.log("MoneroTxGeneratorListener.onNewBlock()");
         console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-        console.log("MoneroTxGenerator numBlocksToBalanceUnlock: " + that.txGenerator.getNumBlocksToBalanceUnlock());
-        console.log("MoneroTxGenerator getNumBlocksToNextTx: " + that.txGenerator.getNumBlocksToNextTx());
+        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
+        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
       }
     });
   }
