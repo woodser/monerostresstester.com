@@ -12,6 +12,7 @@ import {Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.j
 
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 import MoneroTxGenerator from './MoneroTxGenerator.js';
+import MoneroTxGeneratorListener from './MoneroTxGeneratorListener.js';
 
 const DEBUG = true;
 
@@ -136,26 +137,44 @@ class App extends React.Component {
 
   }
   
-  async transactionListener(tx){
-    console.log("Tx generated: " + tx);
-    let balance = await this.state.wallet.getBalance();
-    let availableBalance = await this.state.wallet.getUnlockedBalance();
-    this.setState({
-      transactionsGenerated: this.txGenerator.getNumTxsGenerated(),
-      balance: balance,
-      availableBalane: availableBalance,
-      totalFee: this.txGenerator.getTotalFee()
-    });
-  }
-  
-  createTxGenerator(wallet){
+  createTxGenerator(wallet) {
+    
+    // create daemon with connection
     let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
     let daemon = monerojs.connectToDaemonRpc({
       server: daemonConnection,
       proxyToWorker: true
     });
+    
+    // create tx generator
     this.txGenerator = new MoneroTxGenerator(daemon, wallet);
-    this.txGenerator.addTransactionListener(this.transactionListener.bind(this));
+    
+    // handle notifications from tx generator
+    let that = this;
+    this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
+      async onTransaction(tx) {
+        console.log("MoneroTxGeneratorListener.onTransaction()");
+        console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
+        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
+        console.log("MoneroTxGenerator numBlocksToBalanceUnlock: " + that.txGenerator.getNumBlocksToBalanceUnlock());
+        console.log("MoneroTxGenerator getNumBlocksToNextTx: " + that.txGenerator.getNumBlocksToNextTx());
+        let balance = await that.state.wallet.getBalance();
+        let availableBalance = await that.state.wallet.getUnlockedBalance();
+        that.setState({
+          transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
+          balance: balance,
+          availableBalane: availableBalance,
+          totalFee: that.txGenerator.getTotalFee()
+        });
+      }
+      
+      async onNewBlock(height) {
+        console.log("MoneroTxGeneratorListener.onNewBlock()");
+        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
+        console.log("MoneroTxGenerator numBlocksToBalanceUnlock: " + that.txGenerator.getNumBlocksToBalanceUnlock());
+        console.log("MoneroTxGenerator getNumBlocksToNextTx: " + that.txGenerator.getNumBlocksToNextTx());
+      }
+    });
   }
   
   setBalances(balance, availableBalance){

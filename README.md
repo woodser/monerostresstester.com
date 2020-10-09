@@ -11,7 +11,7 @@ Generates transactions on the Monero network by repeatedly sending funds to self
 6. `npm start`
 7. Access web app at http://localhost:8080 (opens automatically)
 
-## UI Design (work in progress)
+## UI Design
 Initial homepage design.  See [design.pdf](design.pdf) for more mockups.
 <p align="center">
 	<img width="85%" height="auto" src="homepage.png"/><br>
