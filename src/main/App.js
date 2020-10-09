@@ -295,6 +295,9 @@ class App extends React.Component {
           }
         });
         
+        // start syncing wallet in background
+        await walletWasm.startSyncing();
+        
         that.walletUpdater.setWalletIsSynchronized(true);
         let balance = await walletWasm.getBalance();
         let availableBalance = await walletWasm.getUnlockedBalance();

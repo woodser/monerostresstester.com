@@ -92,10 +92,8 @@ class MoneroTxGenerator {
     // register wallet listener which notifies tx generator listeners on new blocks
     if (this.listeners.length === 0) {
       let that = this;   
-      console.log("Listening to new blocks!!!");
       this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
         onNewBlock(height) {
-          console.log("NEW BLOCK!!!");
           that._refreshNumBlocksToUnlock().then(function() {
             for (let listener of that.listeners) listener.onNewBlock(height);
           })
