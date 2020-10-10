@@ -57,7 +57,7 @@ class MoneroTxGenerator {
   /**
    * Get the number of split outputs created as a result of running tx generation.
    *
-   * @return {int} the number of blocks until the wallet has unlocked funds, 0 if wallet has unlocked funds
+   * @return {int} the number of split outputs created from running tx generation
    */
   getNumSplitOutputs() {
     return this.numSplitOutputs;
