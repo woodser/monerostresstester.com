@@ -1,4 +1,4 @@
-available balance not updating while generating txs
+loading button on import and create
 disabled textarea mnemonic black instead of grey
 place restore height box according to ui design
 "or go back" should abort and discard imported wallet and not jump to sync page
