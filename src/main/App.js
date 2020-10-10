@@ -197,30 +197,30 @@ class App extends React.Component {
     
     let alertMessage = "";  
     
-    //First, determine whether the user has typed at height, a date, or something else(invalid)
+    // First, determine whether the user has typed at height, a date, or something else(invalid)
     let height=Number(this.state.restoreHeight);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
     if(!(height != NaN && height%1 === 0 && height >= 0)) {
       // Attempt to convert the string to a date in the format "YYYY-MM-DD"
-      try{
-	var dateParts = this.convertStringToRestoreDate(this.state.restoreHeight);
-	
-	// Attempt to convert date into a monero blockchain height:
-	let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
-	height = await dateRestoreHeightWallet.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
-	console.log("Converted the date " + dateParts[0] + "-" + dateParts[1] + "-" + dateParts[2] + " to the height " + height)
+      try {
+        var dateParts = this.convertStringToRestoreDate(this.state.restoreHeight);
+    
+       // Attempt to convert date into a monero blockchain height:
+       let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
+        height = await dateRestoreHeightWallet.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
+        console.log("Converted the date " + dateParts[0] + "-" + dateParts[1] + "-" + dateParts[2] + " to the height " + height)
       } catch(e) {
-	alertMessage = e;
+        alertMessage = e;
       }
-    } 
+    }
     
     // If no errors were thrown, "height" is a valid restore height.
-    if(alertMessage !== "") {
+    if (alertMessage !== "") {
       //If height was invalid:
       console.log(alertMessage);
       this.setState({
-	enteredHeightIsValid: false,
-	isVerifyingImportWallet: false
+	      enteredHeightIsValid: false,
+	      isVerifyingImportWallet: false
       });
       return;
     }
@@ -248,9 +248,6 @@ class App extends React.Component {
       isVerifyingImportWallet: false
     });
     
-    // create the transaction generator
-    this.createTxGenerator(walletWasm);
-    
     this.setState({
       currentHomePage: "Sync_Wallet_Page",
       lastHomePage: "Import_Wallet",
@@ -263,42 +260,10 @@ class App extends React.Component {
     walletWasm.sync(this.walletUpdater).then(async () => {
       
       if(!that.userCancelledWalletSync){
-        // This code should only run if wallet.sync finished because hte wallet finished syncing
+        // This code should only run if wallet.sync finished because the wallet finished syncing
         // And not because the user cancelled the sync
-        
-        // register listener to handle notifications from tx generator
-        that.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
-            
-          // handle transaction notifications
-          async onTransaction(tx) {
-            console.log("MoneroTxGeneratorListener.onTransaction()");
-            console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
-            console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-            console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
-            console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
-            let balance = await that.state.wallet.getBalance();
-            let availableBalance = await that.state.wallet.getUnlockedBalance();
-            that.setState({
-              transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
-              balance: balance,
-              availableBalance: availableBalance,
-              totalFee: that.txGenerator.getTotalFee()
-            });
-          }
-          
-          // handle notifications of blocks added to the chain
-          async onNewBlock(height) {
-            console.log("MoneroTxGeneratorListener.onNewBlock()");
-            console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-            console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
-            console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
-          }
-        });
-        
-        // start syncing wallet in background
-        await walletWasm.startSyncing();
-        
         that.walletUpdater.setWalletIsSynchronized(true);
+        await that._initMain();
         let balance = await walletWasm.getBalance();
         let availableBalance = await walletWasm.getUnlockedBalance();
         let walletIsFunded = availableBalance >= FUNDED_WALLET_MINIMUM_BALANCE;
@@ -374,19 +339,60 @@ async generateWallet(){
   let wasmWalletInfo = Object.assign({}, WALLET_INFO);
   wasmWalletInfo.mnemonic = newPhrase;
   wasmWalletInfo.path = "";
-  let walletWasm = null;
-  try{
-    walletWasm = await monerojs.createWalletWasm(WALLET_INFO);
-  } catch(error) {
-    console.log("Wasm wallet creation failed with error: " + error);
-    return;
-  }
   
   this.setState({
-    wallet: walletWasm
+    wallet: monerojs.createWalletWasm(WALLET_INFO)  // store promise for later resolution
   });
 }
-  
+
+  /**
+   * Common helper to initialize the main page after the wallet is created and synced.
+   *
+   * Creates the tx generator, listens for event notifications, and starts background synchronization.
+   */
+  async _initMain() {
+    
+    // resolve wallet promise
+    // TODO (woodser): create new wallet button needs greyed while this loads
+    this.state.wallet = await this.state.wallet;
+    
+    // create transaction generator
+    this.createTxGenerator(this.state.wallet);
+        
+    // register listener to handle notifications from tx generator
+    let that = this;
+    await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
+      
+      // handle transaction notifications
+      async onTransaction(tx) {
+        console.log("MoneroTxGeneratorListener.onTransaction()");
+        console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
+        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
+        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
+        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
+        let balance = await that.state.wallet.getBalance();
+        let availableBalance = await that.state.wallet.getUnlockedBalance();
+        that.setState({
+          transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
+          balance: balance,
+          availableBalance: availableBalance,
+          totalFee: that.txGenerator.getTotalFee()
+        });
+      }
+      
+      // handle notifications of blocks added to the chain
+      async onNewBlock(height) {
+        console.log("MoneroTxGeneratorListener.onNewBlock(" + height + ")");
+        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
+        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
+        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
+      }
+    });
+    
+    // start syncing wallet in background
+    await this.state.wallet.startSyncing();
+  }
+
   logout() {
 
     this.setState ({
@@ -426,8 +432,8 @@ async generateWallet(){
     let walletPhrase = await this.state.walletPhrase;
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       
-      // create the transaction generator
-      this.createTxGenerator(this.state.wallet);
+      // initialize main page with listening, background sync, etc
+      await this._initMain();
       
       this.setState ({
         phraseIsConfirmed: true,
@@ -437,10 +443,9 @@ async generateWallet(){
       });
     } else {
       this.setState({
-	enteredMnemonicIsValid: false
+	    enteredMnemonicIsValid: false
       });
     }
-
   }
   
   async confirmAbortWalletSynchronization() {

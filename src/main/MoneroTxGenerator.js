@@ -86,13 +86,12 @@ class MoneroTxGenerator {
    *
    * @param {MoneroTxGeneratorListener} listener - a listener to receive notifications about tx generation
    */
-  addListener(listener) {
-    console.log("Adding a tx generator listener");
+  async addListener(listener) {
     
     // register wallet listener which notifies tx generator listeners on new blocks
     if (this.listeners.length === 0) {
       let that = this;   
-      this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
+      await this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
         onNewBlock(height) {
           that._refreshNumBlocksToUnlock().then(function() {
             for (let listener of that.listeners) listener.onNewBlock(height);
