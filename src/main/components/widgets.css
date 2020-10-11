@@ -87,19 +87,21 @@
 }
 
 .loading_animation_container {
-  display: grid;
-  height: 180px;
   width: 100%;
-  grid-template-areas:
-    ".     .     ."
-    ". animation ." 
-    ".     .     .";
-  grid-template-rows: 1fr auto 1fr;
+  height: 100%;
+  display: grid;
+  grid-template-areas: "."
+              "animation"
+              ".";
+  grid-template-rows: 1fr 64px 1fr;
 }
 
 .loading_animation {
-  grid-area: animation;
   margin: 0 auto;
+  flex: none;
+  height: 64px;
+  width: 64px;
+  grid-area: animation;
 }
 
 .default_value {

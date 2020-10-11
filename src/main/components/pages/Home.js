@@ -65,7 +65,11 @@ class Home extends React.Component {
       case "Import_Wallet": 
 	let buttonContents = null;
 	if(this.props.importPageForceWait){
-	  buttonContents = <Loading_Animation />
+	  buttonContents =
+	  <div className="double_button_contents_container">
+            <span className="double_button_item_1">Verifying...</span>
+            <span className="double_button_item_2"><Loading_Animation /></span>
+          </div>
 	} else {
 	  buttonContents = <>Continue</>
 	}

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './home.css';
-import {Page_Box} from '../Widgets.js';
+import {Page_Box, Loading_Animation} from '../Widgets.js';
 import {UI_Text_Link, UI_Button_Link} from '../Buttons.js';
 
 // The initial home page

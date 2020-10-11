@@ -32,20 +32,19 @@ export function getLoadingAnimationFile(){
 export function Loading_Animation(props) {
   
   // Remove the "onLoad" attribute if no notification function is provided - this will avoid errors
+  let className = props.hide === true ? " loading_animation hidden" : "";
+  let imgElement = null;
   if(props.notifySpinnerLoaded) {
-    let className = props.hide === true ? "loading_animation hidden" : "loading_animation";
-    return ( 
-      <div className={"loading_animation_container"}>
-        <img className={className} src={loadingAnimation} onLoad={props.notifySpinnerLoaded} alt="Spinny wheel animation"></img>
-      </div>
-    );
+    imgElement = <img className={"loading_animation" + className} src={loadingAnimation} onLoad={props.notifySpinnerLoaded} alt="Spinny wheel animation"></img>;
   } else {
-    return ( 
-      <div className={"loading_animation_container"}>
-	<img className="loading_animation" src={loadingAnimation} alt="Spinny wheel animation"></img>
-      </div>
-    );
+    imgElement = <img className={"loading_animation" + className} src={loadingAnimation} alt="Spinny wheel animation"></img>
   }
+  return ( 
+    <div className={"loading_animation_container"}>
+      {imgElement}
+    </div>
+  );
+
 }
 
 export function Page_Text_Box(props) {
