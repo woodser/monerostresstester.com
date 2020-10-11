@@ -13,6 +13,7 @@
   --wallet-button-inactive-color: gray;
   
   --double-button-center-space-width: 50px;
+  --spinner-right-margin: 20px;
 }
 
 .ui_link_container {
@@ -40,22 +41,24 @@
 
 .double_button_contents_container {
   height: 100%;
-  display: grid;
-  grid-template:
-    ". item_1 . item_2 ." 100% / 1fr auto var(--double-button-center-space-width)auto 1fr; 
   line-height: var(--button-height)
 }
 
 .double_button_contents_container > * {
   line-height: var(--button-height);
   height: 100%;
+  position: relative;
 }
 
 .double_button_item_1 {
-	grid-area: item_1;
+  position: absolute;
+  width: var(--item-width);
+  right: 0;
 }
 .double_button_item_2 {
-	grid-area: item_2;
+	width: calc(64px + var(--spinner-right-margin));
+	margin-right: var(--spinner-right-margin);
+	float: right;
 }
 
 .home_button_links {
