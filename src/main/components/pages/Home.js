@@ -86,7 +86,7 @@ class Home extends React.Component {
           header="Import existing wallet" 
           handleTextChange={this.props.setEnteredPhrase} 
           handleContinue={this.props.restoreWallet}
-          handleBack={this.props.resetState}
+          handleBack={this.props.cancelImport}
           backDestination="Welcome"
           textEntryIsActive={!this.props.importPageForceWait}
           buttonsAreActive={!this.props.forceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}

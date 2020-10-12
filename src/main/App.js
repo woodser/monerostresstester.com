@@ -240,6 +240,9 @@ class App extends React.Component {
       return;
     }
     
+    if(this.userCancelledWalletImport){
+      return;
+    }
     // Both the mnemonic and restore height were valid; thus, we can remove the disposable date-conversion
     // Wallet from memory
     this.dateRestoreWasmWallet = null;
@@ -258,7 +261,7 @@ class App extends React.Component {
     let that=this;
     walletWasm.sync(this.walletUpdater).then(async () => {
       
-      if(!that.userCancelledWalletSync){
+      if(!that.userCancelledWalletSync && !that.userCancelledWalletImport){
         // This code should only run if wallet.sync finished because the wallet finished syncing
         // And not because the user cancelled the sync
         that.walletUpdater.setWalletIsSynchronized(true);
@@ -281,6 +284,7 @@ class App extends React.Component {
         // Reset the wallet sync cancellation indicator variable so that any completed
         // syncs in the future are not misinterpretted as cancelled syncs by default
         that.userCancelledWalletSync = false;
+        that.userCancelledWalletImport = false;
       }
     });
     
@@ -489,6 +493,12 @@ async generateWallet(){
     }, 0);
   }
   
+  cancelImport(){
+    console.log("user cancelled wallet import");
+    this.userCancelledWalletImport = true;
+    this.logout();
+  }
+  
   render(){
     if(this.state.animationIsLoaded){
       return(
@@ -522,7 +532,7 @@ async generateWallet(){
                 createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
                 enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
                 enteredHeightIsValid = {this.state.enteredHeightIsValid}
-                resetState = {this.logout.bind(this)}
+                cancelImport = {this.cancelImport.bind(this)}
                 forceWait = {this.state.isAwaitingWalletVerification}
               />} />
               <Route path="/backup" render={(props) => <Backup
