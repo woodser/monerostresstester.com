@@ -275,16 +275,9 @@ class App extends React.Component {
         });
 
       } else {
-        // Reset state variables
-        that.setState({
-          walletPhrase: "",
-          phraseIsConfirmed: false,
-          walletSyncProgress: 0,
-          balance: 0,
-          availableBalance: 0,
-          enteredMnemonicIsValid: true,
-          enteredHeightIsValid: true
-        });
+	
+        console.log("wallet sync cancellation just completed");
+        
         // Reset the wallet sync cancellation indicator variable so that any completed
         // syncs in the future are not misinterpretted as cancelled syncs by default
         that.userCancelledWalletSync = false;
@@ -455,8 +448,16 @@ async generateWallet(){
     let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
     
     if (doAbort){
+      
       this.setState({
-	currentHomePage: "Import_Wallet"
+        walletPhrase: "",
+        phraseIsConfirmed: false,
+        walletSyncProgress: 0,
+        balance: 0,
+        availableBalance: 0,
+        enteredMnemonicIsValid: true,
+        enteredHeightIsValid: true,
+        currentHomePage: "Import_Wallet"
       });
       /*
        * First, set a class variable so that the importWallet function 
