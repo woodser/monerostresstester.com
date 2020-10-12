@@ -116,8 +116,7 @@ class App extends React.Component {
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
       animationIsLoaded: false,
-      isVerifyingImportWallet: false
-      
+      isAwaitingWalletVerification: false
     };
   }
   
@@ -192,12 +191,12 @@ class App extends React.Component {
   async restoreWallet(){
     
     this.setState({
-      isVerifyingImportWallet: true
+      isAwaitingWalletVerification: true
     });
     
     let alertMessage = "";  
     
-    // First, determine whether the user has typed at height, a date, or something else(invalid)
+    // First, determine whether the user has typed a height, a date, or something else(invalid)
     let height=Number(this.state.restoreHeight);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
     if(!(height != NaN && height%1 === 0 && height >= 0)) {
@@ -220,7 +219,7 @@ class App extends React.Component {
       console.log(alertMessage);
       this.setState({
 	      enteredHeightIsValid: false,
-	      isVerifyingImportWallet: false
+	      isAwaitingWalletVerification: false
       });
       return;
     }
@@ -236,7 +235,7 @@ class App extends React.Component {
       console.log("Error: " + e);
       this.setState({
 	enteredMnemonicIsValid: false,
-	isVerifyingImportWallet: false
+	isAwaitingWalletVerification: false
       });
       return;
     }
@@ -245,7 +244,7 @@ class App extends React.Component {
     // Wallet from memory
     this.dateRestoreWasmWallet = null;
     this.setState({
-      isVerifyingImportWallet: false
+      isAwaitingWalletVerification: false
     });
     
     this.setState({
@@ -413,9 +412,9 @@ async generateWallet(){
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFee: 0,
-      isVerifyingImportWallet: false,
       enteredMnemonicIsValid: true,
-      enteredHeightIsValid: true
+      enteredHeightIsValid: true,
+      isAwaitingWalletVerification: false
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -429,9 +428,11 @@ async generateWallet(){
   }
   
   async confirmWallet() {
+    this.setState({
+      isAwaitingWalletVerification: true
+    });
     let walletPhrase = await this.state.walletPhrase;
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
-      
       // initialize main page with listening, background sync, etc
       await this._initMain();
       
@@ -439,11 +440,13 @@ async generateWallet(){
         phraseIsConfirmed: true,
         lastHomePage: "Confirm_Wallet",
         walletIsSynced: true,
-        currentHomePage: "Wallet"
+        currentHomePage: "Wallet",
+        isAwaitingWalletVerification: false
       });
     } else {
       this.setState({
-	    enteredMnemonicIsValid: false
+        enteredMnemonicIsValid: false,
+	isAwaitingWalletVerification: false
       });
     }
   }
@@ -519,7 +522,7 @@ async generateWallet(){
                 enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
                 enteredHeightIsValid = {this.state.enteredHeightIsValid}
                 resetState = {this.logout.bind(this)}
-                importPageForceWait = {this.state.isVerifyingImportWallet}
+                forceWait = {this.state.isAwaitingWalletVerification}
               />} />
               <Route path="/backup" render={(props) => <Backup
                 {...props}

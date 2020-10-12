@@ -25,7 +25,7 @@ class Home extends React.Component {
   
   render() {
     let renderItem = null;
-    
+    let buttonContents = null;
     switch(this.props.currentHomePage){
       case "Welcome":
         renderItem =
@@ -50,6 +50,15 @@ class Home extends React.Component {
           />;
         break;
       case "Confirm_Wallet":
+	if(this.props.forceWait){
+	  buttonContents=
+	    <div className="double_button_contents_container">
+              <span className="double_button_item_1">Creating wallet...</span>
+              <span className="double_button_item_2"><Loading_Animation /></span>
+            </div>
+	} else {
+	  buttonContents = <>Continue</>
+	}
         renderItem = 
   	<Enter_Phrase_Page
             header="Confirm your backup phrase" 
@@ -57,14 +66,13 @@ class Home extends React.Component {
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
             setCurrentHomePage={this.props.setCurrentHomePage}
-            buttonsAreActive={this.props.enteredMnemonicIsValid}
+            buttonsAreActive={this.props.enteredMnemonicIsValid && !this.props.forceWait}
             isValid={this.props.enteredMnemonicIsValid}
-            buttonContents = {<>Continue</>}
+            buttonContents = {buttonContents}
           />;
         break;
       case "Import_Wallet": 
-	let buttonContents = null;
-	if(this.props.importPageForceWait){
+	if(this.props.forceWait){
 	  buttonContents =
 	  <div className="double_button_contents_container">
             <span className="double_button_item_1">Verifying...</span>
@@ -81,7 +89,7 @@ class Home extends React.Component {
           handleBack={this.props.resetState}
           backDestination="Welcome"
           textEntryIsActive={!this.props.importPageForceWait}
-          buttonsAreActive={!this.props.importPageForceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
+          buttonsAreActive={!this.props.forceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
           isValid={this.props.enteredMnemonicIsValid}
           setCurrentHomePage = {this.props.setCurrentHomePage}
           buttonContents={buttonContents}
