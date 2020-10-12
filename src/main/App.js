@@ -354,7 +354,9 @@ async generateWallet(){
     
     // resolve wallet promise
     // TODO (woodser): create new wallet button needs greyed while this loads
-    this.state.wallet = await this.state.wallet;
+    let wallet = await this.state.wallet;
+    // TODO (woodser): if "or go back" link clicked, return
+    this.setState({wallet: wallet});
     
     // create transaction generator
     this.createTxGenerator(this.state.wallet);
@@ -390,6 +392,7 @@ async generateWallet(){
     });
     
     // start syncing wallet in background
+    console.log("STARTING BACKGROUND SYNC");
     await this.state.wallet.startSyncing();
   }
 
