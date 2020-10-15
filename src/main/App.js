@@ -351,7 +351,13 @@ async generateWallet(){
     // resolve wallet promise
     // TODO (woodser): create new wallet button needs greyed while this loads
     let wallet = await this.state.wallet;
-    // TODO (woodser): if "or go back" link clicked, return
+
+    // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
+    // and do NOT proceed to wallet page
+    if(this.userCancelledWalletConfirmation){
+	return;
+    }
+    
     this.setState({wallet: wallet});
     
     // create transaction generator
@@ -387,7 +393,7 @@ async generateWallet(){
       }
     });
     
-    // start syncing wallet in background
+    // start syncing wallet in background if the user has not cancelled wallet creation
     console.log("STARTING BACKGROUND SYNC");
     await this.state.wallet.startSyncing();
   }
@@ -435,6 +441,13 @@ async generateWallet(){
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       // initialize main page with listening, background sync, etc
       await this._initMain();
+      
+      // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
+      // and do NOT proceed to wallet page
+      if(this.userCancelledWalletConfirmation){
+	this.userCancelledWalletConfirmation = false;
+	return;
+      }
       
       this.setState ({
         phraseIsConfirmed: true,
@@ -502,6 +515,22 @@ async generateWallet(){
     this.logout();
   }
   
+  cancelConfirmation(){
+    console.log("user cancelled wallet confirmation");
+    console.log("wallet in state is object of type: " + this.state.wallet.constructor.toString());
+    /*
+     * If the user cancels the wallet import by hitting "or go back", this.state.wallet will remain a promise
+     * to the cancelled wallet. "stopSyncing" must be run on this wallet, but cannot until the promise resolves
+     * by which point the value of state.wallet may have changed do to the user generating a new phrase or 
+     * importing a different wallet in the meantime.
+     * Thus, condemnedWallet allows the app to keep track of the wallet and run "stopSyncing" on it when ready.
+     */
+    this.userCancelledWalletConfirmation = true;
+    this.setState({
+      isAwaitingWalletVerification: false
+    });
+  }
+  
   render(){
     if(this.state.animationIsLoaded){
       return(
@@ -536,6 +565,7 @@ async generateWallet(){
                 enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
                 enteredHeightIsValid = {this.state.enteredHeightIsValid}
                 cancelImport = {this.cancelImport.bind(this)}
+                cancelConfirmation = {this.cancelConfirmation.bind(this)}
                 forceWait = {this.state.isAwaitingWalletVerification}
               />} />
               <Route path="/backup" render={(props) => <Backup

@@ -65,6 +65,7 @@ class Home extends React.Component {
             handleTextChange={this.props.setEnteredPhrase} 
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
+            handleBack={this.props.cancelConfirmation}
             setCurrentHomePage={this.props.setCurrentHomePage}
             buttonsAreActive={this.props.enteredMnemonicIsValid && !this.props.forceWait}
             isValid={this.props.enteredMnemonicIsValid}
