@@ -45,7 +45,6 @@ class Home extends React.Component {
             handleBack={this.props.resetState}
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
-            keysModuleLoaded = {this.props.keysModuleLoaded}
             setCurrentHomePage = {this.props.setCurrentHomePage}
           />;
         break;

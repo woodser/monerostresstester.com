@@ -107,8 +107,6 @@ class App extends React.Component {
       availableBalance: 0,
       currentHomePage: "Welcome",
       lastHomePage: "",
-      keysModuleLoaded: false,
-      wasmModuleLoaded: false,
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
@@ -218,8 +216,8 @@ class App extends React.Component {
       //If height was invalid:
       console.log(alertMessage);
       this.setState({
-	      enteredHeightIsValid: false,
-	      isAwaitingWalletVerification: false
+	enteredHeightIsValid: false,
+        isAwaitingWalletVerification: false
       });
       return;
     }
@@ -412,8 +410,6 @@ async generateWallet(){
       walletIsSynced: false,
       balance: 0,
       availableBalance: 0,
-      keysModuleLoaded: false,
-      wasmModuleLoaded: false,
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
@@ -446,6 +442,9 @@ async generateWallet(){
       // and do NOT proceed to wallet page
       if(this.userCancelledWalletConfirmation){
 	this.userCancelledWalletConfirmation = false;
+	this.setState({
+	  isAwaitingWalletVerification: false
+	});
 	return;
       }
       
@@ -510,14 +509,11 @@ async generateWallet(){
   }
   
   cancelImport(){
-    console.log("user cancelled wallet import");
     this.userCancelledWalletImport = true;
     this.logout();
   }
   
   cancelConfirmation(){
-    console.log("user cancelled wallet confirmation");
-    console.log("wallet in state is object of type: " + this.state.wallet.constructor.toString());
     /*
      * If the user cancels the wallet import by hitting "or go back", this.state.wallet will remain a promise
      * to the cancelled wallet. "stopSyncing" must be run on this wallet, but cannot until the promise resolves
