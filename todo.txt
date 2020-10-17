@@ -4,3 +4,4 @@ place restore height box according to ui design
 "or go back" should abort and discard imported wallet and not jump to sync page
 button hover effect confined to button boundaries
 1 arm pump per tx
+remove text hyperlink underline from buttons which are "solid"

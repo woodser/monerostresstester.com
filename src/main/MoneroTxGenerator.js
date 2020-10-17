@@ -19,7 +19,7 @@ class MoneroTxGenerator {
     // Track the total number of transactions completed
     this.numTxsGenerated = 0;
     // Track the sum of all all cumulative transaction fees
-    this.totalFee = new BigInteger(0);
+    this.totalFees = new BigInteger(0);
     this.numSplitOutputs = 0;
     this.listeners = [];
   }
@@ -51,7 +51,7 @@ class MoneroTxGenerator {
   }
 
   getTotalFee() {
-	return this.totalFee;
+	  return this.totalFees;
   }
   
   /**
@@ -123,18 +123,6 @@ class MoneroTxGenerator {
     }
   }
 
-  /**
-   * Callback to notify requesting classes that a transaction occurred
-   * and to provide those classes with transaction data and total number of
-   * transactions up to this point.
-   */ 
-  async _onTransaction(tx) {
-    await this._refreshNumBlocksToUnlock();
-    for(let i = 0; i < this.listeners.length; i++) {
-      this.listeners[i].onTransaction(tx);
-    }
-  }
-
   async _spendAvailableOutputs() {
 
     console.log("Spending available outputs");
@@ -183,17 +171,17 @@ class MoneroTxGenerator {
           console.log("Sending multi-output tx");
           let tx = await this.wallet.createTx(config);
           this.numTxsGenerated++;
-          this.totalFee = this.totalFee.add(tx.getFee());
+          this.totalFees = this.totalFees.add(tx.getFee());
           this.numSplitOutputs += tx.getOutgoingTransfer().getDestinations().length;
           outputsToCreate -= numDsts;
           console.log("Sent tx id: " + tx.getHash());
           console.log(this.numTxsGenerated + "txs generated");
-          console.log("Total fee: " + this.totalFee);
+          console.log("Total fees: " + this.totalFees);
 
           // The transaction was successful, so fire the "_onTransaction" event
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
-          // data and total number of transactios up to this point
+          // data and total number of transactions up to this point
           await this._onTransaction(tx);
 
         } catch (e) {
@@ -214,10 +202,10 @@ class MoneroTxGenerator {
             relay: true
           });
           this.numTxsGenerated++;
-          this.totalFee = this.totalFee.add(tx.getFee());
+          this.totalFees = this.totalFees.add(tx.getFee());
           console.log("Sweep tx id: " + tx.getHash());
           console.log(this.numTxsGenerated + " txs generated");
-          console.log("Total fee: " + this.totalFee);
+          console.log("Total fees: " + this.totalFees);
 
           // The transaction was successful, so fire the "_onTransaction" event
           // to notify any classes that have submitted listeners that a new
@@ -232,11 +220,25 @@ class MoneroTxGenerator {
     }
   }
   
-  async _refreshNumBlocksToUnlock() {
+  /**
+   * Callback to notify requesting classes that a transaction occurred
+   * and to provide those classes with transaction data and total number of
+   * transactions up to this point.
+   */ 
+  async _onTransaction(tx) {
+    let balance = await this.wallet.getBalance();
+    let unlockedBalance = await this.wallet.getUnlockedBalance();
+    await this._refreshNumBlocksToUnlock(balance, unlockedBalance, 10);
+    for (let i = 0; i < this.listeners.length; i++) {
+      this.listeners[i].onTransaction(tx, balance, unlockedBalance, this.numTxsGenerated, this.totalFees, this.numSplitOutputs, this.numBlocksToNextUnlock, this.numBlocksToLastUnlock);
+    }
+  }
+  
+  async _refreshNumBlocksToUnlock(balance, unlockedBalance, numBlocksToLastUnlock) {
     
     // compute number of blocks until next funds available
     let txs;
-    if ((await this.wallet.getUnlockedBalance()).compare(new BigInteger(0)) >= 0) {
+    if (unlockedBalance.compare(new BigInteger(0)) >= 0) {
       this.numBlocksToNextUnlock = 0;
     } else {
       txs = await this.wallet.getTxs({isLocked: true}); // get locked txs
@@ -246,13 +248,16 @@ class MoneroTxGenerator {
     }
     
     // compute number of blocks until all funds available
-    if ((await this.wallet.getBalance()).compare(await this.wallet.getUnlockedBalance()) === 0) {
-      if ((await this.wallet.getUnlockedBalance()).compare(new BigInteger(0)) >= 0) this.numBlocksToLastUnlock = 0;
-    } else {
-      txs = txs || await this.wallet.getTxs({isLocked: true});  // get locked txs
-      let minNumConfirmations;
-      for (let tx of txs) if (minNumConfirmations === undefined || minNumConfirmations > tx.getNumConfirmations()) minNumConfirmations = tx.getNumConfirmations();
-      this.numBlocksToLastUnlock = 10 - minNumConfirmations;
+    if (numBlocksToLastUnlock !== undefined) this.numBlocksToLastUnlock = numBlocksToLastUnlock;
+    else {
+      if (balance.compare(unlockedBalance) === 0) {
+        if (unlockedBalance.compare(new BigInteger(0)) >= 0) this.numBlocksToLastUnlock = 0;
+      } else {
+        txs = txs || await this.wallet.getTxs({isLocked: true});  // get locked txs
+        let minNumConfirmations;
+        for (let tx of txs) if (minNumConfirmations === undefined || minNumConfirmations > tx.getNumConfirmations()) minNumConfirmations = tx.getNumConfirmations();
+        this.numBlocksToLastUnlock = 10 - minNumConfirmations;
+      }
     }
   }
 }

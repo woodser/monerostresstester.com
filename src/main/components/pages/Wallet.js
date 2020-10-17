@@ -43,7 +43,7 @@ export default function Wallet(props){
         <Wallet_Page_Section label = "Balance" value={props.balance * XMR_AU_RATIO + " XMR"} />
         <Wallet_Page_Section label = "Available balance" value={props.availableBalance * XMR_AU_RATIO + " XMR"} />
         <Wallet_Page_Section label = "Transactions generated" value={props.transactionsGenerated} />
-        <Wallet_Page_Section label = "Total fees" value={props.totalFee * XMR_AU_RATIO + " XMR"} />
+        <Wallet_Page_Section label = "Total fees" value={props.totalFees * XMR_AU_RATIO + " XMR"} />
         <div className="home_button_links">
         <UI_Button_Link 
           handleClick = {buttonHandleContinue}

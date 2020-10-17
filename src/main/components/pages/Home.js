@@ -123,7 +123,7 @@ class Home extends React.Component {
           startGeneratingTxs = {this.props.startGeneratingTxs}
           stopGeneratingTxs = {this.props.stopGeneratingTxs}
           transactionsGenerated = {this.props.transactionsGenerated}
-          totalFee = {this.props.totalFee}
+          totalFees = {this.props.totalFees}
         />;
         break;
     }

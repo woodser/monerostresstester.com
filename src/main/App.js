@@ -110,7 +110,7 @@ class App extends React.Component {
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
-      totalFee: 0,
+      totalFees: 0,
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
       animationIsLoaded: false,
@@ -364,19 +364,21 @@ async generateWallet(){
     await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
       
       // handle transaction notifications
-      async onTransaction(tx) {
+      async onTransaction(tx, balance, availableBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) {
         console.log("MoneroTxGeneratorListener.onTransaction()");
         console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
-        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
-        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
-        let balance = await that.state.wallet.getBalance();
-        let availableBalance = await that.state.wallet.getUnlockedBalance();
+        console.log("MoneroTxGenerator balance: " + balance);
+        console.log("MoneroTxGenerator available balance: " + availableBalance);
+        console.log("MoneroTxGenerator numTxsGenerated: " + numTxsGenerated);
+        console.log("MoneroTxGenerator totalFees: " + totalFees);
+        console.log("MoneroTxGenerator numSplitOutputs: " + numSplitOutputs);
+        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + numBlocksToNextUnlock);
+        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + numBlocksToLastUnlock);
         that.setState({
-          transactionsGenerated: that.txGenerator.getNumTxsGenerated(),
+          transactionsGenerated: numTxsGenerated,
           balance: balance,
           availableBalance: availableBalance,
-          totalFee: that.txGenerator.getTotalFee()
+          totalFees: totalFees
         });
       }
       
@@ -411,7 +413,7 @@ async generateWallet(){
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
-      totalFee: 0,
+      totalFees: 0,
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
       isAwaitingWalletVerification: false
@@ -554,7 +556,7 @@ async generateWallet(){
                 startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
                 stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
                 transactionsGenerated = {this.state.transactionsGenerated}
-                totalFee = {this.state.totalFee}
+                totalFees = {this.state.totalFees}
                 createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
                 enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
                 enteredHeightIsValid = {this.state.enteredHeightIsValid}
