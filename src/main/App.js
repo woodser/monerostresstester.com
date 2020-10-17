@@ -356,10 +356,8 @@ async generateWallet(){
 	return;
     }
     
-    this.setState({wallet: wallet});
-    
     // create transaction generator
-    this.createTxGenerator(this.state.wallet);
+    this.createTxGenerator(wallet);
         
     // register listener to handle notifications from tx generator
     let that = this;
@@ -393,7 +391,7 @@ async generateWallet(){
     
     // start syncing wallet in background if the user has not cancelled wallet creation
     console.log("STARTING BACKGROUND SYNC");
-    await this.state.wallet.startSyncing();
+    await wallet.startSyncing();
   }
 
   logout() {
