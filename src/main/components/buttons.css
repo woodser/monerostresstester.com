@@ -11,16 +11,19 @@
   --alt-wallet-button-click-color: #dd1144;
   
   --wallet-button-inactive-color: gray;
+  
+  --double-button-center-space-width: 50px;
+  --spinner-right-margin: 20px;
 }
 
 .ui_link_container {
   height: var(--button-height);
-  display: block;
   width: calc(var(--button-width) - var(--button-border-width)*2);
-  position: relative;
   margin: 0 auto;
   text-align: center;
   cursor: pointer;
+  
+  font-weight: bold;
 }
 
 .ui_link_text_container {
@@ -30,14 +33,32 @@
 }
 
 .button_contents_container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  line-height: var(--button-height);
+}
+
+.double_button_contents_container {
+  height: 100%;
+  line-height: var(--button-height)
+}
+
+.double_button_contents_container > * {
+  line-height: var(--button-height);
+  height: 100%;
+  position: relative;
+}
+
+.double_button_item_1 {
   position: absolute;
-  margin: 0;
-  top:50%;
-  left:50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  font-weight: bold;
-  width: inherit;
+  width: var(--item-width);
+  right: 0;
+}
+.double_button_item_2 {
+	width: calc(64px + var(--spinner-right-margin));
+	margin-right: var(--spinner-right-margin);
+	float: right;
 }
 
 .home_button_links {

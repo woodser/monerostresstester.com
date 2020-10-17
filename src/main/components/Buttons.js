@@ -10,12 +10,12 @@ export function UI_Button_Link(props) {
       <a
         className={"ui_link_container ui_button_link " + props.className} 
         onClick = {function () {
-  	if(props.handleClick){
-  	  props.handleClick();
-  	}
-  	if(props.destination && props.setCurrentHomePage){
-  	  props.setCurrentHomePage(props.destination);
-  	}
+          if(props.handleClick){
+            props.handleClick();
+          }
+          if(props.destination && props.setCurrentHomePage){
+            props.setCurrentHomePage(props.destination);
+          }
         }}
       >
         <div className="button_contents_container">

@@ -25,7 +25,7 @@ class Home extends React.Component {
   
   render() {
     let renderItem = null;
-    
+    let buttonContents = null;
     switch(this.props.currentHomePage){
       case "Welcome":
         renderItem =
@@ -45,27 +45,39 @@ class Home extends React.Component {
             handleBack={this.props.resetState}
             continueDestination="Confirm_Wallet"
             backDestination="Welcome"
-            keysModuleLoaded = {this.props.keysModuleLoaded}
             setCurrentHomePage = {this.props.setCurrentHomePage}
           />;
         break;
       case "Confirm_Wallet":
+	if(this.props.forceWait){
+	  buttonContents=
+	    <div className="double_button_contents_container">
+              <span className="double_button_item_1">Creating wallet...</span>
+              <span className="double_button_item_2"><Loading_Animation /></span>
+            </div>
+	} else {
+	  buttonContents = <>Continue</>
+	}
         renderItem = 
   	<Enter_Phrase_Page
             header="Confirm your backup phrase" 
             handleTextChange={this.props.setEnteredPhrase} 
             handleContinue={this.props.confirmWallet}
             backDestination="New_Wallet"
+            handleBack={this.props.cancelConfirmation}
             setCurrentHomePage={this.props.setCurrentHomePage}
-            buttonsAreActive={this.props.enteredMnemonicIsValid}
+            buttonsAreActive={this.props.enteredMnemonicIsValid && !this.props.forceWait}
             isValid={this.props.enteredMnemonicIsValid}
-            buttonContents = {<>Continue</>}
+            buttonContents = {buttonContents}
           />;
         break;
       case "Import_Wallet": 
-	let buttonContents = null;
-	if(this.props.importPageForceWait){
-	  buttonContents = <Loading_Animation />
+	if(this.props.forceWait){
+	  buttonContents =
+	  <div className="double_button_contents_container">
+            <span className="double_button_item_1">Verifying...</span>
+            <span className="double_button_item_2"><Loading_Animation /></span>
+          </div>
 	} else {
 	  buttonContents = <>Continue</>
 	}
@@ -74,10 +86,10 @@ class Home extends React.Component {
           header="Import existing wallet" 
           handleTextChange={this.props.setEnteredPhrase} 
           handleContinue={this.props.restoreWallet}
-          handleBack={this.props.resetState}
+          handleBack={this.props.cancelImport}
           backDestination="Welcome"
           textEntryIsActive={!this.props.importPageForceWait}
-          buttonsAreActive={!this.props.importPageForceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
+          buttonsAreActive={!this.props.forceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
           isValid={this.props.enteredMnemonicIsValid}
           setCurrentHomePage = {this.props.setCurrentHomePage}
           buttonContents={buttonContents}
