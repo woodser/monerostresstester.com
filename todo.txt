@@ -1,7 +1,9 @@
-loading button on import and create
-disabled textarea mnemonic black instead of grey
-place restore height box according to ui design
-"or go back" should abort and discard imported wallet and not jump to sync page
-button hover effect confined to button boundaries
-1 arm pump per tx
+loading button smaller per ui spec
+place restore height box according to ui spec
 remove text hyperlink underline from buttons which are "solid"
+disabled textarea mnemonic black instead of grey
+"or go back" should abort and discard imported wallet and not jump to sync page
+1 arm pump per tx
+main page button extends beyond center area
+change button "Verifying..." to "Importing wallet..." and "Creating wallet..."
+update main page state per ui spec
