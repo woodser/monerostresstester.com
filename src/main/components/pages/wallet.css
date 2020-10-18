@@ -1,3 +1,7 @@
+:root {
+  --wallet-item-width: 80%;
+}
+
 .wallet_page_section {
   display: grid;
   grid-template-areas:
@@ -19,9 +23,17 @@
   font-size: 24px;
 }
 .wallet_page_sections_container {
-  width: 80%;
+  width: var(--wallet-item-width);
   padding-top: 38px;
 }
+
+.wallet_page_button_container {
+  width: calc(var(--page-box-width) * 0.8);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .wallet_page_section_label {
   grid-area: section_label;
 }
