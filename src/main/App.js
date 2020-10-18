@@ -300,19 +300,18 @@ setEnteredPhrase(mnemonic){
   });
 }
 
-startGeneratingTxs(){
+async startGeneratingTxs(){
+  await this.txGenerator.start();
   this.setState({
     isGeneratingTxs: true
   })
-  this.txGenerator.start();
 }
 
-stopGeneratingTxs(){
+async stopGeneratingTxs(){
+  this.txGenerator.stop();
   this.setState({
     isGeneratingTxs: false
   })
-
-  this.txGenerator.stop();
 }
 
 async generateWallet(){
@@ -364,11 +363,11 @@ async generateWallet(){
     await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
       
       // handle transaction notifications
-      async onTransaction(tx, balance, availableBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) {
+      async onTransaction(tx, balance, unlockedBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) {
         console.log("MoneroTxGeneratorListener.onTransaction()");
         console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
         console.log("MoneroTxGenerator balance: " + balance);
-        console.log("MoneroTxGenerator available balance: " + availableBalance);
+        console.log("MoneroTxGenerator available balance: " + unlockedBalance);
         console.log("MoneroTxGenerator numTxsGenerated: " + numTxsGenerated);
         console.log("MoneroTxGenerator totalFees: " + totalFees);
         console.log("MoneroTxGenerator numSplitOutputs: " + numSplitOutputs);
@@ -377,17 +376,15 @@ async generateWallet(){
         that.setState({
           transactionsGenerated: numTxsGenerated,
           balance: balance,
-          availableBalance: availableBalance,
+          availableBalance: unlockedBalance,
           totalFees: totalFees
         });
       }
       
       // handle notifications of blocks added to the chain
-      async onNewBlock(height) {
-        console.log("MoneroTxGeneratorListener.onNewBlock(" + height + ")");
-        console.log("MoneroTxGenerator numSplitOutputs: " + that.txGenerator.getNumSplitOutputs());
-        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + that.txGenerator.getNumBlocksToNextUnlock());
-        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + that.txGenerator.getNumBlocksToLastUnlock());
+      async onNewBlock(height, balance, unlockedBalance, numBlocksToNextUnlock, numBlocksToLastUnlock) {
+        console.log("MoneroTxGeneratorListener.onNewBlock()");
+        console.log(arguments);
       }
     });
     

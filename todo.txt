@@ -1,3 +1,4 @@
+UI HIGH PRIORITY
 loading spinny smaller per ui spec
 place restore height box according to ui spec
 remove text hyperlink underline from buttons which are "solid"
@@ -5,6 +6,10 @@ disabled textarea mnemonic black instead of grey
 main page button extends beyond center area
 change button "Verifying..." to "Importing wallet..." and "Creating wallet..."
 update main page state per ui spec
+
+UI LOW PRIORITY
 1 arm pump per tx
 
-mjs hanging on wallet.getBalance() when sweeping outputs at tx #15, #30, #46, etc
+TX GENERATION
+num blocks to next/last unlock based on 10 confirmations; base on unlock height for mined txs
+tx generation hangs on background sync every ~15 txs, pause background sync or limit sync during tx generation?

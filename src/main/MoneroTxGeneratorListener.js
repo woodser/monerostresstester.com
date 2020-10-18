@@ -15,14 +15,18 @@ class MoneroTxGeneratorListener {
      * @param numBlocksToNextUnlock - number of blocks until next funds are available
      * @param numBlocksToLastUnlock - number of blocks until all funds are available
      */
-    onTransaction(tx, balance, availableBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) { }
+    onTransaction(tx, balance, unlockedBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) { }
     
     /**
      * Notified when the wallet's block height updates.
      *
      * @param height - the wallet's new block height
+     * @param balance - wallet's balance
+     * @param unlockedBalance - wallet's unlocked balance after the new block
+     * @param numBlocksToNextUnlock - number of blocks until next funds are available
+     * @param numBlocksToLastUnlock - number of blocks until all funds are available
      */
-    onNewBlock(height) { }
+    onNewBlock(height, balance, unlockedBalance, numBlocksToNextUnlock, numBlocksToLastUnlock) { }
 }
 
 module.exports = MoneroTxGeneratorListener;
