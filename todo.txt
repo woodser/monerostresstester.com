@@ -1,9 +1,10 @@
-loading button smaller per ui spec
+loading spinny smaller per ui spec
 place restore height box according to ui spec
 remove text hyperlink underline from buttons which are "solid"
 disabled textarea mnemonic black instead of grey
-"or go back" should abort and discard imported wallet and not jump to sync page
-1 arm pump per tx
 main page button extends beyond center area
 change button "Verifying..." to "Importing wallet..." and "Creating wallet..."
 update main page state per ui spec
+1 arm pump per tx
+
+mjs hanging on wallet.getBalance() when sweeping outputs at tx #15, #30, #46, etc
