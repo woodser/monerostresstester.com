@@ -3,6 +3,7 @@
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --page-box-width: 900px;
   --item-width: 860px;
+  --loading-animation-size: 36px;
 }
 
 body {

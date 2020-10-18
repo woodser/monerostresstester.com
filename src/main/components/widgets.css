@@ -23,7 +23,7 @@
 }
 
 .save_phrase_box_bottom_margin {
-  height: 28px;
+  height: 42px;
 }
 .regenerate_button_bottom_margin {
   height: 16px;
@@ -93,14 +93,14 @@
   grid-template-areas: "."
               "animation"
               ".";
-  grid-template-rows: 1fr 64px 1fr;
+  grid-template-rows: 1fr var(--loading-animation-size) 1fr;
 }
 
 .loading_animation {
   margin: 0 auto;
   flex: none;
-  height: 64px;
-  width: 64px;
+  height: var(--loading-animation-size);
+  width: var(--loading-animation-size);
   grid-area: animation;
 }
 
@@ -118,7 +118,8 @@
 
 .enter_restore_height_box {
   background-color: var(--text-entry-background-color);
-  height: 42px;
+  margin-top: 42px;
+  height: 56px;
 }
 
 textarea {

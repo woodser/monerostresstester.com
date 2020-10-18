@@ -13,7 +13,7 @@
   --wallet-button-inactive-color: gray;
   
   --double-button-center-space-width: 50px;
-  --spinner-right-margin: 20px;
+  --spinner-right-margin: 10px;
 }
 
 .ui_link_container {
@@ -56,7 +56,7 @@
   right: 0;
 }
 .double_button_item_2 {
-	width: calc(64px + var(--spinner-right-margin));
+	width: calc(var(--loading-animation-size) + var(--spinner-right-margin));
 	margin-right: var(--spinner-right-margin);
 	float: right;
 }
