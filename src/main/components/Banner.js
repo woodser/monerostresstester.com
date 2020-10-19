@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import "./banner.css";
-import logo from "../img/monero_muscle_logo.gif";
 import { BrowserRouter as Link, NavLink } from "react-router-dom";
 
 function convertLinkNameToUrl(name){
@@ -35,7 +34,7 @@ export default function Banner(props) {
         MoneroStressTester.com
       </NavLink>
       <div id="logo_container">
-        <img src={logo} alt="Monero Muscle Logo"></img>
+        <img src={props.flexLogo} alt="Monero Muscle Logo"></img>
       </div>
       <div id="nav">
         {links}
