@@ -14,6 +14,9 @@ import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 import MoneroTxGenerator from './MoneroTxGenerator.js';
 import MoneroTxGeneratorListener from './MoneroTxGeneratorListener.js';
 
+import flexingLogo from './img/muscleFlex.gif';
+import relaxingLogo from './img/muscleRelax.gif';
+
 const DEBUG = true;
 
 const monerojs = require("monero-javascript");
@@ -114,7 +117,8 @@ class App extends React.Component {
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
       animationIsLoaded: false,
-      isAwaitingWalletVerification: false
+      isAwaitingWalletVerification: false,
+      flexLogo: relaxingLogo
     };
   }
   
@@ -379,6 +383,7 @@ async generateWallet(){
           availableBalance: unlockedBalance,
           totalFees: totalFees
         });
+        that.playMuscleAnimation.bind(that)();
       }
       
       // handle notifications of blocks added to the chain
@@ -391,6 +396,18 @@ async generateWallet(){
     // start syncing wallet in background if the user has not cancelled wallet creation
     console.log("STARTING BACKGROUND SYNC");
     await wallet.startSyncing();
+  }
+  
+  playMuscleAnimation(){
+    this.setState({
+      flexLogo: flexingLogo
+    });
+    let that = this;
+    setTimeout(function() {
+      that.setState({
+        flexLogo: relaxingLogo
+      });
+    }, 1000);
   }
 
   logout() {
@@ -529,7 +546,10 @@ async generateWallet(){
       return(
         <div id="app_container">
           <Router>
-            <Banner walletIsSynced={this.state.walletIsSynced}/>
+            <Banner 
+              walletIsSynced={this.state.walletIsSynced}
+              flexLogo = {this.state.flexLogo}
+            />
             <Switch>
               <Route exact path="/" render={() => <Home
                 generateWallet={this.generateWallet.bind(this)}
