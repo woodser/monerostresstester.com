@@ -81,6 +81,7 @@
 
 a.ui_button_link:hover {
   background-color: var(--wallet-button-hover-color);
+  text-decoration: none;
 }
 
 a.ui_button_link.stop_tx_generation_color:hover {
