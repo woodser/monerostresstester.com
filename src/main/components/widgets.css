@@ -7,7 +7,8 @@
   
   --text-box-border-width: 4px;
   --text-entry-background-color: white;
-  --text-box-background-color: #CCCCCC;
+  --text-box-background-color: #d7d6d6;
+  --text-box-text-color: black;
   --text-entry-inactive-border-color: red;
   --text-entry-border-color: black;
 }
@@ -72,6 +73,7 @@
 .text_box {
   font-size: 31px;
   background-color: var(--text-box-background-color);
+  color: var(--text-box-text-color);
   font-family: var(--font);
   line-height: 42px;
   width: calc(100% - var(--text-box-border-width)*3);
