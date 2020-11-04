@@ -1,14 +1,11 @@
 UI HIGH PRIORITY
-loading spinny smaller per ui spec
-place restore height box according to ui spec
-remove text hyperlink underline from buttons which are "solid"
-disabled textarea mnemonic black instead of grey
-main page button extends beyond center area
-change button "Verifying..." to "Importing wallet..." and "Creating wallet..."
 update main page state per ui spec
+deposit
+withdrawal
+sign out
 
 UI LOW PRIORITY
-1 arm pump per tx
+ui tweaks (restore height spacing, background coloring, max page height, etc)
 
 TX GENERATION
 num blocks to next/last unlock based on 10 confirmations; base on unlock height for mined txs
