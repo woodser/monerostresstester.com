@@ -337,8 +337,22 @@ async generateWallet(){
   wasmWalletInfo.mnemonic = newPhrase;
   wasmWalletInfo.path = "";
   
+  // set restore height to daemon's current height
+  let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);    // TODO: factor out common daemon reference so this code is not duplicated
+  let daemon = monerojs.connectToDaemonRpc({
+    server: daemonConnection,
+    proxyToWorker: true
+  });
+  wasmWalletInfo.restoreHeight = await daemon.getHeight();
+  
+  // create wallet promise which syncs when resolved
+  let walletPromise = monerojs.createWalletWasm(wasmWalletInfo);
+  walletPromise.then(async function(wallet) {
+    await wallet.sync();
+  })
+  
   this.setState({
-    wallet: monerojs.createWalletWasm(WALLET_INFO)  // store promise for later resolution
+    wallet: walletPromise  // store promise for later resolution
   });
 }
 
@@ -355,13 +369,11 @@ async generateWallet(){
 
     // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
     // and do NOT proceed to wallet page
-    if(this.userCancelledWalletConfirmation){
-	return;
-    }
-    
+    if (this.userCancelledWalletConfirmation) return;
+        
     // create transaction generator
     this.createTxGenerator(wallet);
-        
+            
     // register listener to handle notifications from tx generator
     let that = this;
     await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
