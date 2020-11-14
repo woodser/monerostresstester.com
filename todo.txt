@@ -5,6 +5,7 @@ withdrawal
 sign out
 
 UI LOW PRIORITY
+Save your backup phrase screen while loading should be fixed size, continue button should be disabled
 ui tweaks (restore height spacing, background coloring, max page height, etc)
 
 TX GENERATION
