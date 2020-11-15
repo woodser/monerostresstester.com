@@ -400,7 +400,21 @@ async generateWallet(){
       }
     });
     
+    // register listener to handle balance notifications
+    // TODO: register once wherever is appropriate, but need to update state with updated balances from wallet listener
+    await wallet.addListener(new class extends MoneroWalletListener {
+      async onBalancesChanged(newBalance, newUnlockedBalance) {
+        console.log("MoneroTxGeneratorListener.onBalancesChanged(" + newBalance.toString() + ", " + newUnlockedBalance.toString() + ")");
+        that.setState({
+          balance: newBalance,
+          availableBalance: newUnlockedBalance
+        });
+      }
+    });
+    
     // start syncing wallet in background if the user has not cancelled wallet creation
+    console.log("Wallet mnemonic: " + await wallet.getMnemonic());
+    console.log("Wallet address: " + await wallet.getPrimaryAddress());
     await wallet.startSyncing();
   }
   
