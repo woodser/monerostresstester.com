@@ -176,14 +176,14 @@ class MoneroTxGenerator {
           this.numSplitOutputs += tx.getOutgoingTransfer().getDestinations().length;
           outputsToCreate -= numDsts;
           console.log("Sent tx id: " + tx.getHash());
-          console.log(this.numTxsGenerated + "txs generated");
+          console.log(this.numTxsGenerated + " txs generated");
           console.log("Total fees: " + this.totalFees);
 
           // The transaction was successful, so fire the "_onTransaction" event
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactions up to this point
-          await this._onTransaction(tx);
+          this._onTransaction(tx);
 
         } catch (e) {
           console.log("Error creating multi-output tx: " + e.message);
@@ -212,7 +212,7 @@ class MoneroTxGenerator {
           // to notify any classes that have submitted listeners that a new
           // transaction just took place and provide that class with transaction
           // data and total number of transactios up to this point
-          await this._onTransaction(tx);
+          this._onTransaction(tx);
 
         } catch (e) {
           console.log("Error creating sweep tx: " + e.message);
@@ -239,25 +239,35 @@ class MoneroTxGenerator {
     
     // compute number of blocks until next funds available
     let txs;
-    if (unlockedBalance.compare(new BigInteger(0)) >= 0) {
+    if (unlockedBalance.compare(new BigInteger(0)) > 0) {
       this.numBlocksToNextUnlock = 0;
     } else {
       txs = await this.wallet.getTxs({isLocked: true}); // get locked txs
-      let maxNumConfirmations = 0;
-      for (let tx of txs) maxNumConfirmations = Math.max(maxNumConfirmations, tx.getNumConfirmations());
-      this.numBlocksToNextUnlock = 10 - maxNumConfirmations;
+      if (txs.length > 0) {
+        let maxNumConfirmations = 0;
+        for (let tx of txs) maxNumConfirmations = Math.max(maxNumConfirmations, tx.getNumConfirmations());
+        this.numBlocksToNextUnlock = 10 - maxNumConfirmations;
+      } else {
+        this.numBlocksToNextUnlock = undefined;
+      }
     }
     
     // compute number of blocks until all funds available
-    if (numBlocksToLastUnlock !== undefined) this.numBlocksToLastUnlock = numBlocksToLastUnlock;
+    if (numBlocksToLastUnlock !== undefined) {
+        this.numBlocksToLastUnlock = numBlocksToLastUnlock;
+    }
     else {
       if (balance.compare(unlockedBalance) === 0) {
-        if (unlockedBalance.compare(new BigInteger(0)) >= 0) this.numBlocksToLastUnlock = 0;
+        if (unlockedBalance.compare(new BigInteger(0)) > 0) this.numBlocksToLastUnlock = 0;
       } else {
         txs = txs || await this.wallet.getTxs({isLocked: true});  // get locked txs
-        let minNumConfirmations;
-        for (let tx of txs) if (minNumConfirmations === undefined || minNumConfirmations > tx.getNumConfirmations()) minNumConfirmations = tx.getNumConfirmations();
-        this.numBlocksToLastUnlock = 10 - minNumConfirmations;
+        if (txs.length > 0) {
+          let minNumConfirmations;
+          for (let tx of txs) if (minNumConfirmations === undefined || minNumConfirmations > tx.getNumConfirmations()) minNumConfirmations = tx.getNumConfirmations();
+          this.numBlocksToLastUnlock = 10 - minNumConfirmations;
+        } else {
+          this.numBlocksToLastUnlock = undefined;
+        }
       }
     }
   }
