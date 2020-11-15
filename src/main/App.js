@@ -380,12 +380,8 @@ async generateWallet(){
       
       // handle transaction notifications
       async onTransaction(tx, balance, unlockedBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) {
-        console.log("MoneroTxGeneratorListener.onTransaction()");
+        console.log("MoneroTxGeneratorListener.onTransaction(" + balance.toString() + ", " + unlockedBalance.toString() + ")");
         console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
-        console.log("MoneroTxGenerator balance: " + balance);
-        console.log("MoneroTxGenerator available balance: " + unlockedBalance);
-        console.log("MoneroTxGenerator numTxsGenerated: " + numTxsGenerated);
-        console.log("MoneroTxGenerator totalFees: " + totalFees);
         console.log("MoneroTxGenerator numSplitOutputs: " + numSplitOutputs);
         console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + numBlocksToNextUnlock);
         console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + numBlocksToLastUnlock);
@@ -400,13 +396,11 @@ async generateWallet(){
       
       // handle notifications of blocks added to the chain
       async onNewBlock(height, balance, unlockedBalance, numBlocksToNextUnlock, numBlocksToLastUnlock) {
-        console.log("MoneroTxGeneratorListener.onNewBlock()");
-        console.log(arguments);
+        console.log("MoneroTxGeneratorListener.onNewBlock({height: " + height + ", balance: " + balance.toString() + ", unlockedBalance: " + unlockedBalance.toString() + ", numBlocksToNextUnlock: " + numBlocksToNextUnlock + ", numBlocksToLastUnlock: " + numBlocksToLastUnlock + "}");
       }
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
-    console.log("STARTING BACKGROUND SYNC");
     await wallet.startSyncing();
   }
   
