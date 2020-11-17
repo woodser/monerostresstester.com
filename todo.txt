@@ -10,7 +10,7 @@ ui tweaks (restore height spacing, background coloring, max page height, etc)
 enter key invokes continue buttons
 do not confirm losing sync progress?
 remove disabled icon/attribute on buttons (only styled and non-clickable)
-button text not highlightable
+button text should not be highlightable
 
 TX GENERATION
 tps should be factor in computing how many outputs to split; tweak output growth; not how many are currently available but how many will be available after they unlock
@@ -19,3 +19,6 @@ num blocks to next/last unlock based on 10 confirmations; base on unlock height 
 balance is incorrect after first tx
 numBlocksToNext/LastUnlock not computed until first block or transaction, but not on initial main
 resume sending transactions on notification of available balance
+vary size of multi-output tx to improve privacy?
+not enough unlocked money errors on sweep txs past 600 txs; freeze to ignore, allow isDust: false on output query?
+cannot pay for itself errors past 800 txs
