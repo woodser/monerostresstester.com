@@ -10,6 +10,9 @@ import Backup from "./components/pages/Backup.js";
 import Withdraw from "./components/pages/Withdraw.js";
 import {Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.js";
 
+import QR_Code from "./components/QR_Code.js";
+import qrcode from './qrcode.js';
+
 import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 import MoneroTxGenerator from './MoneroTxGenerator.js';
 import MoneroTxGeneratorListener from './MoneroTxGeneratorListener.js';
@@ -57,8 +60,12 @@ class App extends React.Component {
     
     // print current version of monero-javascript
     
+    /*
+     * Member Variables
+     * No need to store these in state since no components need to re-render when their values are set
+     */
     this.txGenerator = null;
-    this.walletUpdater = null;
+    this.walletAddress = "empty";
     
     // In order to pass "this" into the nested functions...
     let that = this;
@@ -100,7 +107,6 @@ class App extends React.Component {
        */
       enteredPhrase: "",
       wallet: null,
-      keysOnlyWallet: null,
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
@@ -118,7 +124,9 @@ class App extends React.Component {
       enteredHeightIsValid: true,
       animationIsLoaded: false,
       isAwaitingWalletVerification: false,
-      flexLogo: relaxingLogo
+      flexLogo: relaxingLogo,
+      depositQrCode: null,
+      isAwaitingDeposit: false
     };
   }
   
@@ -278,11 +286,15 @@ class App extends React.Component {
           currentHomePage: "Wallet",
           walletIsFunded: walletIsFunded
         });
+        qrcode.toDataURL(that.walletAddress, function(err, url){
+            let code = <QR_Code url={url} />;
+            that.setState({
+              depositQrCode: code
+            });
+          }
+        );
 
       } else {
-	
-        console.log("wallet sync cancellation just completed");
-        
         // Reset the wallet sync cancellation indicator variable so that any completed
         // syncs in the future are not misinterpretted as cancelled syncs by default
         that.userCancelledWalletSync = false;
@@ -330,7 +342,6 @@ async generateWallet(){
   let newPhrase = await walletKeys.getMnemonic();
   
   this.setState({
-    keysOnlyWallet: walletKeys,
     walletPhrase: newPhrase
   });
   let wasmWalletInfo = Object.assign({}, WALLET_INFO);
@@ -366,7 +377,10 @@ async generateWallet(){
     // resolve wallet promise
     // TODO (woodser): create new wallet button needs greyed while this loads
     let wallet = await this.state.wallet;
-
+    
+    // Keep track of the wallet's address
+    this.walletAddress = await wallet.getAddress(0,0);
+    
     // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
     // and do NOT proceed to wallet page
     if (this.userCancelledWalletConfirmation) return;
@@ -404,12 +418,27 @@ async generateWallet(){
     // TODO: register once wherever is appropriate, but need to update state with updated balances from wallet listener
     await wallet.addListener(new class extends MoneroWalletListener {
       async onBalancesChanged(newBalance, newUnlockedBalance) {
-        console.log("wallet.onBalancesChanged(" + newBalance.toString() + ", " + newUnlockedBalance.toString() + ")");
-        that.setState({
+        console.log("MoneroWalletListener.onBalancesChanged(" + newBalance.toString() + ", " + newUnlockedBalance.toString() + ")");
+        
+        // Define an object whos contents vary depending on whether or not the wallet just received sufficient funds
+        // This prevents having to call setstate twice consecutively if that is the case
+        let stateObject = {
           balance: newBalance,
           availableBalance: newUnlockedBalance
-        });
+        };
+        if (!that.state.walletIsFunded && newBalance >= FUNDED_WALLET_MINIMUM_BALANCE){
+          Object.assign(stateObject, {walletIsFunded: true}) 
+        }
+        that.setState(stateObject);
       }
+      
+      async onOutputReceived(output){
+	if(!output.isConfirmed){
+	  that.setState({
+	    isAwaitingDeposit: false
+	  })
+	}
+      };
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
@@ -436,7 +465,6 @@ async generateWallet(){
       currentHomePage: "Welcome",
       enteredPhrase: "",
       wallet: null,
-      keysOnlyWallet: null,
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
@@ -450,7 +478,9 @@ async generateWallet(){
       totalFees: 0,
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
-      isAwaitingWalletVerification: false
+      isAwaitingWalletVerification: false,
+      depositQrCode: null,
+      isAwaitingDeposit: false
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -469,6 +499,11 @@ async generateWallet(){
     });
     let walletPhrase = await this.state.walletPhrase;
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
+      
+      // Create a wallet event listener
+      this.walletUpdater = new walletListener(this);
+      this.walletUpdater.setWalletIsSynchronized(true);
+      
       // initialize main page with listening, background sync, etc
       await this._initMain();
       
@@ -489,6 +524,15 @@ async generateWallet(){
         currentHomePage: "Wallet",
         isAwaitingWalletVerification: false
       });
+      let that = this;
+      qrcode.toDataURL(this.walletAddress, function(err, url){
+          let code = <QR_Code url={url} />;
+          that.setState({
+            depositQrCode: code
+          });
+        }
+      );
+      
     } else {
       this.setState({
         enteredMnemonicIsValid: false,
@@ -561,6 +605,12 @@ async generateWallet(){
     });
   }
   
+  notifyIntentToDeposit() {
+    this.setState({
+      isAwaitingDeposit: true
+    });
+  }
+  
   render(){
     if(this.state.animationIsLoaded){
       return(
@@ -569,6 +619,7 @@ async generateWallet(){
             <Banner 
               walletIsSynced={this.state.walletIsSynced}
               flexLogo = {this.state.flexLogo}
+              notifyIntentToDeposit = {this.notifyIntentToDeposit.bind(this)}
             />
             <Switch>
               <Route exact path="/" render={() => <Home
@@ -604,8 +655,17 @@ async generateWallet(){
               <Route path="/backup" render={(props) => <Backup
                 {...props}
               />} />
-              <Route path="/deposit" render={(props) => <Deposit
-                {...props}
+              <Route path="/deposit" render={() => <Deposit
+                depositQrCode = {this.state.depositQrCode}
+                walletAddress = {this.walletAddress}
+                
+                // TODO: just becaus the wallet is funded doesn't mean a deposit was made
+                // create an "isAwaitingDeposit" state variable
+                // set to "true" when user opens deposit page
+                // set to "false" when an output is received
+                xmrWasDeposited = {!this.state.isAwaitingDeposit}
+
+                setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
               />} />
               <Route path="/sign_out" render={(props) => <SignOut
                 {...props}
@@ -653,8 +713,8 @@ class walletListener extends MoneroWalletListener {
   }
   
   onBalancesChanged(newBalance, newUnlockedBalance){
+    this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
     if (this.walletIsSynchronized) {
-      this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
       if (newUnlockedBalance >= FUNDED_WALLET_MINIMUM_BALANCE && !callingComponent.state.walletIsFunded){
 	callingComponent.setState({
 	  walletIsFunded: true

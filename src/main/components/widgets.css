@@ -4,7 +4,7 @@
   --progress-bar-container-color: #017b76;
   --progress-bar-text-color: white;
   --progress-bar-text-size: 28px;
-  
+
   --text-box-border-width: 4px;
   --text-entry-background-color: white;
   --text-box-background-color: #d7d6d6;
@@ -13,36 +13,9 @@
   --text-entry-border-color: black;
 }
 
-.page_box > div {
-  margin: 0 auto;
-}
-
 .page_box {
-  width: var(--page-box-width);
-  height: 100%;
   margin: 0 auto;
-}
-
-.save_phrase_box_bottom_margin {
-  height: 42px;
-}
-.regenerate_button_bottom_margin {
-  height: 16px;
-}
-
-.title {
-  font-size: 45px;
-  font-weight: bold;
-  padding-bottom: 42px;
-  padding-top: 80px;
-  margin: 0;
-  line-height: 33px;
-}
-
-.sub_title {
-  font-size: 26px;
-  padding-bottom: 120px;
-  margin: 0;
+  width: var(--page-box-width);
 }
 
 .header {
@@ -57,27 +30,21 @@
   text-align: center;
 }
 
-.header_bottom_margin {
-  height: 48px;
-}
-
-.regenerate_button_container {
-  display: flex;
-  flex-direction: row;
-}
-
-.main_content {
-  width: var(--item-width);
-}
-
 .text_box {
-  font-size: 31px;
   background-color: var(--text-box-background-color);
   color: var(--text-box-text-color);
   font-family: var(--font);
+}
+
+.page_text_box {
+  font-size: 31px;
   line-height: 42px;
   width: calc(100% - var(--text-box-border-width)*3);
   height: 180px;
+}
+
+.save_phrase_box {
+
 }
 
 .active_border {
@@ -106,8 +73,8 @@
   grid-area: animation;
 }
 
-.default_value {
-  color: gray;
+.page_box_defaults {
+
 }
 
 .new_value {

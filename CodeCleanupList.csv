@@ -3,3 +3,6 @@ indentation should be used per nested block scopes
 ndentation formatting
 this comment is better to the right of the one line it describes. otherwise it's implied it applies to all lines imo
 Remove tabs – indentation should ALWAYS be two manual spaces
+Fix deposit/”waiting for deposit” page size and text size/alignment/wrapping
+Rearrange app function in logical order/groups
+Fix sync progress bar not immediately reverting to 0% on sync cancellation

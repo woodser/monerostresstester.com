@@ -22,7 +22,7 @@
   margin: 0 auto;
   text-align: center;
   cursor: pointer;
-  
+  display: table;
   font-weight: bold;
 }
 
@@ -37,6 +37,8 @@
   height: 100%;
   width: 100%;
   line-height: var(--button-height);
+  display: table-cell;
+  vertical-align: middle;
 }
 
 .double_button_contents_container {

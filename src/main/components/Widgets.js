@@ -16,10 +16,10 @@ export function Progress_Bar(props) {
   );
 }
 
-// A generic container for the common "box format" of most of the home sub-pages
+// A generic container for the common box format of most of the site pages
 export function Page_Box(props) {
   return (
-    <div className={"page_box " + props.className}>
+    <div className={(props.className ? props.className + " " : "") + "page_box"}>
       {props.children}
     </div>
   );
@@ -49,7 +49,13 @@ export function Loading_Animation(props) {
 
 export function Page_Text_Box(props) {
   return(
-    <textarea className="text_box save_phrase_box main_content active_border" value={props.box_text} disabled />
+    <textarea className="text_box save_phrase_box page_text_box main_content active_border" value={props.box_text} disabled />
+  );
+}
+
+export function Deposit_Address_Text_Box(props) {
+  return(
+    <textarea className="text_box deposit_address_box" value={props.box_text} disabled />
   );
 }
 
@@ -78,7 +84,7 @@ export class Page_Text_Entry extends React.Component {
   render() {
     
     let className = this.props.className + 
-      " text_box" + 
+      " text_box page_text_box " + 
       ((this.state.isDefault) ? " default_value" : " new_value") +
       ((this.props.isValid ? " active_border" : " inactive_border"));
     let element = null;
@@ -120,15 +126,18 @@ export function Main_Content(props) {
 }
 
 export function Header(props) {
+  let bottomMargin = {};
+  if(!props.omit_header_margin){
+    bottomMargin = <div className="header_bottom_margin">
+                     {props.margin_content}
+                   </div>
+  }
   return (
     <div className="header">
       <div className="header_text">
         {props.text}
       </div>
-
-      <div className="header_bottom_margin">
-        {props.margin_content}
-      </div>
+      {bottomMargin}
     </div>
   );
 }

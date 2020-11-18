@@ -83,7 +83,6 @@ let configBase = {
     new CopyPlugin({
       patterns: [
         { from: path.resolve("node_modules/monero-javascript/dist"), to: path.resolve("browser_build") },
-        { from: path.resolve("node_modules/qrcode/build/qrcode.js"), to: path.resolve("browser_build") }
       ],
     }),
   ],
