@@ -1,16 +1,9 @@
 :root {
-  --app-content-bg-color: #ece4d4;
-}
 
-#home {
-  grid-template-rows: 110px auto;
-  grid-template-columns: 1fr 990px 1fr;
-  padding: 0;
-  margin: 0;
-  height: 100%;
 }
 
 .home_subpage_box {
+  height: 100%;
   grid-row-gap: 0px;
   display: grid;
   grid-template:
@@ -27,22 +20,54 @@
 
 .save_phrase_box_bottom_margin {
   grid-area: save_phrase_box_bottom_margin;
+  height: 42px;
+}
+.regenerate_button_bottom_margin {
+  height: 16px;
 }
 
 .title {
   grid-area: title;
+  font-size: 45px;
+  font-weight: bold;
+  padding-bottom: 42px;
+  padding-top: 80px;
+  margin: 0 auto;
+  line-height: 33px;
 }
 
 .sub_title {
+  font-size: 26px;
+  padding-bottom: 120px;
+  margin: 0 auto;
   grid-area: sub_title;
 }
 
 .header {
   grid-area: header;
+  width: inherit;
+  font-size: 35px;
+  padding-top: 44px;
+  margin: 0;
+  line-height: 33px;
+}
+
+.header_text {
+  text-align: center;
+}
+
+.header_bottom_margin {
+  height: 48px;
+}
+
+.regenerate_button_container {
+  display: flex;
+  flex-direction: row;
 }
 
 .main_content {
   grid-area: main_content;
+  width: var(--item-width);
 }
 
 .home_button_links {

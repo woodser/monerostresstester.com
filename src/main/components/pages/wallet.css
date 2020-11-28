@@ -17,6 +17,7 @@
 }
 .horizontal_rule {
   grid-area: horizontal_line;
+  width: 100%;
 }
 .wallet_page_text {
   width: inherit;

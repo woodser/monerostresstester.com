@@ -3,8 +3,36 @@ import ReactDOM from 'react-dom';
 import {Link} from 'react-router-dom';
 import './buttons.css';
 
+export function Router_UI_Button_Link(props) {
+  if(props.isactive || props.isactive == null) {
+    return(
+      <Link
+        className={"ui_link_container ui_button_link " + props.className} 
+        onClick = {function () {
+          if(props.handleClick){
+            props.handleClick();
+          }
+        }}
+        to={props.destination}
+      >
+        <div className="button_contents_container">
+          {props.children}
+        </div>
+      </Link>
+    );
+  } else {
+    return(
+      <div className={"ui_link_container ui_button_link_inactive " + props.className}>
+        <div className="button_contents_container">
+          {props.children}
+        </div>
+      </div>
+    );
+  }
+}
+
 // Component for the common "button link" used in the bottom of the page_box home pages
-export function UI_Button_Link(props) {
+export function Home_UI_Button_Link(props) {
   if(props.isactive || props.isactive == null) {
     return(
       <a

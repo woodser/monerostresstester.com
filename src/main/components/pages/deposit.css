@@ -1,0 +1,120 @@
+:root {
+	--deposit-page-box-width: 740px;
+	--address-box-margin: 0px;
+	--code-text-width: 660px;
+	--code-text-height: 100px;
+	--qr-size: 220px;
+	--checkmark-size: 64px;
+	--horizontal-button-margin: 42px;
+}
+
+.deposit_page_box {
+  width: var(--deposit-page-box-width);
+  margin: auto;
+  margin-top: 125px;
+  grid-row-gap: 0px;
+  display: grid;
+  grid-template:
+  "header" 
+  "code_image"
+  "code_text"
+  "status_area"
+  "button";
+  grid-template-columns: calc((var(--deposit-page-box-width) - var(--item-width))/2), var(--item-width), calc((var(--deposit-page-box-width) - var(--item-width))/2);
+  background-color: var(--app-content-bg-color);
+}
+
+div {
+  margin: 0 auto;
+}
+
+.deposit_page_box > .header {
+  grid-area: header;
+  height: 40px;
+}
+
+.code_image {
+  width: 100%;
+  grid-area: code_image;
+  height: auto;
+  margin: 0 auto;
+  margin-top: 20px;
+}
+
+.qr_code_image {
+  height: var(--qr-size);
+  width: var(--qr-size);	
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+}
+
+.code_text_container {
+  margin: 0 auto;
+  padding-top: 20px;
+  height: auto;
+  width: var(--code-text-width);
+  height: var(--code-text-height);
+  border-style: dotted;
+  border-width: 1px; 
+}
+
+.code_text {
+  text-align: center;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.deposit_address_box {
+  grid-area: code_text;
+  text-align: center;
+  background-color: var(--app-content-bg-color);
+  border: 1px dotted black;
+  margin: 0 auto;
+  margin-top: 20px;
+  padding: 10px;
+  width: calc(var(--code-text-width) - 20px);
+  font-size: 20px;
+}
+
+.status_area {
+  grid-area: status_area;
+  display: flex;
+  align-items: center;
+}
+
+.checkmark {
+  grid-area: checkmark;
+  height: var(--checkmark-size);
+  width: var(--checkmark-size);
+}
+
+.return_home_from_deposit_button {
+  grid-area: button;
+  margin: 0 auto;
+  height: 80px;
+  margin-bottom: 50px;
+  width: calc(100% - var(--horizontal-button-margin)*2);
+  text-decoration: none;
+}
+
+.empty_return_home_button_area {
+  grid-area: button;
+  height: 0px;
+}
+
+.status_message {
+  margin-top: 30px;
+  margin-bottom: 40px;
+  grid-area: message;
+  height: auto;
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+  font-style: italic;
+  font-weight: bold;
+}

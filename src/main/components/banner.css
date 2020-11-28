@@ -1,6 +1,7 @@
 :root {
   --banner-color: #017b76;
   --banner-height: 115px;
+  --banner-min-width: 1160px;
   --text-color: white;
 
   --title-size: 38px;
@@ -12,33 +13,74 @@
   --nav-vertical-displacement: 39%;
 
   --nav-text-color: #cfd2d2;
+  
+  --logo-native-width: 200px;
+  --logo-native-height: 76px;
+  --logo-scale-factor: 0.75;
+  
+  --header-width: 510px;
+  --nav-bar-width: 470px;
+}
+
+
+
+#muscle_logo {
+  width: calc(var(--logo-native-width) * var(--logo-scale-factor));
+  height: calc(var(--logo-native-height) * var(--logo-scale-factor));
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
 }
 
 #banner-container {
   display: flex;
-  flex-direction: row;
-  align-items: center;
   color: var(--text-color);
   background-color: var(--banner-color);
   width: 100%;
-  min-width: 1200px;
+  min-width: var(--banner-min-width);
   height: var(--banner-height);
   position: relative;
   font-family: var(--banner-font);
+  grid-template: "header logo nav" 1fr / auto 1fr auto;
 }
 
 #logo_container {
-  margin: 0 auto;
+  grid-area: logo;
+  width: calc(100% - var(--header-width) - var(--nav-bar-width));
+  margin-left: 0px;
+  margin-right: 0px;
+  
 }
 
 .link {
   margin-right: 5px;
   margin-left: 5px;
+  height: var(--nav-font-size);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 a:hover{
   text-decoration: underline;
+}
+
+.vertically_centered_item_container {
+  height: var(--banner-height);
+  position: relative;
+}
+
+#header_link_container {
+  width: var(--header-width);
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+#nav_container {
+  grid-area: nav;
+  margin-left: 0px;
+  margin-right: 0px;
+  width: var(--nav-bar-width);
 }
 
 .header_link {
@@ -47,16 +89,14 @@ a:hover{
   font-size: var(--title-size);
   font-family: var(--banner-font);
   font-weight: bold;
-  margin-right: 25px;
-  margin-left: var(--h1-horizontal-offset);
+  margin-left: 50px;
 }
 
 #nav {
   color: var(--nav-text-color);
-  right: 0px;
   margin-right: var(--nav-horizontal-offset);
-  top: var(--nav-vertical-displacement);
   font-size: var(--nav-font-size);
+  display: flex;
 }
 
 .nav_link {

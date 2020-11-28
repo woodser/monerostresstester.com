@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './home.css';
 import {Page_Box, Page_Text_Box, Main_Content, Header, Loading_Animation} from '../Widgets.js';
-import {UI_Text_Link, UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
+import {UI_Text_Link, Home_UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
 
 export default function New_Wallet(props) {
   
@@ -28,7 +28,7 @@ export default function New_Wallet(props) {
       {mainContent}
       <div className="save_phrase_box_bottom_margin"></div>
       <div className="home_button_links">
-        <UI_Button_Link
+        <Home_UI_Button_Link
           destination={props.continueDestination} 
           setCurrentHomePage = {props.setCurrentHomePage}
           isActive = {props.text ? true : false}
@@ -36,7 +36,7 @@ export default function New_Wallet(props) {
           <>
             Continue
           </>
-        </UI_Button_Link>
+        </Home_UI_Button_Link>
         <UI_Text_Link 
           link_text="Or Go Back" 
           destination={props.backDestination} 

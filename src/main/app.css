@@ -1,9 +1,26 @@
 :root {
-  --bg-color: #eaf0f0;
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --page-box-width: 900px;
   --item-width: 860px;
   --loading-animation-size: 36px;
+  --app-content-bg-color: #ece4d4;
+  --app-bg-color: #eaf0f0;
+  --home-page-box-width: 900px;
+}
+
+.vertical_center {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#home {
+  grid-template-rows: 110px auto;
+  grid-template-columns: 1fr 990px 1fr;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  background-color: var(--app-bg-color);
 }
 
 body {
@@ -15,10 +32,13 @@ body {
   visibility: hidden;
 }
 
+#app {
+}
+
 #app_container {
+  background-color: rgba(0,0,0,0);
   position: absolute;
   width: 100%;
   margin: 0 auto;
   height: 100%;
-  background-color: var(--bg-color);
 }
