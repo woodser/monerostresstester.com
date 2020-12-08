@@ -375,87 +375,80 @@ async generateWallet(){
   async _initMain() {
     
     // resolve wallet promise
-    // TODO (woodser): create new wallet button needs greyed while this loads
-    let wallet = await this.state.wallet;
+    this.state.wallet = await this.state.wallet; // TODO: wallet and tx generator should both be part of state or not
     
     // Keep track of the wallet's address
-    this.walletAddress = await wallet.getAddress(0,0);
+    this.walletAddress = await this.state.wallet.getAddress(0,0);
     
     // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
     // and do NOT proceed to wallet page
     if (this.userCancelledWalletConfirmation) return;
         
     // create transaction generator
-    this.createTxGenerator(wallet);
+    this.createTxGenerator(this.state.wallet);
             
     // register listener to handle notifications from tx generator
     let that = this;
     await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
+        
+      async onMessage(msg) {
+        console.log("MoneroTxGeneratorListener.onMessage(): " + msg);
+      }
       
       // handle transaction notifications
-      async onTransaction(tx, balance, unlockedBalance, numTxsGenerated, totalFees, numSplitOutputs, numBlocksToNextUnlock, numBlocksToLastUnlock) {
-        console.log("MoneroTxGeneratorListener.onTransaction(" + balance.toString() + ", " + unlockedBalance.toString() + ")");
-        console.log("Tx has " + tx.getOutgoingTransfer().getDestinations().length + " outputs");
-        console.log("MoneroTxGenerator numSplitOutputs: " + numSplitOutputs);
-        console.log("MoneroTxGenerator getNumBlocksToNextUnlock: " + numBlocksToNextUnlock);
-        console.log("MoneroTxGenerator getNumBlocksToLastUnlock: " + numBlocksToLastUnlock);
-        that.setState({
-          transactionsGenerated: numTxsGenerated,
-          balance: balance,
-          availableBalance: unlockedBalance,
-          totalFees: totalFees
-        });
+      async onTransaction(tx, numTxsGenerated, totalFees, numSplitOutputs) {
+        
+        // refresh main ui
+        await that.refreshMainState();
+        
+        // play muscle animation if tx generated
         that.playMuscleAnimation.bind(that)();
       }
       
-      // handle notifications of blocks added to the chain
-      async onNewBlock(height, balance, unlockedBalance, numBlocksToNextUnlock, numBlocksToLastUnlock) {
-        console.log("MoneroTxGeneratorListener.onNewBlock({height: " + height + ", balance: " + balance.toString() + ", unlockedBalance: " + unlockedBalance.toString() + ", numBlocksToNextUnlock: " + numBlocksToNextUnlock + ", numBlocksToLastUnlock: " + numBlocksToLastUnlock + "}");
+      async onNumBlocksToUnlock(numBlocksToNextUnlock, numBlocksToLastUnlock) {
+        that.refreshMainState();
       }
     });
     
-    // register listener to handle balance notifications
-    // TODO: register once wherever is appropriate, but need to update state with updated balances from wallet listener
-    await wallet.addListener(new class extends MoneroWalletListener {
-      async onBalancesChanged(newBalance, newUnlockedBalance) {
-        console.log("MoneroWalletListener.onBalancesChanged(" + newBalance.toString() + ", " + newUnlockedBalance.toString() + ")");
+    // listen for wallet updates to refresh main ui
+    await this.state.wallet.addListener(new class extends MoneroWalletListener {
         
-        // Define an object whos contents vary depending on whether or not the wallet just received sufficient funds
-        // This prevents having to call setstate twice consecutively if that is the case
-        let stateObject = {
-          balance: newBalance,
-          availableBalance: newUnlockedBalance
-        };
-        if (!that.state.walletIsFunded && newBalance >= FUNDED_WALLET_MINIMUM_BALANCE){
-          Object.assign(stateObject, {walletIsFunded: true}) 
-        }
-        that.setState(stateObject);
+      async onBalancesChanged(newBalance, newUnlockedBalance) {
+        that.refreshMainState();
       }
       
       async onOutputReceived(output){
-	if(!output.isConfirmed){
-	  that.setState({
-	    isAwaitingDeposit: false
-	  })
-	}
+	    if (!output.getTx().isConfirmed()) {
+	      that.setState({
+	        isAwaitingDeposit: false
+	      });
+	    }
       };
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
-    console.log("Wallet mnemonic: " + await wallet.getMnemonic());
-    console.log("Wallet address: " + await wallet.getPrimaryAddress());
-    await wallet.startSyncing();
+    console.log("Wallet mnemonic: " + await this.state.wallet.getMnemonic());
+    console.log("Wallet address: " + await this.state.wallet.getPrimaryAddress());
+    await this.state.wallet.startSyncing();
   }
   
-  playMuscleAnimation(){
-    this.setState({
-      flexLogo: flexingLogo
-    });
+  async refreshMainState() {
+    let state = {};
+    state.balance = await this.state.wallet.getBalance();
+    state.availableBalance = await this.state.wallet.getUnlockedBalance();
+    state.transactionsGenerated = this.txGenerator.getNumTxsGenerated();
+    state.totalFees = this.txGenerator.getTotalFees();
+    if (!this.state.walletIsFunded && state.balance >= FUNDED_WALLET_MINIMUM_BALANCE) state.walletIsFunded = true;
+    // TODO: update balance with time to last unlock if > 0
+    console.log("Num blocks to next unlock: " + this.txGenerator.getNumBlocksToNextUnlock() + "; Num blocks to last unlock: " + this.txGenerator.getNumBlocksToLastUnlock());
+    this.setState(state);
+  }
+  
+  playMuscleAnimation() {
+    this.setState({flexLogo: flexingLogo});
     let that = this;
     setTimeout(function() {
-      that.setState({
-        flexLogo: relaxingLogo
-      });
+      that.setState({flexLogo: relaxingLogo});
     }, 1000);
   }
 

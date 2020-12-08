@@ -9,7 +9,7 @@ import checkmark from "../../img/checkmark.png";
 
 export default function Deposit(props){
   
-  console.log("props.xmrWasDeposited: " + props.xmrWasDeposited);
+  //console.log("props.xmrWasDeposited: " + props.xmrWasDeposited);
   
   let statusElement = null;
   let button = null;
