@@ -361,8 +361,9 @@ async generateWallet(){
     console.log("failed to create keys-only wallet with error: " + error);
     return;
   }
-  let newPhrase = await walletKeys.getMnemonic();
   
+  let newPhrase = await walletKeys.getMnemonic();
+  this.walletAddress = await walletKeys.getAddress(0,0);
   this.setState({
     walletPhrase: newPhrase
   });
