@@ -35,9 +35,19 @@ export function Loading_Animation(props) {
   let className = props.hide === true ? " loading_animation hidden" : "";
   let imgElement = null;
   if(props.notifySpinnerLoaded) {
-    imgElement = <img className={"loading_animation" + className} src={loadingAnimation} onLoad={props.notifySpinnerLoaded} alt="Spinny wheel animation"></img>;
+    imgElement = 
+      <img 
+        className={"loading_animation" + className} 
+        src={loadingAnimation} onLoad={props.notifySpinnerLoaded} 
+        alt="Spinny wheel animation">
+      </img>;
   } else {
-    imgElement = <img className={"loading_animation" + className} src={loadingAnimation} alt="Spinny wheel animation"></img>
+    imgElement = 
+      <img 
+        className={"loading_animation" + className} 
+        src={loadingAnimation} 
+        alt="Spinny wheel animation">
+      </img>;
   }
   return ( 
     <div className={"loading_animation_container"}>
@@ -49,13 +59,21 @@ export function Loading_Animation(props) {
 
 export function Page_Text_Box(props) {
   return(
-    <textarea className="text_box save_phrase_box page_text_box main_content active_border" value={props.box_text} disabled />
+    <textarea 
+      className="text_box save_phrase_box page_text_box main_content active_border" 
+      value={props.box_text} 
+      disabled 
+    />
   );
 }
 
 export function Deposit_Address_Text_Box(props) {
   return(
-    <textarea className="text_box deposit_address_box" value={props.box_text} disabled />
+    <textarea 
+      className="text_box deposit_address_box" 
+      value={props.box_text} 
+      disabled 
+    />
   );
 }
 

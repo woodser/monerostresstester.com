@@ -18,10 +18,13 @@ export default function New_Wallet(props) {
   
     mainContent = (
       <Main_Content>
-        <Loading_Animation />
+        <div className="page_text_box_space">
+          <Loading_Animation />
+        </div>
       </Main_Content>
     );
   }
+  
   return(
     <Page_Box className = "home_subpage_box">
       <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>/>
