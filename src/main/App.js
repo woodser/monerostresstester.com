@@ -508,10 +508,15 @@ async generateWallet(){
   }
   
   async confirmWallet() {
+    
+    console.log("Running confirmWallet");
     this.setState({
       isAwaitingWalletVerification: true
     });
+    console.log("Awaiting walletPhrase");
     let walletPhrase = await this.state.walletPhrase;
+    console.log("walletPhrase awaited");
+    
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       
       // Create a wallet event listener
@@ -519,11 +524,15 @@ async generateWallet(){
       this.walletUpdater.setWalletIsSynchronized(true);
       
       // initialize main page with listening, background sync, etc
+      console.log("Awaiting initmain");
       await this._initMain();
+      console.log("initmain finished");
       
       // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
       // and do NOT proceed to wallet page
       if(this.userCancelledWalletConfirmation){
+	
+        console.log("User cancelled wallet creation. abandoning");
 	this.userCancelledWalletConfirmation = false;
 	this.setState({
 	  isAwaitingWalletVerification: false
@@ -548,11 +557,14 @@ async generateWallet(){
         }
       );
       
+      console.log("Wallet successfully verified!");
+      
     } else {
       this.setState({
         enteredMnemonicIsValid: false,
 	isAwaitingWalletVerification: false
       });
+      console.log("Entered mnemonic is invalid!");
     }
   }
   
@@ -609,12 +621,15 @@ async generateWallet(){
      * to the cancelled wallet. "stopSyncing" must be run on this wallet, but cannot until the promise resolves
      * by which point the value of this.wallet may have changed do to the user generating a new phrase or 
      * importing a different wallet in the meantime.
-     * Thus, condemnedWallet allows the app to keep track of the wallet and run "stopSyncing" on it when ready.
+     * Thus, userCancelledWalletConfirmation allows the app to keep track of the wallet and run "stopSyncing" 
+     * on it when ready.
      */
-    this.userCancelledWalletConfirmation = true;
-    this.setState({
-      isAwaitingWalletVerification: false
-    });
+    if(this.state.isAwaitingWalletVerification){
+      this.userCancelledWalletConfirmation = true;
+      this.setState({
+        isAwaitingWalletVerification: false
+      });
+    };
   }
   
   notifyIntentToDeposit() {
