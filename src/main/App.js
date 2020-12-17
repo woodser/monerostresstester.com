@@ -66,7 +66,12 @@ class App extends React.Component {
      */
     this.txGenerator = null;
     this.walletAddress = "empty";
-    
+    this.wallet = null;
+    this.enteredPhrase = "";
+    this.restoreHeight = 0;
+    this.lastHomePage = "";
+    this.animationIsLoaded = false;
+ 
     // In order to pass "this" into the nested functions...
     let that = this;
     
@@ -100,29 +105,44 @@ class App extends React.Component {
       } 
     );
     
+    /*
+     * VARS TO EXTRACT FROM STATE:
+     * lastHomePage
+     */
+    
+    /*
+     * VARS TO KEEP IN STATE
+                walletSyncProgress = {this.state.walletSyncProgress}
+                walletPhrase = {this.state.walletPhrase}
+                currentHomePage = {this.state.currentHomePage}
+                balance = {this.state.balance}
+                availableBalance = {this.state.availableBalance}
+                coreModuleLoaded = {this.state.coreModuleLoaded}
+                keysModuleLoaded = {this.state.keysModuleLoaded}
+                isGeneratingTxs = {this.state.isGeneratingTxs}
+                walletIsFunded = {this.state.walletIsFunded}
+                transactionsGenerated = {this.state.transactionsGenerated}
+                totalFees = {this.state.totalFees}
+                enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
+                enteredHeightIsValid = {this.state.enteredHeightIsValid}
+                forceWait = {this.state.isAwaitingWalletVerification}
+                depositQrCode = {this.state.depositQrCode}
+                walletAddress = {this.walletAddress}
+     */
     this.state = {
-      /*
-       * The mnemonic phrase (or portion thereof) that the user has typed into
-       * either the "confirm" or "restore" wallet text box
-       */
-      enteredPhrase: "",
-      wallet: null,
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
-      restoreHeight: 0,
       walletIsSynced: false,
       balance: 0,
       availableBalance: 0,
       currentHomePage: "Welcome",
-      lastHomePage: "",
       isGeneratingTxs: false,
       walletIsFunded: false,
       transactionsGenerated: 0,
       totalFees: 0,
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
-      animationIsLoaded: false,
       isAwaitingWalletVerification: false,
       flexLogo: relaxingLogo,
       depositQrCode: null,
@@ -192,8 +212,8 @@ class App extends React.Component {
   }
   
   setRestoreHeight(height){
+    this.restoreHeight = height;
     this.setState({
-      restoreHeight: height,
       enteredHeightIsValid: true
     });
   }
@@ -207,12 +227,12 @@ class App extends React.Component {
     let alertMessage = "";  
     
     // First, determine whether the user has typed a height, a date, or something else(invalid)
-    let height=Number(this.state.restoreHeight);
+    let height=Number(this.restoreHeight);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
     if(!(height != NaN && height%1 === 0 && height >= 0)) {
       // Attempt to convert the string to a date in the format "YYYY-MM-DD"
       try {
-        var dateParts = this.convertStringToRestoreDate(this.state.restoreHeight);
+        var dateParts = this.convertStringToRestoreDate(this.restoreHeight);
     
        // Attempt to convert date into a monero blockchain height:
        let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
@@ -260,10 +280,12 @@ class App extends React.Component {
       isAwaitingWalletVerification: false
     });
     
+    this.wallet = walletWasm;
+    
+    this.lastHomePage = "Import_Wallet";
+    
     this.setState({
-      currentHomePage: "Sync_Wallet_Page",
-      lastHomePage: "Import_Wallet",
-      wallet: walletWasm
+      currentHomePage: "Sync_Wallet_Page"
     });
     
     // Create a wallet listener to keep app.js updated on the wallet's balance etc.
@@ -295,8 +317,8 @@ class App extends React.Component {
         );
 
       } else {
-        // Reset the wallet sync cancellation indicator variable so that any completed
-        // syncs in the future are not misinterpretted as cancelled syncs by default
+        // Reset the wallet sync cancellation indicator variable so that any syncs
+        // completed in the future are not misinterpretted as cancelled syncs by default
         that.userCancelledWalletSync = false;
         that.userCancelledWalletImport = false;
       }
@@ -310,8 +332,8 @@ setCurrentSyncProgress(percentDone){
 }
   
 setEnteredPhrase(mnemonic){
+  this.enteredPhrase = mnemonic;
   this.setState({
-    enteredPhrase: mnemonic,
     enteredMnemonicIsValid: true
   });
 }
@@ -339,8 +361,9 @@ async generateWallet(){
     console.log("failed to create keys-only wallet with error: " + error);
     return;
   }
-  let newPhrase = await walletKeys.getMnemonic();
   
+  let newPhrase = await walletKeys.getMnemonic();
+  this.walletAddress = await walletKeys.getAddress(0,0);
   this.setState({
     walletPhrase: newPhrase
   });
@@ -362,9 +385,7 @@ async generateWallet(){
     await wallet.sync();
   })
   
-  this.setState({
-    wallet: walletPromise  // store promise for later resolution
-  });
+  this.wallet = walletPromise;
 }
 
   /**
@@ -375,17 +396,17 @@ async generateWallet(){
   async _initMain() {
     
     // resolve wallet promise
-    this.state.wallet = await this.state.wallet; // TODO: wallet and tx generator should both be part of state or not
+    this.wallet = await this.wallet;
     
     // Keep track of the wallet's address
-    this.walletAddress = await this.state.wallet.getAddress(0,0);
+    this.walletAddress = await this.wallet.getAddress(0,0);
     
     // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
     // and do NOT proceed to wallet page
     if (this.userCancelledWalletConfirmation) return;
         
     // create transaction generator
-    this.createTxGenerator(this.state.wallet);
+    this.createTxGenerator(this.wallet);
             
     // register listener to handle notifications from tx generator
     let that = this;
@@ -411,7 +432,7 @@ async generateWallet(){
     });
     
     // listen for wallet updates to refresh main ui
-    await this.state.wallet.addListener(new class extends MoneroWalletListener {
+    await this.wallet.addListener(new class extends MoneroWalletListener {
         
       async onBalancesChanged(newBalance, newUnlockedBalance) {
         that.refreshMainState();
@@ -427,18 +448,18 @@ async generateWallet(){
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
-    console.log("Wallet mnemonic: " + await this.state.wallet.getMnemonic());
-    console.log("Wallet address: " + await this.state.wallet.getPrimaryAddress());
-    await this.state.wallet.startSyncing();
+    console.log("Wallet mnemonic: " + await this.wallet.getMnemonic());
+    console.log("Wallet address: " + await this.wallet.getPrimaryAddress());
+    await this.wallet.startSyncing();
   }
   
   async refreshMainState() {
     let state = {};
-    state.balance = await this.state.wallet.getBalance();
-    state.availableBalance = await this.state.wallet.getUnlockedBalance();
+    state.balance = await this.wallet.getBalance();
+    state.availableBalance = await this.wallet.getUnlockedBalance();
     state.transactionsGenerated = this.txGenerator.getNumTxsGenerated();
     state.totalFees = this.txGenerator.getTotalFees();
-    if (!this.state.walletIsFunded && state.balance >= FUNDED_WALLET_MINIMUM_BALANCE) state.walletIsFunded = true;
+    if (!this.walletIsFunded && state.balance >= FUNDED_WALLET_MINIMUM_BALANCE) state.walletIsFunded = true;
     // TODO: update balance with time to last unlock if > 0
     console.log("Num blocks to next unlock: " + this.txGenerator.getNumBlocksToNextUnlock() + "; Num blocks to last unlock: " + this.txGenerator.getNumBlocksToLastUnlock());
     this.setState(state);
@@ -456,12 +477,9 @@ async generateWallet(){
 
     this.setState ({
       currentHomePage: "Welcome",
-      enteredPhrase: "",
-      wallet: null,
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
-      restoreHeight: 0,
       walletIsSynced: false,
       balance: 0,
       availableBalance: 0,
@@ -477,20 +495,28 @@ async generateWallet(){
     });
     this.txGenerator = null;
     this.walletUpdater = null;
+    this.wallet = null;
+    this.restoreHeight = 0;
+    this.lastHomePage = "";
   }
   
   delimitEnteredWalletPhrase(){
     // Remove any extra whitespaces
-    let enteredPhraseCopy = this.state.enteredPhrase;
+    let enteredPhraseCopy = this.enteredPhrase;
     enteredPhraseCopy = enteredPhraseCopy.replace(/ +(?= )/g,'').trim();
     return(enteredPhraseCopy);
   }
   
   async confirmWallet() {
+    
+    console.log("Running confirmWallet");
     this.setState({
       isAwaitingWalletVerification: true
     });
+    console.log("Awaiting walletPhrase");
     let walletPhrase = await this.state.walletPhrase;
+    console.log("walletPhrase awaited");
+    
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       
       // Create a wallet event listener
@@ -498,11 +524,15 @@ async generateWallet(){
       this.walletUpdater.setWalletIsSynchronized(true);
       
       // initialize main page with listening, background sync, etc
+      console.log("Awaiting initmain");
       await this._initMain();
+      console.log("initmain finished");
       
       // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
       // and do NOT proceed to wallet page
       if(this.userCancelledWalletConfirmation){
+	
+        console.log("User cancelled wallet creation. abandoning");
 	this.userCancelledWalletConfirmation = false;
 	this.setState({
 	  isAwaitingWalletVerification: false
@@ -510,9 +540,10 @@ async generateWallet(){
 	return;
       }
       
+      this.lastHomePage = "Confirm_Wallet";
+      
       this.setState ({
         phraseIsConfirmed: true,
-        lastHomePage: "Confirm_Wallet",
         walletIsSynced: true,
         currentHomePage: "Wallet",
         isAwaitingWalletVerification: false
@@ -526,11 +557,14 @@ async generateWallet(){
         }
       );
       
+      console.log("Wallet successfully verified!");
+      
     } else {
       this.setState({
         enteredMnemonicIsValid: false,
 	isAwaitingWalletVerification: false
       });
+      console.log("Entered mnemonic is invalid!");
     }
   }
   
@@ -555,7 +589,7 @@ async generateWallet(){
        * and not because the wallet actually finished syncing
        */
       this.userCancelledWalletSync = true;      
-      await this.state.wallet.stopSyncing();
+      await this.wallet.stopSyncing();
     }
   }
   
@@ -572,10 +606,7 @@ async generateWallet(){
      * Otherwise, the imagine will not ACTUALLY finish loading 
      */
     setTimeout(() => {
-      this.setState({
-	animationIsLoaded: true
-      });
-	    
+      this.animationIsLoaded = true;
     }, 0);
   }
   
@@ -586,16 +617,19 @@ async generateWallet(){
   
   cancelConfirmation(){
     /*
-     * If the user cancels the wallet import by hitting "or go back", this.state.wallet will remain a promise
+     * If the user cancels the wallet import by hitting "or go back", this.wallet will remain a promise
      * to the cancelled wallet. "stopSyncing" must be run on this wallet, but cannot until the promise resolves
-     * by which point the value of state.wallet may have changed do to the user generating a new phrase or 
+     * by which point the value of this.wallet may have changed do to the user generating a new phrase or 
      * importing a different wallet in the meantime.
-     * Thus, condemnedWallet allows the app to keep track of the wallet and run "stopSyncing" on it when ready.
+     * Thus, userCancelledWalletConfirmation allows the app to keep track of the wallet and run "stopSyncing" 
+     * on it when ready.
      */
-    this.userCancelledWalletConfirmation = true;
-    this.setState({
-      isAwaitingWalletVerification: false
-    });
+    if(this.state.isAwaitingWalletVerification){
+      this.userCancelledWalletConfirmation = true;
+      this.setState({
+        isAwaitingWalletVerification: false
+      });
+    };
   }
   
   notifyIntentToDeposit() {
@@ -605,7 +639,7 @@ async generateWallet(){
   }
   
   render(){
-    if(this.state.animationIsLoaded){
+    if(this.animationIsLoaded){
       return(
         <div id="app_container">
           <Router>
@@ -627,7 +661,7 @@ async generateWallet(){
                 currentHomePage = {this.state.currentHomePage}
                 balance = {this.state.balance}
                 setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
-                lastHomePage = {this.state.lastHomePage}
+                lastHomePage = {this.lastHomePage}
                 availableBalance = {this.state.availableBalance}
                 confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
                 coreModuleLoaded = {this.state.coreModuleLoaded}
@@ -652,10 +686,6 @@ async generateWallet(){
                 depositQrCode = {this.state.depositQrCode}
                 walletAddress = {this.walletAddress}
                 
-                // TODO: just becaus the wallet is funded doesn't mean a deposit was made
-                // create an "isAwaitingDeposit" state variable
-                // set to "true" when user opens deposit page
-                // set to "false" when an output is received
                 xmrWasDeposited = {!this.state.isAwaitingDeposit}
 
                 setCurrentHomePage = {this.setCurrentHomePage.bind(this)}

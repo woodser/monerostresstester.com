@@ -43,6 +43,10 @@
   height: 180px;
 }
 
+.page_text_box_space {
+	height: calc(180px + var(--text-box-border-width) * 4);
+}
+
 .save_phrase_box {
 
 }
