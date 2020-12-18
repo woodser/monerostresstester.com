@@ -1,6 +1,4 @@
 UI HIGH PRIORITY
-wrong wallet imported (or memory access errors?) when regenerate clicked
-clicking "or go back" on mnemonic confirmation causes need for continue button to be clicked twice before advancing to main page
 update main page state per ui spec
 deposit
 withdrawal
@@ -15,9 +13,11 @@ remove disabled icon/attribute on buttons (only styled and non-clickable)
 button text should not be highlightable
 
 TX GENERATION
-balance is non-deterministic restoring from mnemonic
+freeze or sweep dust on unspendable outputs
+compute time to unlock with non-frozen outputs
 error after wakeUp() called occasionally
-remember and don't re-try failed outputs
+balance is non-deterministic restoring from mnemonic
+don't spam messages from _spendAvailableOutputs()
 handle dust wallet balance
 tps should be factor in computing how many outputs to split; tweak output growth; not how many are currently available but how many will be available after they unlock
 tx generator's listener has status message which should be updated to button so status reflects what's happening instead of what happened
