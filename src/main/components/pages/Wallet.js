@@ -1,7 +1,7 @@
 import React from 'react';
 import {Page_Box} from "../Widgets.js";
 import "./wallet.css";
-import {Home_UI_Button_Link} from "../Buttons.js";
+import {UI_Button_Link} from "../Buttons.js";
 
 const XMR_AU_RATIO = 0.000000000001;
 
@@ -45,14 +45,14 @@ export default function Wallet(props){
         <Wallet_Page_Section label = "Transactions generated" value={props.transactionsGenerated} />
         <Wallet_Page_Section label = "Total fees" value={props.totalFees * XMR_AU_RATIO + " XMR"} />
         <div className="wallet_page_button_container">
-          <Home_UI_Button_Link 
+          <UI_Button_Link 
             handleClick = {buttonHandleContinue}
             destination="/" 
             isactive={buttonIsActive}
             className={props.isGeneratingTxs ? "stop_tx_generation_color" : ""} 
           >
             {buttonTextElement}
-          </Home_UI_Button_Link>
+          </UI_Button_Link>
         </div>
       </div>
     </Page_Box>

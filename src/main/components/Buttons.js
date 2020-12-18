@@ -32,7 +32,7 @@ export function Router_UI_Button_Link(props) {
 }
 
 // Component for the common "button link" used in the bottom of the page_box home pages
-export function Home_UI_Button_Link(props) {
+export function UI_Button_Link(props) {
   if(props.isactive || props.isactive == null) {
     return(
       <a
