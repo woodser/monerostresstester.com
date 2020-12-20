@@ -411,7 +411,7 @@ async generateWallet(){
     // register listener to handle notifications from tx generator
     let that = this;
     await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
-        
+      
       async onMessage(msg) {
         console.log("MoneroTxGeneratorListener.onMessage(): " + msg);
       }
@@ -421,13 +421,10 @@ async generateWallet(){
         
         // refresh main ui
         await that.refreshMainState();
-        
-        // play muscle animation if tx generated
-        that.playMuscleAnimation.bind(that)();
       }
       
       async onNumBlocksToUnlock(numBlocksToNextUnlock, numBlocksToLastUnlock) {
-        that.refreshMainState();
+        await that.refreshMainState();
       }
     });
     
@@ -435,7 +432,7 @@ async generateWallet(){
     await this.wallet.addListener(new class extends MoneroWalletListener {
         
       async onBalancesChanged(newBalance, newUnlockedBalance) {
-        that.refreshMainState();
+        await that.refreshMainState();
       }
       
       async onOutputReceived(output){
@@ -454,15 +451,27 @@ async generateWallet(){
   }
   
   async refreshMainState() {
+    
+    // skip if already refreshing
+    if (this._refreshingMainState) return;
+    this._refreshingMainState = true;
+    
+    // build new state
     let state = {};
     state.balance = await this.wallet.getBalance();
     state.availableBalance = await this.wallet.getUnlockedBalance();
     state.transactionsGenerated = this.txGenerator.getNumTxsGenerated();
     state.totalFees = this.txGenerator.getTotalFees();
     if (!this.walletIsFunded && state.balance >= FUNDED_WALLET_MINIMUM_BALANCE) state.walletIsFunded = true;
+    
+    // pump arms if new tx generated
+    let armPump = state.transactionsGenerated > this.state.transactionsGenerated;
+    if (armPump) this.playMuscleAnimation();
+
     // TODO: update balance with time to last unlock if > 0
     console.log("Num blocks to next unlock: " + this.txGenerator.getNumBlocksToNextUnlock() + "; Num blocks to last unlock: " + this.txGenerator.getNumBlocksToLastUnlock());
     this.setState(state);
+    this._refreshingMainState = false;
   }
   
   playMuscleAnimation() {

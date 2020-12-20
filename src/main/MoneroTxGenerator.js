@@ -207,10 +207,13 @@ class MoneroTxGenerator {
   }
   
   async _refreshNumBlocksToUnlock() {
-    if (this.refreshingNumBlocksToUnlock) return;
-    this.refreshingNumBlocksToUnlock = true;
+    
+    // skip if already refreshing num blocks to unlock
+    if (this._refreshingNumBlocksToUnlock) return;
+    this._refreshingNumBlocksToUnlock = true;
+    
+    // compute numb locks to unlock
     let numBlocksToUnlock = await this.wallet.getNumBlocksToUnlock();
-    this.refreshingNumBlocksToUnlock = false;
     
     // announce updated blocks to unlock
     if (this.numBlocksToNextUnlock !== numBlocksToUnlock[0] || this.numBlocksToLastUnlock !== numBlocksToUnlock[1]) {
@@ -225,6 +228,7 @@ class MoneroTxGenerator {
     if (this._isGenerating && this.numBlocksToNextUnlock !== undefined && this.numBlocksToNextUnlock > 0) {
       this._onMessage("Waiting for available balance (~" + (this.numBlocksToNextUnlock * 2) + " minutes)");
     }
+    this._refreshingNumBlocksToUnlock = false;
   }
   
   async _onMessage(msg) {
