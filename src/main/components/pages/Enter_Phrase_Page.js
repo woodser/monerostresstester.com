@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './enter_phrase_page.css';
 import {Page_Box, Header, Main_Content, Page_Text_Entry} from '../Widgets.js';
 import {UI_Button_Link, UI_Text_Link} from '../Buttons.js';
 
@@ -7,7 +8,7 @@ import './home.css';
 
 export default function Enter_Phrase_Page(props) {
   return(
-    <Page_Box className="home_subpage_box">
+    <Page_Box className="home_subpage_box_flex">
       <Header text={props.header}/>
       <Main_Content>
       	<Page_Text_Entry 

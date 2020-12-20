@@ -19,7 +19,7 @@ export default function Welcome(props) {
   }
   
   return (
-    <Page_Box className = "home_subpage_box">
+    <Page_Box className = "home_subpage_box_flex">
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
       <div className="home_button_links">

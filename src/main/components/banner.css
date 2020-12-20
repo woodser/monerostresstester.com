@@ -33,7 +33,7 @@
   margin: auto;
 }
 
-#banner-container {
+#banner_container {
   display: flex;
   color: var(--text-color);
   background-color: var(--banner-color);

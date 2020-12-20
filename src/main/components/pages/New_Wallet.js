@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './home.css';
+import './new_wallet.css';
 import {Page_Box, Page_Text_Box, Main_Content, Header, Loading_Animation} from '../Widgets.js';
-import {UI_Text_Link, UI_Button_Link, Regenerate_Phrase_Button} from '../Buttons.js';
+import {UI_Text_Link, UI_Button_Link} from '../Buttons.js';
 
 export default function New_Wallet(props) {
   
@@ -26,8 +27,11 @@ export default function New_Wallet(props) {
   }
   
   return(
-    <Page_Box className = "home_subpage_box">
-      <Header text="Save your backup phrase" margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>/>
+    <Page_Box className = "home_subpage_box_flex">
+      <Header 
+        text="Save your backup phrase" 
+        margin_content=<Regenerate_Phrase_Button handleClick={props.handleRegenerate}/>
+      />
       {mainContent}
       <div className="save_phrase_box_bottom_margin"></div>
       <div className="home_button_links">
@@ -47,5 +51,12 @@ export default function New_Wallet(props) {
           setCurrentHomePage = {props.setCurrentHomePage}/>
       </div>
     </Page_Box>
+  );
+}
+
+//Component for the unique "Regenerate" button in the wallet generation sub-page
+function Regenerate_Phrase_Button(props) {
+  return(
+      <a className="regenerate_button" onClick={props.handleClick}>Regenerate</a>
   );
 }

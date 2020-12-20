@@ -1,5 +1,32 @@
 :root {
   --wallet-item-width: 80%;
+  
+  --start-generating-button-color: #30de00;
+  --stop-generating-button-color: #f96749;
+  
+  --no-funds-button-color: #939393;
+  --start-generating-button-hover-color: #717171;
+  --start-generating-button-click-color: #B5B5B5;
+}
+
+.button_start_generating {
+	background-color: var(--start-generating-button-color);
+}
+
+.button_start_generating:hover {
+	background-color: var(--start-generating-button-hover-color);
+}
+
+.button_start_generating:active{
+	background-color: var(--start-generating-button-click-color);
+}
+
+.button_stop_generating {
+	background-color: var(--stop-generating-button-color);
+}
+
+.button_idle {
+	background-color: var(--no-funds-button-color);
 }
 
 .wallet_page_section {
