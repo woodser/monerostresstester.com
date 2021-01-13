@@ -10,7 +10,7 @@ export default function Sync_Wallet_Page(props) {
   let headerAndContent = null;
   
   headerAndContent = (
-    <Page_Box className="home_subpage_box">
+    <Page_Box className="home_subpage_box_flex">
       <Header text="Synchronizing Wallet" />
       <Main_Content>
         <Progress_Bar progress={props.progress}/>

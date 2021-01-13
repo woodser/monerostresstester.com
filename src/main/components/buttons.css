@@ -14,6 +14,10 @@
   
   --double-button-center-space-width: 50px;
   --spinner-right-margin: 10px;
+  
+  --regenerate-button-width: 115px;
+  --regenerate-button-right-margin: calc((var(--page-box-width) - var(--item-width)) / 2 );
+  --regenerate-button-left-margin: calc(var(--item-width) - var(--regenerate-button-width) - var(--regenerate-button-right-margin)); 
 }
 
 .ui_link_container {
@@ -113,8 +117,6 @@ div.ui_button_link_inactive:hover {
 	cursor: not-allowed;
 }
 
-
-
 .ui_text_link {
   text-decoration: none;
   text-align: center;
@@ -134,14 +136,4 @@ a.ui_text_link:hover {
 
 .ui_text_link:hover {
   text-decoration: underline;
-}
-
-.regenerate_button {
-  right: 0px;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.regenerate_button_left_spacer {
-  width: 758px;
 }

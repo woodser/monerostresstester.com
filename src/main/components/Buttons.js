@@ -1,42 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Link} from 'react-router-dom';
 import './buttons.css';
 
-export function Router_UI_Button_Link(props) {
-  if(props.isactive || props.isactive == null) {
-    return(
-      <Link
-        className={"ui_link_container ui_button_link " + props.className} 
-        onClick = {function () {
-          if(props.handleClick){
-            props.handleClick();
-          }
-        }}
-        to={props.destination}
-      >
-        <div className="button_contents_container">
-          {props.children}
-        </div>
-      </Link>
-    );
-  } else {
-    return(
-      <div className={"ui_link_container ui_button_link_inactive " + props.className}>
-        <div className="button_contents_container">
-          {props.children}
-        </div>
-      </div>
-    );
-  }
-}
-
 // Component for the common "button link" used in the bottom of the page_box home pages
-export function Home_UI_Button_Link(props) {
+export function UI_Button_Link(props) {
+  
+  if(props.style){
+    console.log("UI_Button_Link inline style: " + JSON.stringify(props.style));
+  }
+  
   if(props.isactive || props.isactive == null) {
     return(
       <a
         className={"ui_link_container ui_button_link " + props.className} 
+        style={props.style}
         onClick = {function () {
           if(props.handleClick){
             props.handleClick();
@@ -45,6 +22,10 @@ export function Home_UI_Button_Link(props) {
             props.setCurrentHomePage(props.destination);
           }
         }}
+        onMouseEnter={props.onMouseEnter}
+        onMouseLeave={props.onMouseLeave}
+        onMouseDown={props.onMouseDown}
+        onMouseUp={props.onMouseUp}
       >
         <div className="button_contents_container">
           {props.children}
@@ -53,7 +34,10 @@ export function Home_UI_Button_Link(props) {
     );
   } else {
     return(
-      <div className={"ui_link_container ui_button_link_inactive " + props.className}>
+      <div className={"ui_link_container ui_button_link_inactive " + props.className}
+        onMouseEnter={props.onMouseEnter}
+        onMouseLeave={props.onMouseLeave}
+      >
         <div className="button_contents_container">
           {props.children}
         </div>
@@ -82,14 +66,4 @@ export function UI_Text_Link(props) {
       </a>
     </div>
   )
-}
-
-// Component for the unique "Regenerate" button in the wallet generation sub-page
-export function Regenerate_Phrase_Button(props) {
-  return(
-    <div className="regenerate_button_container">
-      <div className="regenerate_button_left_spacer"></div>
-      <a className="regenerate_button" onClick={props.handleClick}>Regenerate</a>
-    </div>
-  );
 }

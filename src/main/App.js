@@ -120,7 +120,6 @@ class App extends React.Component {
                 coreModuleLoaded = {this.state.coreModuleLoaded}
                 keysModuleLoaded = {this.state.keysModuleLoaded}
                 isGeneratingTxs = {this.state.isGeneratingTxs}
-                walletIsFunded = {this.state.walletIsFunded}
                 transactionsGenerated = {this.state.transactionsGenerated}
                 totalFees = {this.state.totalFees}
                 enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
@@ -138,7 +137,6 @@ class App extends React.Component {
       availableBalance: 0,
       currentHomePage: "Welcome",
       isGeneratingTxs: false,
-      walletIsFunded: false,
       transactionsGenerated: 0,
       totalFees: 0,
       enteredMnemonicIsValid: true,
@@ -146,7 +144,8 @@ class App extends React.Component {
       isAwaitingWalletVerification: false,
       flexLogo: relaxingLogo,
       depositQrCode: null,
-      isAwaitingDeposit: false
+      isAwaitingDeposit: false,
+      transactionStatusMessage: ""
     };
   }
   
@@ -300,13 +299,11 @@ class App extends React.Component {
         await that._initMain();
         let balance = await walletWasm.getBalance();
         let availableBalance = await walletWasm.getUnlockedBalance();
-        let walletIsFunded = availableBalance >= FUNDED_WALLET_MINIMUM_BALANCE;
         that.setState({
           walletIsSynced: true,
           balance: balance,
           availableBalance: availableBalance,
-          currentHomePage: "Wallet",
-          walletIsFunded: walletIsFunded
+          currentHomePage: "Wallet"
         });
         qrcode.toDataURL(that.walletAddress, function(err, url){
             let code = <QR_Code url={url} />;
@@ -414,6 +411,9 @@ async generateWallet(){
       
       async onMessage(msg) {
         console.log("MoneroTxGeneratorListener.onMessage(): " + msg);
+        that.setState({
+          transactionStatusMessage: msg
+        });
       }
       
       // handle transaction notifications
@@ -462,7 +462,6 @@ async generateWallet(){
     state.availableBalance = await this.wallet.getUnlockedBalance();
     state.transactionsGenerated = this.txGenerator.getNumTxsGenerated();
     state.totalFees = this.txGenerator.getTotalFees();
-    if (!this.walletIsFunded && state.balance >= FUNDED_WALLET_MINIMUM_BALANCE) state.walletIsFunded = true;
     
     // pump arms if new tx generated
     let armPump = state.transactionsGenerated > this.state.transactionsGenerated;
@@ -493,14 +492,14 @@ async generateWallet(){
       balance: 0,
       availableBalance: 0,
       isGeneratingTxs: false,
-      walletIsFunded: false,
       transactionsGenerated: 0,
       totalFees: 0,
       enteredMnemonicIsValid: true,
       enteredHeightIsValid: true,
       isAwaitingWalletVerification: false,
       depositQrCode: null,
-      isAwaitingDeposit: false
+      isAwaitingDeposit: false,
+      transactionStatusMessage: ""
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -676,7 +675,6 @@ async generateWallet(){
                 coreModuleLoaded = {this.state.coreModuleLoaded}
                 keysModuleLoaded = {this.state.keysModuleLoaded}
                 isGeneratingTxs = {this.state.isGeneratingTxs}
-                walletIsFunded = {this.state.walletIsFunded}
                 startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
                 stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
                 transactionsGenerated = {this.state.transactionsGenerated}
@@ -687,6 +685,7 @@ async generateWallet(){
                 cancelImport = {this.cancelImport.bind(this)}
                 cancelConfirmation = {this.cancelConfirmation.bind(this)}
                 forceWait = {this.state.isAwaitingWalletVerification}
+                transactionStatusMessage = {this.state.transactionStatusMessage}
               />} />
               <Route path="/backup" render={(props) => <Backup
                 {...props}
@@ -746,17 +745,6 @@ class walletListener extends MoneroWalletListener {
   
   onBalancesChanged(newBalance, newUnlockedBalance){
     this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
-    if (this.walletIsSynchronized) {
-      if (newUnlockedBalance >= FUNDED_WALLET_MINIMUM_BALANCE && !callingComponent.state.walletIsFunded){
-	callingComponent.setState({
-	  walletIsFunded: true
-	});
-      } else if (newUnlockedBalance < FUNDED_WALLET_MINIMUM_BALANCE && callingComponent.state.walletIsFunded){
-	callingComponent.setState({
-	  walletIsFunded: false
-	});
-      }
-    }
   }
   
   setWalletIsSynchronized(value) {

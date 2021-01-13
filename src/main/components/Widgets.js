@@ -145,11 +145,10 @@ export function Main_Content(props) {
 
 export function Header(props) {
   let bottomMargin = {};
-  if(!props.omit_header_margin){
-    bottomMargin = <div className="header_bottom_margin">
-                     {props.margin_content}
-                   </div>
-  }
+  bottomMargin = <div className="header_bottom_margin">
+                   {props.margin_content}
+                 </div>
+  
   return (
     <div className="header">
       <div className="header_text">

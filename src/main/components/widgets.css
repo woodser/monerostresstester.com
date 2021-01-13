@@ -30,6 +30,11 @@
   text-align: center;
 }
 
+.header_bottom_margin {
+  height: 48px;
+  position: relative;
+}
+
 .text_box {
   background-color: var(--text-box-background-color);
   color: var(--text-box-text-color);

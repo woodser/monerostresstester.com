@@ -45,7 +45,7 @@ export default function Banner(props) {
   }
   
   return(
-    <div id="banner-container">
+    <div id="banner_container">
       <div id="header_link_container" className="vertically_centered_item_container">
         <NavLink to="/" className="header_link vertical_center">
           MoneroStressTester.com

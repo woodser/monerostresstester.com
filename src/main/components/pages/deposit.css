@@ -33,7 +33,7 @@ div {
   height: 40px;
 }
 
-.code_image {
+.qr_code_image_container {
   width: 100%;
   grid-area: code_image;
   height: auto;

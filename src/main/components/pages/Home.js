@@ -9,73 +9,41 @@ import Sync_Wallet_Page from './Sync_Wallet_Page.js';
 import Enter_Phrase_Page from './Enter_Phrase_Page.js';
 import Wallet from "./Wallet.js";
 
-import {Home_UI_Button_Link, UI_Text_Link, Regenerate_Phrase_Button} from '../Buttons.js';
+import {UI_Button_Link, UI_Text_Link} from '../Buttons.js';
 import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Content, Loading_Animation} from '../Widgets.js';
 
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
-class Home extends React.Component {
-  
-  constructor(props) {
-    super(props);
-    this.state = {
-      currentHomePage: "Welcome"
-    }
-  }
-  
-  render() {
-    let renderItem = null;
-    let buttonContents = null;
-    switch(this.props.currentHomePage){
-      case "Welcome":
-        renderItem =
-  	<Welcome
-  	  handleContinue={this.props.generateWallet}
-          handleBack={this.props.createDateConversionWallet}
-          setCurrentHomePage={this.props.setCurrentHomePage}
+function Home(props) {
+  let renderItem = null;
+  let buttonContents = null;
+  switch(props.currentHomePage){
+    case "Welcome":
+      renderItem =
+        <Welcome
+          handleContinue={props.generateWallet}
+          handleBack={props.createDateConversionWallet}
+          setCurrentHomePage={props.setCurrentHomePage}
           continueDestination="New_Wallet"
           backDestination="Import_Wallet"
         />;
-        break;
-      case "New_Wallet":
-        renderItem =
-  	<New_Wallet 
-            text={this.props.walletPhrase}
-            handleRegenerate={this.props.generateWallet}
-            handleBack={this.props.resetState}
-            continueDestination="Confirm_Wallet"
-            backDestination="Welcome"
-            setCurrentHomePage = {this.props.setCurrentHomePage}
-          />;
-        break;
-      case "Confirm_Wallet":
-	if(this.props.forceWait){
-	  buttonContents=
-	    <div className="double_button_contents_container">
-              <span className="double_button_item_1">Creating wallet...</span>
-              <span className="double_button_item_2"><Loading_Animation /></span>
-            </div>
-	} else {
-	  buttonContents = <>Continue</>
-	}
-        renderItem = 
-  	<Enter_Phrase_Page
-            header="Confirm your backup phrase" 
-            handleTextChange={this.props.setEnteredPhrase} 
-            handleContinue={this.props.confirmWallet}
-            backDestination="New_Wallet"
-            handleBack={this.props.cancelConfirmation}
-            setCurrentHomePage={this.props.setCurrentHomePage}
-            buttonsAreActive={this.props.enteredMnemonicIsValid && !this.props.forceWait}
-            isValid={this.props.enteredMnemonicIsValid}
-            buttonContents = {buttonContents}
-          />;
-        break;
-      case "Import_Wallet": 
-	if(this.props.forceWait){
-	  buttonContents =
-	  <div className="double_button_contents_container">
-            <span className="double_button_item_1">Importing wallet...</span>
+      break;
+    case "New_Wallet":
+      renderItem =
+        <New_Wallet 
+          text={props.walletPhrase}
+          handleRegenerate={props.generateWallet}
+          handleBack={props.resetState}
+          continueDestination="Confirm_Wallet"
+          backDestination="Welcome"
+          setCurrentHomePage = {props.setCurrentHomePage}
+        />;
+      break;
+    case "Confirm_Wallet":
+      if(props.forceWait){
+        buttonContents=
+          <div className="double_button_contents_container">
+            <span className="double_button_item_1">Creating wallet...</span>
             <span className="double_button_item_2"><Loading_Animation /></span>
           </div>
 	} else {
@@ -83,15 +51,38 @@ class Home extends React.Component {
 	}
         renderItem = 
   	<Enter_Phrase_Page
+          header="Confirm your backup phrase" 
+          handleTextChange={props.setEnteredPhrase} 
+          handleContinue={props.confirmWallet}
+          backDestination="New_Wallet"
+          handleBack={props.cancelConfirmation}
+          setCurrentHomePage={props.setCurrentHomePage}
+          buttonsAreActive={props.enteredMnemonicIsValid && !props.forceWait}
+          isValid={props.enteredMnemonicIsValid}
+          buttonContents = {buttonContents}
+        />;
+      break;
+    case "Import_Wallet": 
+      if(props.forceWait){
+        buttonContents =
+          <div className="double_button_contents_container">
+            <span className="double_button_item_1">Importing wallet...</span>
+            <span className="double_button_item_2"><Loading_Animation /></span>
+          </div>
+      } else {
+        buttonContents = <>Continue</>
+      }
+      renderItem = 
+        <Enter_Phrase_Page
           header="Import existing wallet" 
-          handleTextChange={this.props.setEnteredPhrase} 
-          handleContinue={this.props.restoreWallet}
-          handleBack={this.props.cancelImport}
+          handleTextChange={props.setEnteredPhrase} 
+          handleContinue={props.restoreWallet}
+          handleBack={props.cancelImport}
           backDestination="Welcome"
-          textEntryIsActive={!this.props.importPageForceWait}
-          buttonsAreActive={!this.props.forceWait && this.props.enteredMnemonicIsValid && this.props.enteredHeightIsValid}
-          isValid={this.props.enteredMnemonicIsValid}
-          setCurrentHomePage = {this.props.setCurrentHomePage}
+          textEntryIsActive={!props.importPageForceWait}
+          buttonsAreActive={!props.forceWait && props.enteredMnemonicIsValid && props.enteredHeightIsValid}
+          isValid={props.enteredMnemonicIsValid}
+          setCurrentHomePage = {props.setCurrentHomePage}
           buttonContents={buttonContents}
         >
           <Page_Text_Entry 
@@ -99,40 +90,39 @@ class Home extends React.Component {
             isSingleLineEntry={true}
             className="enter_restore_height_box"
             placeholder="Enter restore height or date (YYYY-MM-DD)" 
-            handleTextChange={this.props.setRestoreHeight}
-            isactive={!this.props.importPageForceWait}
-            isValid={this.props.enteredHeightIsValid}
+            handleTextChange={props.setRestoreHeight}
+            isactive={!props.importPageForceWait}
+            isValid={props.enteredHeightIsValid}
           />
         </Enter_Phrase_Page>;
-        break;
-      case "Sync_Wallet_Page":
-        renderItem =
-  	<Sync_Wallet_Page
-            progress={this.props.walletSyncProgress}
-            backDestination={this.props.lastHomePage}
-            setCurrentHomePage={this.props.confirmAbortWalletSynchronization}
-          />;
-        break;
-      case "Wallet":
-        renderItem =
-  	<Wallet
-  	  balance={this.props.balance}
-          availableBalance={this.props.availableBalance}
-          isGeneratingTxs = {this.props.isGeneratingTxs}
-          walletIsFunded = {this.props.walletIsFunded}
-          startGeneratingTxs = {this.props.startGeneratingTxs}
-          stopGeneratingTxs = {this.props.stopGeneratingTxs}
-          transactionsGenerated = {this.props.transactionsGenerated}
-          totalFees = {this.props.totalFees}
+      break;
+    case "Sync_Wallet_Page":
+      renderItem =
+        <Sync_Wallet_Page
+          progress={props.walletSyncProgress}
+          backDestination={props.lastHomePage}
+          setCurrentHomePage={props.confirmAbortWalletSynchronization}
         />;
-        break;
+      break;
+    case "Wallet":
+      renderItem =
+        <Wallet
+          balance={props.balance}
+          availableBalance={props.availableBalance}
+          isGeneratingTxs = {props.isGeneratingTxs}
+          startGeneratingTxs = {props.startGeneratingTxs}
+          stopGeneratingTxs = {props.stopGeneratingTxs}
+          transactionsGenerated = {props.transactionsGenerated}
+          totalFees = {props.totalFees}
+          transactionStatusMessage = {props.transactionStatusMessage}
+        />;
+      break;
     }
-    return (
-      <div id="home">   
-        {renderItem} 
-      </div>
-    );
-  }
+  return (
+    <div id="home">   
+      {renderItem} 
+    </div>
+  );
 }
 
 /*

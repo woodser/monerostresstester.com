@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
+import {Link} from 'react-router-dom';
 import "./deposit.css";
 
 import {Page_Box, Header, Deposit_Address_Text_Box} from "../Widgets.js";
-import {Router_UI_Button_Link} from "../Buttons.js";
 import checkmark from "../../img/checkmark.png";
 
 export default function Deposit(props){
@@ -44,10 +43,38 @@ export default function Deposit(props){
   return(
     <Page_Box className="deposit_page_box">
       <Header text="Deposit" omit_bottom_margin={true}/>
-      <div className="code_image">{props.depositQrCode}</div>
+      <div className="qr_code_image_container">{props.depositQrCode}</div>
       <Deposit_Address_Text_Box box_text={props.walletAddress} />
       {statusElement}
       {button}
     </Page_Box>
   );
+}
+
+function Router_UI_Button_Link(props) {
+  if(props.isactive || props.isactive == null) {
+    return(
+      <Link
+        className={"ui_link_container ui_button_link " + props.className} 
+        onClick = {function () {
+          if(props.handleClick){
+            props.handleClick();
+          }
+        }}
+        to={props.destination}
+      >
+        <div className="button_contents_container">
+          {props.children}
+        </div>
+      </Link>
+    );
+  } else {
+    return(
+      <div className={"ui_link_container ui_button_link_inactive " + props.className}>
+        <div className="button_contents_container">
+          {props.children}
+        </div>
+      </div>
+    );
+  }
 }
