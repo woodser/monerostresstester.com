@@ -75,7 +75,7 @@ class App extends React.Component {
     // In order to pass "this" into the nested functions...
     let that = this;
     
-    //Start loading the Keys-only and Wasm wallet modules
+    //Start loading the Keys-only and full wallet modules
     
     //First, load the keys-only wallet module  
     LibraryUtils.loadKeysModule().then(
@@ -84,8 +84,8 @@ class App extends React.Component {
 	  keysModuleLoaded: true
 	});
 
-	// Load the core (Wasm wallet) module
-	LibraryUtils.loadCoreModule().then(
+	// Load the full module
+	LibraryUtils.loadFullModule().then(
 	  function() {
 	    that.setState({
 	      coreModuleLoaded: true
@@ -93,7 +93,7 @@ class App extends React.Component {
 	  }
 	).catch(
 	  function(error) {
-	    console.log("Failed to load core wallet module!");
+	    console.log("Failed to load full wallet module!");
 	    console.log("Error: " + error);
 	  } 
 	);
@@ -154,7 +154,7 @@ class App extends React.Component {
     // At present, getRestoreHeightFromDate() is (erroneously) an instance method; thus, a wallet instance is
     // required to use it.
     
-    this.dateRestoreWalletPromise = monerojs.createWalletWasm({
+    this.dateRestoreWalletPromise = monerojs.createWalletFull({
       password: "supersecretpassword123",
       networkType: "stagenet",
       path: "",
@@ -165,11 +165,11 @@ class App extends React.Component {
 
   }
   
-  createTxGenerator(wallet) {
+  async createTxGenerator(wallet) {
     
     // create daemon with connection
     let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
-    let daemon = monerojs.connectToDaemonRpc({
+    let daemon = await monerojs.connectToDaemonRpc({
       server: daemonConnection,
       proxyToWorker: true
     });
@@ -253,13 +253,13 @@ class App extends React.Component {
       return;
     }
     
-    let walletWasm = null;
+    let walletFull = null;
     try {
-      let wasmWalletInfo = Object.assign({}, WALLET_INFO);
-      wasmWalletInfo.path = "";
-      wasmWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
-      wasmWalletInfo.restoreHeight = height;
-      walletWasm = await monerojs.createWalletWasm(wasmWalletInfo);
+      let fullWalletInfo = Object.assign({}, WALLET_INFO);
+      fullWalletInfo.path = "";
+      fullWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
+      fullWalletInfo.restoreHeight = height;
+      walletFull = await monerojs.createWalletFull(fullWalletInfo);
     } catch(e) {
       console.log("Error: " + e);
       this.setState({
@@ -274,12 +274,12 @@ class App extends React.Component {
     }
     // Both the mnemonic and restore height were valid; thus, we can remove the disposable date-conversion
     // Wallet from memory
-    this.dateRestoreWasmWallet = null;
+    this.dateRestoreHeightWallet = null;
     this.setState({
       isAwaitingWalletVerification: false
     });
     
-    this.wallet = walletWasm;
+    this.wallet = walletFull;
     
     this.lastHomePage = "Import_Wallet";
     
@@ -290,15 +290,15 @@ class App extends React.Component {
     // Create a wallet listener to keep app.js updated on the wallet's balance etc.
     this.walletUpdater = new walletListener(this);
     let that=this;
-    walletWasm.sync(this.walletUpdater).then(async () => {
+    walletFull.sync(this.walletUpdater).then(async () => {
       
       if(!that.userCancelledWalletSync && !that.userCancelledWalletImport){
         // This code should only run if wallet.sync finished because the wallet finished syncing
         // And not because the user cancelled the sync
         that.walletUpdater.setWalletIsSynchronized(true);
         await that._initMain();
-        let balance = await walletWasm.getBalance();
-        let availableBalance = await walletWasm.getUnlockedBalance();
+        let balance = await walletFull.getBalance();
+        let availableBalance = await walletFull.getUnlockedBalance();
         that.setState({
           walletIsSynced: true,
           balance: balance,
@@ -364,20 +364,20 @@ async generateWallet(){
   this.setState({
     walletPhrase: newPhrase
   });
-  let wasmWalletInfo = Object.assign({}, WALLET_INFO);
-  wasmWalletInfo.mnemonic = newPhrase;
-  wasmWalletInfo.path = "";
+  let fullWalletInfo = Object.assign({}, WALLET_INFO);
+  fullWalletInfo.mnemonic = newPhrase;
+  fullWalletInfo.path = "";
   
   // set restore height to daemon's current height
   let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);    // TODO: factor out common daemon reference so this code is not duplicated
-  let daemon = monerojs.connectToDaemonRpc({
+  let daemon = await monerojs.connectToDaemonRpc({
     server: daemonConnection,
     proxyToWorker: true
   });
-  wasmWalletInfo.restoreHeight = await daemon.getHeight();
+  fullWalletInfo.restoreHeight = await daemon.getHeight();
   
   // create wallet promise which syncs when resolved
-  let walletPromise = monerojs.createWalletWasm(wasmWalletInfo);
+  let walletPromise = monerojs.createWalletFull(fullWalletInfo);
   walletPromise.then(async function(wallet) {
     await wallet.sync();
   })
@@ -403,7 +403,7 @@ async generateWallet(){
     if (this.userCancelledWalletConfirmation) return;
         
     // create transaction generator
-    this.createTxGenerator(this.wallet);
+    await this.createTxGenerator(this.wallet);
             
     // register listener to handle notifications from tx generator
     let that = this;
@@ -447,7 +447,7 @@ async generateWallet(){
     // start syncing wallet in background if the user has not cancelled wallet creation
     console.log("Wallet mnemonic: " + await this.wallet.getMnemonic());
     console.log("Wallet address: " + await this.wallet.getPrimaryAddress());
-    await this.wallet.startSyncing();
+    await this.wallet.startSyncing(5000);
   }
   
   async refreshMainState() {

@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "memfs": "^3.1.2",
-    "monero-javascript": "^0.4.6",
+    "monero-javascript": "^0.5.0",
     "qrcode": "^1.4.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

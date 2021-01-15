@@ -6,7 +6,7 @@ import './buttons.css';
 export function UI_Button_Link(props) {
   
   if(props.style){
-    console.log("UI_Button_Link inline style: " + JSON.stringify(props.style));
+    //console.log("UI_Button_Link inline style: " + JSON.stringify(props.style));
   }
   
   if(props.isactive || props.isactive == null) {
