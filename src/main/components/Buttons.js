@@ -49,6 +49,7 @@ export function UI_Button_Link(props) {
 export function UI_Text_Link(props) {
   return(
     <div className="ui_link_text_container">
+      &nbsp;
       <a 
         className="ui_text_link" 
 	onClick={function () {

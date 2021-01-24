@@ -11,6 +11,8 @@
   --text-box-text-color: black;
   --text-entry-inactive-border-color: red;
   --text-entry-border-color: black;
+  
+  --standard-margin: 42px;
 }
 
 .page_box {
@@ -24,21 +26,18 @@
   padding-top: 44px;
   margin: 0;
   line-height: 33px;
-}
-
-.header_text {
   text-align: center;
-}
-
-.header_bottom_margin {
-  height: 48px;
-  position: relative;
 }
 
 .text_box {
   background-color: var(--text-box-background-color);
   color: var(--text-box-text-color);
   font-family: var(--font);
+}
+
+.standard_page_box_margin {
+	min-height: var(--standard-margin);
+	height: var(--standard-margin);
 }
 
 .page_text_box {
@@ -96,7 +95,6 @@
 
 .enter_restore_height_box {
   background-color: var(--text-entry-background-color);
-  margin-top: 42px;
   height: 56px;
 }
 
@@ -135,3 +133,28 @@ textarea {
   padding-top: calc(var(--progress-bar-height)/2 - var(--progress-bar-text-size)/2);
   padding-bottom: calc(var(--progress-bar-height)/2 - var(--proress-bar-text-size)/2);
 }
+
+.notification_bar {
+	background-color: #fbfe56;
+	font-size: 22px;
+	height: 75px;
+	position: relative;
+}
+
+.notification_bar_contents {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	min-width: 350px;
+}
+
+.notification_bar_contents > a {
+  color: #74b295;
+}
+.notification_bar_contents > a:hover {
+  cursor: pointer;
+}
+

@@ -32,7 +32,7 @@ export default function Banner(props) {
         to={convertLinkNameToUrl(link)} 
         className="link nav_link" 
         activeClassName="current_nav"
-        onClick={link==="Deposit" ? props.notifyIntentToDeposit : undefined}>
+        onClick={link==="Deposit" ? props.notifyIntentToDeposit : () => props.setCurrentSitePage(link)}>
           {link + (link==="Sign Out" ? "" : "   ")}
       </NavLink>);
   } else {

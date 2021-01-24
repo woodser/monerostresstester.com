@@ -2,7 +2,7 @@ Features/Functionality,CLEANUP,REFACTORING,,,,
 use getNumBlocksToUnlock(),indentation should be used per nested block scopes,Convert all class components to functional components (https://reactjs.org/docs/hooks-state.html),,,,
 Fix: restoring wallet with pending but not avilable funds should not inactivate txgen button/should not say “fund wallet before sending Txs”,"and lines can breathe, using newlines between chunks of logic, each chunk having a comment in plain english",Standardize page box,Properties:,Height (Fullpage vs box),Width,Background color (with default set to current homepagebox color)
 ,ndentation formatting,Create dedicated multi-content button class (and replace ad-hoc div structure used in import button),,,,
-,this comment is better to the right of the one line it describes. otherwise it's implied it applies to all lines imo,,,,,
+,this comment is better to the right of the one line it describes. otherwise it's implied it applies to all lines imo,move ALL uses of bind() to constructors,,,,
 ,Remove tabs – indentation should ALWAYS be two manual spaces,,,,,
 ,Fix deposit/”waiting for deposit” page size and text size/alignment/wrapping,,,,,
 ,Rearrange app function in logical order/groups,,,,,
