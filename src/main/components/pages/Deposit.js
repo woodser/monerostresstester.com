@@ -32,7 +32,7 @@ export default function Deposit(props){
         <Router_UI_Button_Link
           className="return_home_from_deposit_button"
           destination="/"
-          setCurrentHomePage={props.setCurrentHomePage}
+          setCurrentPage={props.setCurrentPage}
         >
           Return to Home
         </Router_UI_Button_Link>

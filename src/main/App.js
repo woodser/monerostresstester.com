@@ -6,14 +6,15 @@ import Banner from "./components/Banner.js";
 import Home from "./components/pages/Home.js";
 import Deposit from "./components/pages/Deposit.js";
 import SignOut from "./components/pages/SignOut.js";
-import Backup from "./components/pages/Backup.js";
+import Save_Phrase_Page from "./components/pages/Save_Phrase_Page.js";
 import Withdraw from "./components/pages/Withdraw.js";
-import {Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.js";
+import {Notification_Bar, Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.js";
 
 import QR_Code from "./components/QR_Code.js";
 import qrcode from './qrcode.js';
 
-import {HashRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
+import {HashRouter as Router, Link, Route, Switch, Redirect} from 'react-router-dom';
+//import { BrowserRouter as Link, NavLink } from "react-router-dom";
 import MoneroTxGenerator from './MoneroTxGenerator.js';
 import MoneroTxGeneratorListener from './MoneroTxGeneratorListener.js';
 
@@ -110,24 +111,6 @@ class App extends React.Component {
      * lastHomePage
      */
     
-    /*
-     * VARS TO KEEP IN STATE
-                walletSyncProgress = {this.state.walletSyncProgress}
-                walletPhrase = {this.state.walletPhrase}
-                currentHomePage = {this.state.currentHomePage}
-                balance = {this.state.balance}
-                availableBalance = {this.state.availableBalance}
-                coreModuleLoaded = {this.state.coreModuleLoaded}
-                keysModuleLoaded = {this.state.keysModuleLoaded}
-                isGeneratingTxs = {this.state.isGeneratingTxs}
-                transactionsGenerated = {this.state.transactionsGenerated}
-                totalFees = {this.state.totalFees}
-                enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
-                enteredHeightIsValid = {this.state.enteredHeightIsValid}
-                forceWait = {this.state.isAwaitingWalletVerification}
-                depositQrCode = {this.state.depositQrCode}
-                walletAddress = {this.walletAddress}
-     */
     this.state = {
       walletPhrase: "",
       phraseIsConfirmed: false,
@@ -145,7 +128,8 @@ class App extends React.Component {
       flexLogo: relaxingLogo,
       depositQrCode: null,
       isAwaitingDeposit: false,
-      transactionStatusMessage: ""
+      transactionStatusMessage: "",
+      currentSitePage: "/"
     };
   }
   
@@ -281,6 +265,9 @@ class App extends React.Component {
     
     this.wallet = walletFull;
     
+    // Get the mnemonic so we can store it in state and make it available to view on "Backup" page
+    let mnemonic = await walletFull.getMnemonic();
+    
     this.lastHomePage = "Import_Wallet";
     
     this.setState({
@@ -303,7 +290,8 @@ class App extends React.Component {
           walletIsSynced: true,
           balance: balance,
           availableBalance: availableBalance,
-          currentHomePage: "Wallet"
+          currentHomePage: "Wallet",
+          walletPhrase: mnemonic
         });
         qrcode.toDataURL(that.walletAddress, function(err, url){
             let code = <QR_Code url={url} />;
@@ -499,7 +487,8 @@ async generateWallet(){
       isAwaitingWalletVerification: false,
       depositQrCode: null,
       isAwaitingDeposit: false,
-      transactionStatusMessage: ""
+      transactionStatusMessage: "",
+      currentSitePage: "/"
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -601,9 +590,26 @@ async generateWallet(){
     }
   }
   
+  /*
+   * currentHomePage and currentSitePage
+   * the "current home page" is the "subpage" of "home" (/#) the user is currently viewing
+   * 
+   * currentSitePage refers to the ACTUAL page - this could be "home" (/#) but can also be any
+   * of the other pages (deposit, withrawl, etc)
+   * 
+   * currentHomePage becomes irrelevant once the user loads a wallet and gains acces
+   * to the other site pages besides home (since home no longer has sub pages
+   * once this is the case)
+   */
   setCurrentHomePage(pageName){
     this.setState({
       currentHomePage: pageName
+    });
+  }
+  
+  setCurrentSitePage(pageName) {
+    this.setState({
+      currentSitePage: pageName
     });
   }
   
@@ -641,12 +647,33 @@ async generateWallet(){
   }
   
   notifyIntentToDeposit() {
+    console.log("Notified of deposit intent");
     this.setState({
       isAwaitingDeposit: true
     });
+    this.setCurrentSitePage("/deposit");
   }
   
   render(){
+    let notificationBar = null;
+    
+    if(this.state.walletIsSynced && !(this.state.balance > 0) && this.state.currentSitePage != "/deposit"){
+      notificationBar = (
+	<Notification_Bar content = {
+	  <>
+            No funds deposited
+            &thinsp;
+            <Link 
+              onClick = {this.notifyIntentToDeposit.bind(this)}
+              to = "/deposit"	
+            >
+              click to deposit
+            </Link>
+          </>
+	} />
+      );
+    }
+    
     if(this.animationIsLoaded){
       return(
         <div id="app_container">
@@ -655,7 +682,9 @@ async generateWallet(){
               walletIsSynced={this.state.walletIsSynced}
               flexLogo = {this.state.flexLogo}
               notifyIntentToDeposit = {this.notifyIntentToDeposit.bind(this)}
+              setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
             />
+            {notificationBar}
             <Switch>
               <Route exact path="/" render={() => <Home
                 generateWallet={this.generateWallet.bind(this)}
@@ -687,8 +716,9 @@ async generateWallet(){
                 forceWait = {this.state.isAwaitingWalletVerification}
                 transactionStatusMessage = {this.state.transactionStatusMessage}
               />} />
-              <Route path="/backup" render={(props) => <Backup
-                {...props}
+              <Route path="/backup" render={() => <Save_Phrase_Page 
+        	omit_buttons = {true} 
+                text = {this.state.walletPhrase}
               />} />
               <Route path="/deposit" render={() => <Deposit
                 depositQrCode = {this.state.depositQrCode}
@@ -696,7 +726,7 @@ async generateWallet(){
                 
                 xmrWasDeposited = {!this.state.isAwaitingDeposit}
 
-                setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
+                setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
               />} />
               <Route path="/sign_out" render={(props) => <SignOut
                 {...props}
