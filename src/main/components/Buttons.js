@@ -68,3 +68,9 @@ export function UI_Text_Link(props) {
     </div>
   )
 }
+
+export function Text_Box_Top_Right_Link_Button(props) {
+  return(
+      <a className="text_box_top_right_button" onClick={props.handleClick}>{props.text}</a>
+  );
+}

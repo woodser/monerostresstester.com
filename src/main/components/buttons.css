@@ -114,3 +114,10 @@ a.ui_text_link:hover {
 .ui_text_link:hover {
   text-decoration: underline;
 }
+
+.text_box_top_right_button {
+  font-size: 22px;
+  cursor: pointer;
+  float: right;
+  margin-right: 20px;
+}

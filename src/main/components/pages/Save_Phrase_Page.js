@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './save_phrase_page.css';
 import {Page_Box, Page_Box_Margin, Page_Text_Box, Main_Content, Header, Loading_Animation} from '../Widgets.js';
-import {UI_Text_Link, UI_Button_Link} from '../Buttons.js';
+import {UI_Text_Link, UI_Button_Link, Text_Box_Top_Right_Link_Button} from '../Buttons.js';
 import warningImage from '../../img/warning.png'
 
 export default function Save_Phrase_Page(props) {
@@ -30,7 +30,10 @@ export default function Save_Phrase_Page(props) {
   if(!props.omit_buttons){ // The new wallet and backup pages are nearly identical EXCEPT backup lacks buttons
     regenerateButtonSpace = (
       <div style = {{width: "100%"}}>
-        <Regenerate_Phrase_Button handleClick = {props.handleRegenerate} />
+        <Text_Box_Top_Right_Link_Button 
+          handleClick = {props.handleRegenerate} 
+          text = "Regenerate"
+        />
       </div>
     );
     
@@ -87,9 +90,3 @@ export default function Save_Phrase_Page(props) {
   );
 }
 
-//Component for the unique "Regenerate" button in the wallet generation sub-page
-function Regenerate_Phrase_Button(props) {
-  return(
-      <a className="regenerate_button" onClick={props.handleClick}>Regenerate</a>
-  );
-}

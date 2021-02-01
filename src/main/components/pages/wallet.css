@@ -1,5 +1,4 @@
 :root {
-  --wallet-item-width: 80%;
   
   --start-generating-button-color: #30de00;
   --stop-generating-button-color: #f96749;
@@ -29,30 +28,8 @@
 	background-color: var(--no-funds-button-color);
 }
 
-.wallet_page_section {
-  display: grid;
-  grid-template-areas:
-  '      .                .                 .     ' 
-  'section_label          .          section_value'
-  'horizontal_line horizontal_line horizontal_line'
-  '      .                .                 .     ';
-  grid-template-rows: 36px auto auto 36px;
-  grid-template-columns: auto 1fr auto;
-}
 .wallet_page_box {
   background-color: white;
-}
-.horizontal_rule {
-  grid-area: horizontal_line;
-  width: 100%;
-}
-.wallet_page_text {
-  width: inherit;
-  font-size: 24px;
-}
-.wallet_page_sections_container {
-  width: var(--wallet-item-width);
-  padding-top: 38px;
 }
 
 .wallet_page_button_container {
@@ -60,11 +37,4 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-}
-
-.wallet_page_section_label {
-  grid-area: section_label;
-}
-.wallet_page_section_value {
-  grid-area: section_value;
 }

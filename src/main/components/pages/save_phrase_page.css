@@ -1,9 +1,4 @@
-.regenerate_button {
-  font-size: 22px;
-  cursor: pointer;
-  float: right;
-  margin-right: 20px;
-}
+
 
 .warning_image {
 	height: calc(var(--sub-title-font-size) - var(--sub-title-font-size) / 3.25);

@@ -127,6 +127,7 @@ export class Page_Text_Entry extends React.Component {
     let element = null;
     
     if (this.props.isSingleLineEntry){
+      className = className + " single_line_text_entry";
       element = (
         <input
           type="text"
@@ -167,5 +168,57 @@ export function Header(props) {
     <div className="header">
       {props.text}
     </div>
+  );
+}
+
+export function Page_Box_Line_Field(props) {
+  
+  console.log("page line field style: " + props.field_style);
+  
+  /*
+   * There are two possible field styles:
+   * 
+   * horizontal: label and value/text are on the same line with label on left and 
+   * value on right.
+   * 
+   * vertical: Both the label and value are left-aligned; label is on top, value on bottom
+   */
+  
+  let fieldStyleObject = {
+    display: "flex",
+    flexDirection: "row"
+  };
+  
+  // Field style defaults to horizontal layout
+  let lineStyleObject = {
+    width: "50%"
+  }
+  let labelAlignment = {float: "left"};
+  let valueAlignment = {float: "right"};
+  
+  if(props.field_style == "vertical"){
+    lineStyleObject.width = "100%";
+    fieldStyleObject.flexDirection = "column";
+    valueAlignment.float = "left";
+  } else if (props.field_style != "horizontal" && props.field_style != undefined) {
+    throw("Invalid page box line field style: " + props.field_style);
+  }
+  
+  return(
+    <>
+      <div className = "page_box_line_field_text" style = {fieldStyleObject}>
+        <div className = "horizontal_fields_page_text" style = {lineStyleObject}>
+          <div style = {labelAlignment}>{props.label}</div>
+        </div>
+        <div className="horizontal_fields_page_text" style={lineStyleObject}>
+          <div style = {valueAlignment}>{props.value}</div>
+        </div>
+      </div>
+      <Page_Box_Margin height = "7px" />
+      <div className = "horizontal_rule">
+        <hr />
+      </div>
+      <Page_Box_Margin height = "45px" />
+    </>
   );
 }
