@@ -133,7 +133,7 @@ export class Page_Text_Entry extends React.Component {
   render() {
     
     console.log("defaultValue: " + this.props.defaultValue);
-    console.log("overrideValue: " + this.props.overrideWithdrawAmountText);
+    console.log("overrideValue: " + this.props.parentControlledText);
     
     let className = this.props.className + 
       " text_box page_text_box " + 
@@ -143,14 +143,14 @@ export class Page_Text_Entry extends React.Component {
     let element = null;
     
     let value = null;
-    if(this.props.overrideWithdrawAmountText === null){
+    if(this.props.parentControlledText === null){
       if(this.state.showPlaceholderText){
         value = this.props.defaultValue;
       } else {
         value = this.state.enteredText;
       }
     } else {
-      value = this.props.overrideWithdrawAmountText;
+      value = this.props.parentControlledText;
     }
 
     if (this.props.isSingleLineEntry){
@@ -163,6 +163,7 @@ export class Page_Text_Entry extends React.Component {
           disabled={!this.props.isactive}
           value = {value}
           onClick = {this.handleClick.bind(this)}
+          style = {this.props.style}
         />
       );
     } else {
@@ -173,6 +174,7 @@ export class Page_Text_Entry extends React.Component {
           disabled={!this.props.isactive}
           value = {value}
           onClick = {this.handleClick.bind(this)}
+          style = {this.props.style}
         />
       );
     }

@@ -32,6 +32,12 @@ export default function Withdraw(props){
     // User has not yet entered TX details. Show TX detail entry page
     console.log("User has not yet entered TX details. Show TX detail entry page");    
     
+    let amountTextAlignStyle = {textAlign: "left"};
+    // If the user clicked "Send all" above the amount box, right align text
+    if(props.overrideWithdrawAmountText != null){
+      amountTextAlignStyle = {textAlign: "right"}
+    }
+    
     withdrawPageBox = (
       <Page_Box>
         <Main_Content>
@@ -81,7 +87,8 @@ export default function Withdraw(props){
           handleTextChange={props.handleAmountChange}
           isValid = {props.enteredAmountIsValid}
           isactive = {true}
-          parentControlledText = {props.overrideAmountText}
+          parentControlledText = {props.overrideWithdrawAmountText}
+          style = {amountTextAlignStyle}
         />
         <UI_Button_Link 
           link_text = "Withdraw" 

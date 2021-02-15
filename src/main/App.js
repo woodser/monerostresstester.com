@@ -782,7 +782,7 @@ async generateWallet(){
     console.log("Send all pressed");
     this.setState({
       enteredWithdrawAmount: this.state.availableBalance,
-      overrideWithdrawAmountText: "Send all funds"
+      overrideWithdrawAmountText: "ALl available funds"
     });
   }
   
