@@ -60,8 +60,8 @@ export default function Withdraw(props){
           <span style = {{float: "left", fontSize: "24px"}}>Address</span>
         </div>
         <Page_Text_Entry 
-      	  isDefault={true}
-	  placeholder="Enter destination wallet address..." 
+      	  isDefault={false}
+	  defaultValue="Enter destination wallet address..." 
 	  handleTextChange={props.handleAddressChange}
       	  isactive={props.textEntryIsActive === undefined ? true : props.textEntryIsActive}
       	  isValid={props.enteredAddressIsValid}
@@ -71,16 +71,17 @@ export default function Withdraw(props){
         <span style = {{fontSize: "24px"}}>Amount</span>
         <Text_Box_Top_Right_Link_Button
           style = {{float: "right"}}
-          handleClick = {props.handleSendAllFunds}
+          handleClick = {props.sendAllFunds}
           text = "Send all"
         / > 
         <Page_Text_Entry 
-          isDefault={true} 
+          isDefault={false} 
           isSingleLineEntry={true}
-          placeholder='Enter amount or click "send all" to send all funds' 
+          defaultValue='Enter amount or click "send all" to send all funds' 
           handleTextChange={props.handleAmountChange}
           isValid = {props.enteredAmountIsValid}
           isactive = {true}
+          parentControlledText = {props.overrideAmountText}
         />
         <UI_Button_Link 
           link_text = "Withdraw" 

@@ -69,12 +69,12 @@ class App extends React.Component {
     this.txGenerator = null;
     this.walletAddress = "empty";
     this.wallet = null;
-    this.enteredPhrase = "";
+    this.enteredText = "";
     this.restoreHeight = 0;
     this.lastHomePage = "";
     this.animationIsLoaded = false;
-    this.enteredAmountIsValid = false;
-    this.enteredAddressIsValid = false;
+    this.enteredAmountIsValid = true;
+    this.enteredAddressIsValid = true;
     
     // Function binding
     this.createWithdrawTx = this.createWithdrawTx.bind(this);
@@ -147,7 +147,8 @@ class App extends React.Component {
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       enteredAmount: null,
-      withdrawTxStatus: "" //POssible values: "", "creating", "relaying"
+      withdrawTxStatus: "", //POssible values: "", "creating", "relaying",
+      overrideWithdrawAmountText: null
     };
     
     // Bind functions
@@ -340,7 +341,7 @@ setCurrentSyncProgress(percentDone){
 }
   
 setEnteredPhrase(mnemonic){
-  this.enteredPhrase = mnemonic;
+  this.enteredText = mnemonic;
   this.setState({
     enteredMnemonicIsValid: true
   });
@@ -529,16 +530,16 @@ async generateWallet(){
     this.wallet = null;
     this.restoreHeight = 0;
     this.lastHomePage = "";
-    this.enteredAmountIsValid = false;
-    this.enteredAddressIsValid = false;
+    this.enteredAmountIsValid = true;
+    this.enteredAddressIsValid = true;
     this.withdrawTransaction = null;
   }
   
   delimitEnteredWalletPhrase(){
     // Remove any extra whitespaces
-    let enteredPhraseCopy = this.enteredPhrase;
-    enteredPhraseCopy = enteredPhraseCopy.replace(/ +(?= )/g,'').trim();
-    return(enteredPhraseCopy);
+    let enteredTextCopy = this.enteredText;
+    enteredTextCopy = enteredTextCopy.replace(/ +(?= )/g,'').trim();
+    return(enteredTextCopy);
   }
   
   async confirmWallet() {
@@ -706,6 +707,7 @@ async generateWallet(){
     console.log("Creating tx with address: " + this.state.enteredWithdrawAddress + " and amount: " + this.state.enteredWithdrawAmount);
      
     let txCreationWasSuccessful = true;
+    
     this.withdrawTx = await this.wallet.createTx(
       {
         address: this.state.enteredWithdrawAddress,
@@ -765,9 +767,23 @@ async generateWallet(){
       this.withdrawTx = null;
       this.setState({
 	currentWithdrawInfo: newWithdrawInfo,
-	withdrawTxStatus: ""
+	withdrawTxStatus: "",
+	enteredAddressIsValid: true,
+	enteredAmountIsValid: true,
+	enteredWithdrawAddress: null,
+	enteredWithdrawAmount: null
       });
     }
+  }
+  
+  // Runs when the user clicks "Send all" above the withdraw send amount field
+  prepareWithdrawAllFunds() {
+    
+    console.log("Send all pressed");
+    this.setState({
+      enteredWithdrawAmount: this.state.availableBalance,
+      overrideWithdrawAmountText: "Send all funds"
+    });
   }
   
   resetWithdrawPage() {
@@ -783,11 +799,12 @@ async generateWallet(){
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       enteredAmount: null,
-      withdrawTxStatus: ""
+      withdrawTxStatus: "",
+      overrideWithdrawAmountText: null
     });
     
-    this.enteredAmountIsValid = false;
-    this.enteredAddressIsValid = false;
+    this.enteredAmountIsValid = true;
+    this.enteredAddressIsValid = true;
   }
   
   setEnteredWithdrawAddress(address) {
@@ -817,7 +834,8 @@ async generateWallet(){
       this.enteredAmountIsValid = false;
     }
     this.setState({
-      enteredWithdrawAmount: amount
+      overrideWithdrawAmountText: null,
+      enteredWithdrawAmountText: amount
     });
   }
   
@@ -926,6 +944,8 @@ async generateWallet(){
                 submitWithdrawInfo = {this.createWithdrawTx.bind(this)}
                 confirmWithdraw = {this.relayWithdrawTx.bind(this)}
                 withdrawTxStatus = {this.state.withdrawTxStatus}
+                sendAllFunds = {this.prepareWithdrawAllFunds.bind(this)}
+                overrideWithdrawAmountText = {this.state.overrideWithdrawAmountText}
               />} />
               <Route component={default_page} />
             </Switch>

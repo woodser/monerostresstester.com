@@ -105,27 +105,54 @@ export class Page_Text_Entry extends React.Component {
   constructor(props) {
     super(props);
     this.state={
-      isDefault: true,
-      enteredPhrase: this.props.value
+      enteredText: "",
+      showPlaceholderText: true
     }
+    this.isDefault = true;
   }
 
   handleChange(e){
+   
+      this.setState({
+        enteredText: e.target.value,
+      });
+      if (e.target.value === "") 
+        this.isDefault = true;
+      else
+	this.isDefault = false;
+      this.props.handleTextChange(e.target.value);
+    
+  }
+  
+  handleClick(){
     this.setState({
-      enteredPhrase: e.target.value,
-      isDefault: e.target.value === "" ? true : false
+      showPlaceholderText: false
     });
-    this.props.handleTextChange(e.target.value);
   }
 
   render() {
+    
+    console.log("defaultValue: " + this.props.defaultValue);
+    console.log("overrideValue: " + this.props.overrideWithdrawAmountText);
     
     let className = this.props.className + 
       " text_box page_text_box " + 
       ((this.state.isDefault) ? " default_value" : " new_value") +
       ((this.props.isValid ? " active_border" : " inactive_border"));
+    
     let element = null;
     
+    let value = null;
+    if(this.props.overrideWithdrawAmountText === null){
+      if(this.state.showPlaceholderText){
+        value = this.props.defaultValue;
+      } else {
+        value = this.state.enteredText;
+      }
+    } else {
+      value = this.props.overrideWithdrawAmountText;
+    }
+
     if (this.props.isSingleLineEntry){
       className = className + " single_line_text_entry";
       element = (
@@ -133,18 +160,19 @@ export class Page_Text_Entry extends React.Component {
           type="text"
           className={className}
           onChange={this.handleChange.bind(this)}
-          placeholder={this.props.placeholder}
           disabled={!this.props.isactive}
+          value = {value}
+          onClick = {this.handleClick.bind(this)}
         />
       );
     } else {
       element = (
         <textarea
           className={className}
-          value={this.state.enteredPhrase}
           onChange={this.handleChange.bind(this)} 
-          placeholder={this.props.placeholder}
           disabled={!this.props.isactive}
+          value = {value}
+          onClick = {this.handleClick.bind(this)}
         />
       );
     }
