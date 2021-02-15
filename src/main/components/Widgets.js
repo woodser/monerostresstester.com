@@ -128,6 +128,9 @@ export class Page_Text_Entry extends React.Component {
     this.setState({
       showPlaceholderText: false
     });
+    if(this.props.handleClick != undefined && this.props.handleClick != null){
+      this.props.handleClick();
+    }
   }
 
   render() {

@@ -59,9 +59,6 @@ class App extends React.Component {
     const img = new Image();
     img.src = getLoadingAnimationFile();
     
-    
-    // print current version of monero-javascript
-    
     /*
      * Member Variables
      * No need to store these in state since no components need to re-render when their values are set
@@ -75,6 +72,13 @@ class App extends React.Component {
     this.animationIsLoaded = false;
     this.enteredAmountIsValid = true;
     this.enteredAddressIsValid = true;
+    this.currentWithdrawInfo = {
+      withdrawAddress: null,
+      withdrawAmount: null,
+      withdrawHash: null,
+      withdrawFee: null,
+      withdrawTxKey: null
+    }
     
     // Function binding
     this.createWithdrawTx = this.createWithdrawTx.bind(this);
@@ -137,13 +141,6 @@ class App extends React.Component {
       transactionStatusMessage: "",
       currentSitePage: "/",
       withdrawTx: null,
-      currentWithdrawInfo: {
-	withdrawAddress: null,
-	withdrawAmount: null,
-	withdrawHash: null,
-	withdrawFee: null,
-	withdrawTxKey: null
-      },
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       enteredAmount: null,
@@ -514,13 +511,6 @@ async generateWallet(){
       transactionStatusMessage: "",
       currentSitePage: "/",
       withdrawTx: null,
-      currentWithdrawInfo: {
-	withdrawAddress: null,
-	withdrawAmount: null,
-	withdrawHash: null,
-	withdrawFee: null,
-	withdrawTxKey: null
-      },
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       isCreatingWithdrawTx: true
@@ -533,6 +523,13 @@ async generateWallet(){
     this.enteredAmountIsValid = true;
     this.enteredAddressIsValid = true;
     this.withdrawTransaction = null;
+    this.currentWithdrawInfo = {
+      withdrawAddress: null,
+      withdrawAmount: null,
+      withdrawHash: null,
+      withdrawFee: null,
+      withdrawTxKey: null
+    }
   }
   
   delimitEnteredWalletPhrase(){
@@ -707,23 +704,21 @@ async generateWallet(){
     console.log("Creating tx with address: " + this.state.enteredWithdrawAddress + " and amount: " + this.state.enteredWithdrawAmount);
      
     let txCreationWasSuccessful = true;
-    
-    this.withdrawTx = await this.wallet.createTx(
-      {
-        address: this.state.enteredWithdrawAddress,
-        amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
-        accountIndex: 0,
-        // relay: true, (?)
-      }
-    ).catch(
-      function(e) {
-	console.log("Error creating tx: " + e);
-	that.setState({
-	  withdrawTxStatus: ""
-	});
-	txCreationWasSuccessful = false;
-      }
-    );
+    try {
+      this.withdrawTx = await this.wallet.createTx(
+        {
+          address: this.state.enteredWithdrawAddress,
+          amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
+          accountIndex: 0
+        }
+      );
+    } catch(e) {
+      console.log("Error creating tx: " + e);
+      this.setState({
+	withdrawTxStatus: ""
+      });
+      txCreationWasSuccessful = false;  
+    }
     
     if(txCreationWasSuccessful){
       let newWithdrawInfo = {
@@ -735,9 +730,9 @@ async generateWallet(){
       };
       console.log("Successfully created Tx! : " + JSON.stringify(newWithdrawInfo));
       this.setState({
-        currentWithdrawInfo: newWithdrawInfo,
         withdrawTxStatus: ""
       });
+      this.currentWithdrawInfo = newWithdrawInfo;
       
     }
   }
@@ -758,15 +753,14 @@ async generateWallet(){
     
     if (relayTxWasSuccessful) {
       let newWithdrawInfo = {
-        withdrawAddress: this.state.currentWithdrawInfo.withdrawAddress,
-        withdrawAmount: this.state.currentWithdrawInfo.withdrawAmount,
-        withdrawFee: this.state.currentWithdrawInfo.withdrawFee,
+        withdrawAddress: this.currentWithdrawInfo.withdrawAddress,
+        withdrawAmount: this.currentWithdrawInfo.withdrawAmount,
+        withdrawFee: this.currentWithdrawInfo.withdrawFee,
         withdrawHash: hash,
-        withdrawKey: this.state.currentWithdrawInfo.withdrawKey
+        withdrawKey: this.currentWithdrawInfo.withdrawKey
       }
       this.withdrawTx = null;
       this.setState({
-	currentWithdrawInfo: newWithdrawInfo,
 	withdrawTxStatus: "",
 	enteredAddressIsValid: true,
 	enteredAmountIsValid: true,
@@ -789,13 +783,6 @@ async generateWallet(){
   resetWithdrawPage() {
     this.setState({
       withdrawTx: null,
-      currentWithdrawInfo: {
-	withdrawAddress: null,
-	withdrawAmount: null,
-	withdrawHash: null,
-	withdrawFee: null,
-	withdrawTxKey: null
-      },
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       enteredAmount: null,
@@ -805,6 +792,13 @@ async generateWallet(){
     
     this.enteredAmountIsValid = true;
     this.enteredAddressIsValid = true;
+    this.currentWithdrawInfo = {
+      withdrawAddress: null,
+      withdrawAmount: null,
+      withdrawHash: null,
+      withdrawFee: null,
+      withdrawTxKey: null
+    }
   }
   
   setEnteredWithdrawAddress(address) {
@@ -825,17 +819,17 @@ async generateWallet(){
   }
   
   setEnteredWithdrawAmount(amount) {
-    
+    console.log("Setting the withdraw amount state var in App.js");
     // Validate the withdraw amount. It must be a number greater than zero and less than available balance
     let n = Number(amount);
-    if(!n != NaN && n > 0 && n <= this.state.availableBalance) {
+    if(n != NaN && n > 0 && n <= this.state.availableBalance) {
       this.enteredAmountIsValid = true;
     } else {
       this.enteredAmountIsValid = false;
     }
     this.setState({
-      overrideWithdrawAmountText: null,
-      enteredWithdrawAmountText: amount
+      overrideWithdrawAmount: null,
+      enteredWithdrawAmount: amount
     });
   }
   
@@ -844,14 +838,12 @@ async generateWallet(){
     console.log("attempting to submit withdraw details")
     
     let newWithdrawInfo = {};
-    newWithdrawInfo = Object.assign(newWithdrawInfo, this.state.currentWithdrawInfo);
-    console.log("state.withdrawInfo: " + this.state.currentWithdrawInfo);
-    console.log("newWithrdawInfo: " + newWithdrawInfo);
+    newWithdrawInfo = Object.assign(newWithdrawInfo, this.currentWithdrawInfo);
+    console.log("state.withdrawInfo: " + this.currentWithdrawInfo);
     newWithdrawInfo.withdrawAddress = this.state.enteredWithdrawAddress;
-    newWithdrawInfo.withdrawAmount = this.state.enteredWithdrawAmount;
-    this.setState({
-      currentWithdrawInfo: newWithdrawInfo
-    });
+    newWithdrawInfo.withdrawAmount = Number(this.state.enteredWithdrawAmount);
+    console.log("newWithrdawInfo: " + newWithdrawInfo);
+    this.currentWithdrawInfo = newWithdrawInfo;
   }
   
   render(){
@@ -934,7 +926,7 @@ async generateWallet(){
               <Route path="/withdraw" render={(props) => <Withdraw 
         	submitWithdrawInfo = {this.setWithdrawAddressAndAmount.bind(this)}
                 resetWithdrawPage = {this.resetWithdrawPage.bind(this)}
-                withdrawInfo = {this.state.currentWithdrawInfo}
+                withdrawInfo = {this.currentWithdrawInfo}
                 availableBalance = {this.state.availableBalance}
                 totalBalance = {this.state.balance}
                 handleAddressChange = {this.setEnteredWithdrawAddress.bind(this)}
@@ -966,7 +958,7 @@ function default_page(){
   return <h1>ERROR - invalid url path!</h1>
 }
             
-/**
+/*
  * Print sync progress every X blocks.
  */
 class walletListener extends MoneroWalletListener {
