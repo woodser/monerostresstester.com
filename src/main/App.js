@@ -59,6 +59,9 @@ class App extends React.Component {
     const img = new Image();
     img.src = getLoadingAnimationFile();
     
+    
+    // print current version of monero-javascript
+    
     /*
      * Member Variables
      * No need to store these in state since no components need to re-render when their values are set
@@ -72,13 +75,6 @@ class App extends React.Component {
     this.animationIsLoaded = false;
     this.enteredAmountIsValid = true;
     this.enteredAddressIsValid = true;
-    this.currentWithdrawInfo = {
-      withdrawAddress: null,
-      withdrawAmount: null,
-      withdrawHash: null,
-      withdrawFee: null,
-      withdrawTxKey: null
-    }
     
     // Function binding
     this.createWithdrawTx = this.createWithdrawTx.bind(this);
@@ -141,6 +137,13 @@ class App extends React.Component {
       transactionStatusMessage: "",
       currentSitePage: "/",
       withdrawTx: null,
+      currentWithdrawInfo: {
+	withdrawAddress: null,
+	withdrawAmount: null,
+	withdrawHash: null,
+	withdrawFee: null,
+	withdrawTxKey: null
+      },
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       enteredAmount: null,
@@ -511,6 +514,13 @@ async generateWallet(){
       transactionStatusMessage: "",
       currentSitePage: "/",
       withdrawTx: null,
+      currentWithdrawInfo: {
+	withdrawAddress: null,
+	withdrawAmount: null,
+	withdrawHash: null,
+	withdrawFee: null,
+	withdrawTxKey: null
+      },
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       isCreatingWithdrawTx: true
@@ -523,13 +533,6 @@ async generateWallet(){
     this.enteredAmountIsValid = true;
     this.enteredAddressIsValid = true;
     this.withdrawTransaction = null;
-    this.currentWithdrawInfo = {
-      withdrawAddress: null,
-      withdrawAmount: null,
-      withdrawHash: null,
-      withdrawFee: null,
-      withdrawTxKey: null
-    }
   }
   
   delimitEnteredWalletPhrase(){
@@ -730,9 +733,9 @@ async generateWallet(){
       };
       console.log("Successfully created Tx! : " + JSON.stringify(newWithdrawInfo));
       this.setState({
+        currentWithdrawInfo: newWithdrawInfo,
         withdrawTxStatus: ""
       });
-      this.currentWithdrawInfo = newWithdrawInfo;
       
     }
   }
@@ -753,14 +756,15 @@ async generateWallet(){
     
     if (relayTxWasSuccessful) {
       let newWithdrawInfo = {
-        withdrawAddress: this.currentWithdrawInfo.withdrawAddress,
-        withdrawAmount: this.currentWithdrawInfo.withdrawAmount,
-        withdrawFee: this.currentWithdrawInfo.withdrawFee,
+        withdrawAddress: this.state.currentWithdrawInfo.withdrawAddress,
+        withdrawAmount: this.state.currentWithdrawInfo.withdrawAmount,
+        withdrawFee: this.state.currentWithdrawInfo.withdrawFee,
         withdrawHash: hash,
-        withdrawKey: this.currentWithdrawInfo.withdrawKey
+        withdrawKey: this.state.currentWithdrawInfo.withdrawKey
       }
       this.withdrawTx = null;
       this.setState({
+	currentWithdrawInfo: newWithdrawInfo,
 	withdrawTxStatus: "",
 	enteredAddressIsValid: true,
 	enteredAmountIsValid: true,
@@ -783,6 +787,13 @@ async generateWallet(){
   resetWithdrawPage() {
     this.setState({
       withdrawTx: null,
+      currentWithdrawInfo: {
+	withdrawAddress: null,
+	withdrawAmount: null,
+	withdrawHash: null,
+	withdrawFee: null,
+	withdrawTxKey: null
+      },
       enteredWithdrawAddress: null,
       enteredWithdrawAmount: null,
       enteredAmount: null,
@@ -792,13 +803,6 @@ async generateWallet(){
     
     this.enteredAmountIsValid = true;
     this.enteredAddressIsValid = true;
-    this.currentWithdrawInfo = {
-      withdrawAddress: null,
-      withdrawAmount: null,
-      withdrawHash: null,
-      withdrawFee: null,
-      withdrawTxKey: null
-    }
   }
   
   setEnteredWithdrawAddress(address) {
@@ -818,8 +822,14 @@ async generateWallet(){
     });
   }
   
+  clearOverrideText(){
+    this.setState({
+      overrideWithdrawAmountText: null,
+      enteredWithdrawAmount: null  
+    });
+  }
+  
   setEnteredWithdrawAmount(amount) {
-    console.log("Setting the withdraw amount state var in App.js");
     // Validate the withdraw amount. It must be a number greater than zero and less than available balance
     let n = Number(amount);
     if(n != NaN && n > 0 && n <= this.state.availableBalance) {
@@ -828,7 +838,7 @@ async generateWallet(){
       this.enteredAmountIsValid = false;
     }
     this.setState({
-      overrideWithdrawAmount: null,
+      overrideWithdrawAmountText: null,
       enteredWithdrawAmount: amount
     });
   }
@@ -838,12 +848,14 @@ async generateWallet(){
     console.log("attempting to submit withdraw details")
     
     let newWithdrawInfo = {};
-    newWithdrawInfo = Object.assign(newWithdrawInfo, this.currentWithdrawInfo);
-    console.log("state.withdrawInfo: " + this.currentWithdrawInfo);
-    newWithdrawInfo.withdrawAddress = this.state.enteredWithdrawAddress;
-    newWithdrawInfo.withdrawAmount = Number(this.state.enteredWithdrawAmount);
+    newWithdrawInfo = Object.assign(newWithdrawInfo, this.state.currentWithdrawInfo);
+    console.log("state.withdrawInfo: " + this.state.currentWithdrawInfo);
     console.log("newWithrdawInfo: " + newWithdrawInfo);
-    this.currentWithdrawInfo = newWithdrawInfo;
+    newWithdrawInfo.withdrawAddress = this.state.enteredWithdrawAddress;
+    newWithdrawInfo.withdrawAmount = this.state.enteredWithdrawAmount;
+    this.setState({
+      currentWithdrawInfo: newWithdrawInfo
+    });
   }
   
   render(){
@@ -926,7 +938,7 @@ async generateWallet(){
               <Route path="/withdraw" render={(props) => <Withdraw 
         	submitWithdrawInfo = {this.setWithdrawAddressAndAmount.bind(this)}
                 resetWithdrawPage = {this.resetWithdrawPage.bind(this)}
-                withdrawInfo = {this.currentWithdrawInfo}
+                withdrawInfo = {this.state.currentWithdrawInfo}
                 availableBalance = {this.state.availableBalance}
                 totalBalance = {this.state.balance}
                 handleAddressChange = {this.setEnteredWithdrawAddress.bind(this)}
@@ -938,6 +950,8 @@ async generateWallet(){
                 withdrawTxStatus = {this.state.withdrawTxStatus}
                 sendAllFunds = {this.prepareWithdrawAllFunds.bind(this)}
                 overrideWithdrawAmountText = {this.state.overrideWithdrawAmountText}
+                textEntryIsActive = {this.state.withdrawTxStatus === ""}
+                clearOverrideText = {this.clearOverrideText.bind(this)}
               />} />
               <Route component={default_page} />
             </Switch>

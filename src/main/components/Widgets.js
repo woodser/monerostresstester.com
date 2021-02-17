@@ -112,7 +112,6 @@ export class Page_Text_Entry extends React.Component {
   }
 
   handleChange(e){
-   
       this.setState({
         enteredText: e.target.value,
       });
@@ -146,7 +145,7 @@ export class Page_Text_Entry extends React.Component {
     let element = null;
     
     let value = null;
-    if(this.props.parentControlledText === null){
+    if(this.props.parentControlledText === undefined || this.props.parentControlledText === null){
       if(this.state.showPlaceholderText){
         value = this.props.defaultValue;
       } else {

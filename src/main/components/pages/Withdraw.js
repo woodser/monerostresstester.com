@@ -16,11 +16,17 @@ const XMR_AU_RATIO = 0.000000000001;
 
 export default function Withdraw(props){  
   
+  const handleAmountFieldClick = function(){
+    if(props.overrideWithdrawAmountText != null){
+      props.clearOverrideText();
+    }
+  }
+  
   let XMR_AU_RATIO = 0.000000000001;
   
   console.log("props.withdrawInfo: ");
   for(const property in props.withdrawInfo){
-    console.log(`${property}: ${props.withdrawInfo.property}`);
+    console.log(`${property}: ${props.withdrawInfo[property]}`);
   }
   console.log("withdrawInfo stringified: " + JSON.stringify(props.withdrawInfo));
   
@@ -36,6 +42,13 @@ export default function Withdraw(props){
     // If the user clicked "Send all" above the amount box, right align text
     if(props.overrideWithdrawAmountText != null){
       amountTextAlignStyle = {textAlign: "right"}
+    }
+    
+    let createButtonText = 
+    if(props.withdrawTxStatus === "creating"){
+      let withdrawButtonText = "Creating transaction";
+    } else {
+      withdrawButtonText = "Withdraw";
     }
     
     withdrawPageBox = (
@@ -89,13 +102,14 @@ export default function Withdraw(props){
           isactive = {true}
           parentControlledText = {props.overrideWithdrawAmountText}
           style = {amountTextAlignStyle}
+          handleClick = {handleAmountFieldClick}
         />
         <UI_Button_Link 
           link_text = "Withdraw" 
           handleClick = {props.submitWithdrawInfo}
           isactive = {buttonIsActive}
         >
-          Withdraw
+          {withdrawButtonText}
         </UI_Button_Link>
         </Main_Content>
       </Page_Box>
