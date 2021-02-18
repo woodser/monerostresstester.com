@@ -110,17 +110,20 @@ export class Page_Text_Entry extends React.Component {
     }
     this.isDefault = true;
   }
+  
+  setEnteredText(text){
+    this.setState({
+      enteredText: text
+    });
+  }
 
   handleChange(e){
-      this.setState({
-        enteredText: e.target.value,
-      });
-      if (e.target.value === "") 
-        this.isDefault = true;
-      else
-	this.isDefault = false;
-      this.props.handleTextChange(e.target.value);
-    
+    this.setEnteredText(e.target.value);
+    if (e.target.value === "") 
+      this.isDefault = true;
+    else
+      this.isDefault = false;
+    this.props.handleTextChange(e.target.value);
   }
   
   handleClick(){

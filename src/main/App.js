@@ -776,8 +776,6 @@ async generateWallet(){
   
   // Runs when the user clicks "Send all" above the withdraw send amount field
   prepareWithdrawAllFunds() {
-    
-    console.log("Send all pressed");
     this.setState({
       enteredWithdrawAmount: this.state.availableBalance,
       overrideWithdrawAmountText: "ALl available funds"
@@ -952,6 +950,7 @@ async generateWallet(){
                 overrideWithdrawAmountText = {this.state.overrideWithdrawAmountText}
                 textEntryIsActive = {this.state.withdrawTxStatus === ""}
                 clearOverrideText = {this.clearOverrideText.bind(this)}
+                enteredWithdrawAmount = {this.state.enteredWithdrawAmount}
               />} />
               <Route component={default_page} />
             </Switch>

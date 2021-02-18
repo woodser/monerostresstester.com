@@ -44,11 +44,9 @@ export default function Withdraw(props){
       amountTextAlignStyle = {textAlign: "right"}
     }
     
-    let createButtonText = 
+    let withdrawButtonText = "Withdraw";
     if(props.withdrawTxStatus === "creating"){
       let withdrawButtonText = "Creating transaction";
-    } else {
-      withdrawButtonText = "Withdraw";
     }
     
     withdrawPageBox = (
@@ -79,7 +77,6 @@ export default function Withdraw(props){
           <span style = {{float: "left", fontSize: "24px"}}>Address</span>
         </div>
         <Page_Text_Entry 
-      	  isDefault={false}
 	  defaultValue="Enter destination wallet address..." 
 	  handleTextChange={props.handleAddressChange}
       	  isactive={props.textEntryIsActive === undefined ? true : props.textEntryIsActive}
@@ -94,7 +91,6 @@ export default function Withdraw(props){
           text = "Send all"
         / > 
         <Page_Text_Entry 
-          isDefault={false} 
           isSingleLineEntry={true}
           defaultValue='Enter amount or click "send all" to send all funds' 
           handleTextChange={props.handleAmountChange}
