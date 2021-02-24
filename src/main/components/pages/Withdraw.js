@@ -16,27 +16,31 @@ const XMR_AU_RATIO = 0.000000000001;
 
 export default function Withdraw(props){  
   
+  /*
+   * NOTE: both of these functions should only run if their corresponding text fields are either
+   * 1. The default value or
+   * 2. A special value - in this case amountField set to "All available funds"
+   */
+  
   const handleAmountFieldClick = function(){
-    if(props.overrideWithdrawAmountText != null){
-      props.clearOverrideText();
-    }
+      props.clearEnteredAmountText();
+  }
+  const handleAddressFieldClick = function(){
+    props.clearEnteredAddressText();
+    
   }
   
   let XMR_AU_RATIO = 0.000000000001;
   
-  console.log("props.withdrawInfo: ");
-  for(const property in props.withdrawInfo){
-    console.log(`${property}: ${props.withdrawInfo[property]}`);
-  }
-  console.log("withdrawInfo stringified: " + JSON.stringify(props.withdrawInfo));
-  
   let withdrawPageBox = null;
-  console.log("enteredAddressIsValid: " + props.enteredAddressIsValid + "; enteredAmountIsValid: " + props.enteredAmountIsValid);
-  let buttonIsActive = props.enteredAddressIsValid && props.enteredAmountIsValid;
+  let buttonIsActive = props.enteredWithdrawAddressIsValid && props.enteredWithdrawAmountIsValid;
   
   if(props.withdrawInfo.withdrawAddress == null) {
     // User has not yet entered TX details. Show TX detail entry page
-    console.log("User has not yet entered TX details. Show TX detail entry page");    
+    
+    // The strings/values to be inserted into the text fields by App.js (as these fields are parent-controlled)
+    let amountValue = props.enteredWithdrawAmount;
+    let addressValue = props.enteredWithdrawAddress;
     
     let amountTextAlignStyle = {textAlign: "left"};
     // If the user clicked "Send all" above the amount box, right align text
@@ -77,10 +81,11 @@ export default function Withdraw(props){
           <span style = {{float: "left", fontSize: "24px"}}>Address</span>
         </div>
         <Page_Text_Entry 
-	  defaultValue="Enter destination wallet address..." 
 	  handleTextChange={props.handleAddressChange}
+          handleClick={handleAddressFieldClick}
       	  isactive={props.textEntryIsActive === undefined ? true : props.textEntryIsActive}
-      	  isValid={props.enteredAddressIsValid}
+      	  isValid={props.enteredWithdrawAddressIsValid}
+          value = {addressValue}
 	/>
         <Page_Box_Margin />
         
@@ -92,13 +97,13 @@ export default function Withdraw(props){
         / > 
         <Page_Text_Entry 
           isSingleLineEntry={true}
-          defaultValue='Enter amount or click "send all" to send all funds' 
           handleTextChange={props.handleAmountChange}
-          isValid = {props.enteredAmountIsValid}
+          isValid = {props.enteredWithdrawAmountIsValid}
           isactive = {true}
           parentControlledText = {props.overrideWithdrawAmountText}
           style = {amountTextAlignStyle}
           handleClick = {handleAmountFieldClick}
+          value = {amountValue}
         />
         <UI_Button_Link 
           link_text = "Withdraw" 

@@ -105,20 +105,21 @@ export class Page_Text_Entry extends React.Component {
   constructor(props) {
     super(props);
     this.state={
-      enteredText: "",
+      displayedText: "",
       showPlaceholderText: true
     }
     this.isDefault = true;
+    this.setText.bind(this);
   }
   
-  setEnteredText(text){
+  setText(text){
     this.setState({
-      enteredText: text
+      displayedText: text
     });
   }
 
   handleChange(e){
-    this.setEnteredText(e.target.value);
+    this.setText(e.target.value);
     if (e.target.value === "") 
       this.isDefault = true;
     else
@@ -127,9 +128,6 @@ export class Page_Text_Entry extends React.Component {
   }
   
   handleClick(){
-    this.setState({
-      showPlaceholderText: false
-    });
     if(this.props.handleClick != undefined && this.props.handleClick != null){
       this.props.handleClick();
     }
@@ -137,26 +135,12 @@ export class Page_Text_Entry extends React.Component {
 
   render() {
     
-    console.log("defaultValue: " + this.props.defaultValue);
-    console.log("overrideValue: " + this.props.parentControlledText);
-    
     let className = this.props.className + 
       " text_box page_text_box " + 
       ((this.state.isDefault) ? " default_value" : " new_value") +
       ((this.props.isValid ? " active_border" : " inactive_border"));
     
     let element = null;
-    
-    let value = null;
-    if(this.props.parentControlledText === undefined || this.props.parentControlledText === null){
-      if(this.state.showPlaceholderText){
-        value = this.props.defaultValue;
-      } else {
-        value = this.state.enteredText;
-      }
-    } else {
-      value = this.props.parentControlledText;
-    }
 
     if (this.props.isSingleLineEntry){
       className = className + " single_line_text_entry";
@@ -166,7 +150,7 @@ export class Page_Text_Entry extends React.Component {
           className={className}
           onChange={this.handleChange.bind(this)}
           disabled={!this.props.isactive}
-          value = {value}
+          value = {this.props.value}
           onClick = {this.handleClick.bind(this)}
           style = {this.props.style}
         />
@@ -177,7 +161,7 @@ export class Page_Text_Entry extends React.Component {
           className={className}
           onChange={this.handleChange.bind(this)} 
           disabled={!this.props.isactive}
-          value = {value}
+          value = {this.props.value}
           onClick = {this.handleClick.bind(this)}
           style = {this.props.style}
         />

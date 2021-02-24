@@ -52,8 +52,13 @@ const WALLET_INFO = {
 }
 
 class App extends React.Component {
+  
   constructor(props) {
     super(props);
+    
+    this.withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
+    this.withdrawAmountSendAllText = "All available funds";
+    this.withdrawAddressTextPrompt = "Enter destination wallet address..";
     
     // Force the loading animation to preload
     const img = new Image();
@@ -73,8 +78,8 @@ class App extends React.Component {
     this.restoreHeight = 0;
     this.lastHomePage = "";
     this.animationIsLoaded = false;
-    this.enteredAmountIsValid = true;
-    this.enteredAddressIsValid = true;
+    this.enteredWithdrawAmountIsValid = true;
+    this.enteredWithdrawAddressIsValid = true;
     
     // Function binding
     this.createWithdrawTx = this.createWithdrawTx.bind(this);
@@ -145,8 +150,10 @@ class App extends React.Component {
 	withdrawTxKey: null
       },
       enteredWithdrawAddress: null,
+      enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
       enteredWithdrawAmount: null,
-      enteredAmount: null,
+      enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
+      enteredWithdrawAmount: null,
       withdrawTxStatus: "", //POssible values: "", "creating", "relaying",
       overrideWithdrawAmountText: null
     };
@@ -521,7 +528,9 @@ async generateWallet(){
 	withdrawFee: null,
 	withdrawTxKey: null
       },
-      enteredWithdrawAddress: null,
+      enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
+      enteredWithdrawAmount: null,
+      enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
       enteredWithdrawAmount: null,
       isCreatingWithdrawTx: true
     });
@@ -530,8 +539,8 @@ async generateWallet(){
     this.wallet = null;
     this.restoreHeight = 0;
     this.lastHomePage = "";
-    this.enteredAmountIsValid = true;
-    this.enteredAddressIsValid = true;
+    this.enteredWithdrawAmountIsValid = true;
+    this.enteredWithdrawAddressIsValid = true;
     this.withdrawTransaction = null;
   }
   
@@ -707,14 +716,19 @@ async generateWallet(){
     console.log("Creating tx with address: " + this.state.enteredWithdrawAddress + " and amount: " + this.state.enteredWithdrawAmount);
      
     let txCreationWasSuccessful = true;
+    
+    let txConfig = {
+      address: this.state.enteredWithdrawAddress,
+      amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
+      accountIndex: 0
+    }
+    
     try {
-      this.withdrawTx = await this.wallet.createTx(
-        {
-          address: this.state.enteredWithdrawAddress,
-          amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
-          accountIndex: 0
-        }
-      );
+      if(Number(this.state.enteredWithdrawAmout) === this.state.availableBalance){
+        this.withdrawTx = await this.wallet.sweepUnlocked(txConfig);
+      } else {
+	this.withdrawTx = await this.wallet.createTx(txConfig);
+      }
     } catch(e) {
       console.log("Error creating tx: " + e);
       this.setState({
@@ -766,10 +780,12 @@ async generateWallet(){
       this.setState({
 	currentWithdrawInfo: newWithdrawInfo,
 	withdrawTxStatus: "",
-	enteredAddressIsValid: true,
-	enteredAmountIsValid: true,
+	enteredWithdrawAddressIsValid: true,
+	enteredWithdrawAmountIsValid: true,
 	enteredWithdrawAddress: null,
-	enteredWithdrawAmount: null
+	enteredWithdrawAddressText: "Enter destination wallet address..",
+	enteredWithdrawAmount: null,
+	enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
       });
     }
   }
@@ -778,7 +794,7 @@ async generateWallet(){
   prepareWithdrawAllFunds() {
     this.setState({
       enteredWithdrawAmount: this.state.availableBalance,
-      overrideWithdrawAmountText: "ALl available funds"
+      enteredWithdrawAmountText: this.withdrawAmountSendAllText
     });
   }
   
@@ -793,62 +809,75 @@ async generateWallet(){
 	withdrawTxKey: null
       },
       enteredWithdrawAddress: null,
+      enteredWithdrawAddressText: "Enter destination wallet address..",
       enteredWithdrawAmount: null,
-      enteredAmount: null,
+      enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
+      enteredWithdrawAmount: null,
       withdrawTxStatus: "",
       overrideWithdrawAmountText: null
     });
     
-    this.enteredAmountIsValid = true;
-    this.enteredAddressIsValid = true;
+    this.enteredWithdrawAmountIsValid = true;
+    this.enteredWithdrawAddressIsValid = true;
   }
   
   setEnteredWithdrawAddress(address) {
     
     // Validate the address
     if(address.match(/[45][0-9AB][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{93}/)){
-      this.enteredAddressIsValid = true;
+      this.enteredWithdrawAddressIsValid = true;
     } else {
-      this.enteredAddressIsValid = false;
+      this.enteredWithdrawAddressIsValid = false;
     }
     
     console.log("Entered address: " + address);
-    console.log("Entered address is valid? " + this.enteredAddressIsValid);
+    console.log("Entered address is valid? " + this.enteredWithdrawAddressIsValid);
     
     this.setState({
-      enteredWithdrawAddress: address
+      enteredWithdrawAddress: address,
+      enteredWithdrawAddressText: address
     });
   }
   
-  clearOverrideText(){
+  clearEnteredAmountText(){
+    if(
+      this.state.enteredWithdrawAmountText === this.withdrawAmountTextPrompt || 
+      this.state.enteredWithdrawAmountText == this.withdrawAmountSendAllText
+    ) { // Only clear on click if field is default or "send all" value
+      console.log("Clearing entered amount text");
+      this.setState({
+        enteredWithdrawAmount: null,
+        enteredWithdrawAmountText: ""
+      });
+    }
+  }
+  
+  clearEnteredAddressText(){
     this.setState({
-      overrideWithdrawAmountText: null,
-      enteredWithdrawAmount: null  
+      enteredWithdrawAddress: null,
+      enteredWithdrawAddressText: ""
     });
   }
   
   setEnteredWithdrawAmount(amount) {
+    
+    console.log("Setting entered amount to " + amount);
     // Validate the withdraw amount. It must be a number greater than zero and less than available balance
     let n = Number(amount);
     if(n != NaN && n > 0 && n <= this.state.availableBalance) {
-      this.enteredAmountIsValid = true;
+      this.enteredWithdrawAmountIsValid = true;
     } else {
-      this.enteredAmountIsValid = false;
+      this.enteredWithdrawAmountIsValid = false;
     }
     this.setState({
-      overrideWithdrawAmountText: null,
-      enteredWithdrawAmount: amount
+      enteredWithdrawAmount: amount,
+      enteredWithdrawAmountText: amount
     });
   }
   
   setWithdrawAddressAndAmount() {
-    
-    console.log("attempting to submit withdraw details")
-    
     let newWithdrawInfo = {};
     newWithdrawInfo = Object.assign(newWithdrawInfo, this.state.currentWithdrawInfo);
-    console.log("state.withdrawInfo: " + this.state.currentWithdrawInfo);
-    console.log("newWithrdawInfo: " + newWithdrawInfo);
     newWithdrawInfo.withdrawAddress = this.state.enteredWithdrawAddress;
     newWithdrawInfo.withdrawAmount = this.state.enteredWithdrawAmount;
     this.setState({
@@ -941,16 +970,18 @@ async generateWallet(){
                 totalBalance = {this.state.balance}
                 handleAddressChange = {this.setEnteredWithdrawAddress.bind(this)}
                 handleAmountChange = {this.setEnteredWithdrawAmount.bind(this)}
-                enteredAddressIsValid = {this.enteredAddressIsValid}
-                enteredAmountIsValid = {this.enteredAmountIsValid}
+                enteredWithdrawAddressIsValid = {this.enteredWithdrawAddressIsValid}
+                enteredWithdrawAmountIsValid = {this.enteredWithdrawAmountIsValid}
                 submitWithdrawInfo = {this.createWithdrawTx.bind(this)}
                 confirmWithdraw = {this.relayWithdrawTx.bind(this)}
                 withdrawTxStatus = {this.state.withdrawTxStatus}
                 sendAllFunds = {this.prepareWithdrawAllFunds.bind(this)}
                 overrideWithdrawAmountText = {this.state.overrideWithdrawAmountText}
                 textEntryIsActive = {this.state.withdrawTxStatus === ""}
-                clearOverrideText = {this.clearOverrideText.bind(this)}
-                enteredWithdrawAmount = {this.state.enteredWithdrawAmount}
+                clearEnteredAmountText = {this.clearEnteredAmountText.bind(this)}
+                clearEnteredAddressText = {this.clearEnteredAddressText.bind(this)}
+                enteredWithdrawAmount = {this.state.enteredWithdrawAmountText}
+                enteredWithdrawAddress = {this.state.enteredWithdrawAddressText}
               />} />
               <Route component={default_page} />
             </Switch>
