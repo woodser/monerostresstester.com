@@ -29,6 +29,7 @@ const MoneroWalletListener = monerojs.MoneroWalletListener;
 const MoneroWallet = monerojs.MoneroWallet;
 const MoneroRpcConnection = monerojs.MoneroRpcConnection;
 const MoneroUtils = monerojs.MoneroUtils;
+const BigInteger = monerojs.BigInteger;
 
 /* 
  * A wallet must contain at least this many atomic units to be considered "funded" 
@@ -716,18 +717,26 @@ async generateWallet(){
     console.log("Creating tx with address: " + this.state.enteredWithdrawAddress + " and amount: " + this.state.enteredWithdrawAmount);
      
     let txCreationWasSuccessful = true;
+
     
-    let txConfig = {
-      address: this.state.enteredWithdrawAddress,
-      amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
-      accountIndex: 0
-    }
-    
+    console.log("*****************************************");
+    console.log("*****************************************");
+    console.log("Entered withdraw amount: " + this.state.enteredWithdrawAmount);
+    console.log("Available balance: " + this.state.availableBalance);
+    console.log("*****************************************");
+    console.log("*****************************************");
     try {
-      if(Number(this.state.enteredWithdrawAmout) === this.state.availableBalance){
-        this.withdrawTx = await this.wallet.sweepUnlocked(txConfig);
+      if(this.state.enteredWithdrawAmout === this.state.availableBalance.toString()){
+        this.withdrawTx = await this.wallet.sweepUnlocked({
+          address: this.state.enteredWithdrawAddress,
+          accountIndex: 0
+        });
       } else {
-	this.withdrawTx = await this.wallet.createTx(txConfig);
+	this.withdrawTx = await this.wallet.createTx({
+	  address: this.state.enteredWithdrawAddress,
+	  amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
+	  accountIndex: 0
+	});
       }
     } catch(e) {
       console.log("Error creating tx: " + e);
@@ -810,11 +819,9 @@ async generateWallet(){
       },
       enteredWithdrawAddress: null,
       enteredWithdrawAddressText: "Enter destination wallet address..",
-      enteredWithdrawAmount: null,
       enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
       enteredWithdrawAmount: null,
-      withdrawTxStatus: "",
-      overrideWithdrawAmountText: null
+      withdrawTxStatus: ""
     });
     
     this.enteredWithdrawAmountIsValid = true;
