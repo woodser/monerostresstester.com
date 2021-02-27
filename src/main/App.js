@@ -36,7 +36,7 @@ const BigInteger = monerojs.BigInteger;
  * and thus allowed to generate transactions
  */
 const FUNDED_WALLET_MINIMUM_BALANCE = 0.0000001;
-const AU_XMR_RATIO = 0.000000000001;
+const XMR_AU_RATIO = "1000000000000";
 /*
  * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
  * in order to create a new, random keys-only wallet
@@ -718,7 +718,6 @@ async generateWallet(){
      
     let txCreationWasSuccessful = true;
 
-    
     console.log("*****************************************");
     console.log("*****************************************");
     console.log("Entered withdraw amount: " + this.state.enteredWithdrawAmount);
@@ -726,15 +725,16 @@ async generateWallet(){
     console.log("*****************************************");
     console.log("*****************************************");
     try {
-      if(this.state.enteredWithdrawAmout === this.state.availableBalance.toString()){
+      if(this.state.enteredWithdrawAmount === this.state.availableBalance.toString()){
         this.withdrawTx = await this.wallet.sweepUnlocked({
           address: this.state.enteredWithdrawAddress,
           accountIndex: 0
         });
       } else {
+        console.log("Amount XMR converted to AU: " + BigInteger(this.state.enteredWithdrawAmount).multiply(XMR_AU_RATIO))
 	this.withdrawTx = await this.wallet.createTx({
 	  address: this.state.enteredWithdrawAddress,
-	  amount: this.state.enteredWithdrawAmount / AU_XMR_RATIO,
+	  amount: BigInteger(this.state.enteredWithdrawAmount).multiply(XMR_AU_RATIO),
 	  accountIndex: 0
 	});
       }
@@ -747,6 +747,8 @@ async generateWallet(){
     }
     
     if(txCreationWasSuccessful){
+      
+      console.log("withdrawTx: " + this.withdrawTx.toString());
       let newWithdrawInfo = {
 	withdrawAddress: this.state.enteredWithdrawAddress,
 	withdrawAmount: this.withdrawTx.getOutgoingAmount(),
@@ -802,7 +804,7 @@ async generateWallet(){
   // Runs when the user clicks "Send all" above the withdraw send amount field
   prepareWithdrawAllFunds() {
     this.setState({
-      enteredWithdrawAmount: this.state.availableBalance,
+      enteredWithdrawAmount: this.state.availableBalance.toString(),
       enteredWithdrawAmountText: this.withdrawAmountSendAllText
     });
   }
