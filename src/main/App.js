@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import "./app.css";
 
+import XMR_Au_Converter from './XMR_Au_Converter.js';
+
 import Banner from "./components/Banner.js";
 import Home from "./components/pages/Home.js";
 import Deposit from "./components/pages/Deposit.js";
@@ -35,8 +37,7 @@ const BigInteger = monerojs.BigInteger;
  * A wallet must contain at least this many atomic units to be considered "funded" 
  * and thus allowed to generate transactions
  */
-const FUNDED_WALLET_MINIMUM_BALANCE = 0.0000001;
-const XMR_AU_RATIO = "1000000000000";
+const FUNDED_WALLET_MINIMUM_BALANCE = 0.000000000001;
 /*
  * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
  * in order to create a new, random keys-only wallet
@@ -532,7 +533,6 @@ async generateWallet(){
       enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
       enteredWithdrawAmount: null,
       enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
-      enteredWithdrawAmount: null,
       isCreatingWithdrawTx: true
     });
     this.txGenerator = null;
@@ -724,17 +724,17 @@ async generateWallet(){
     console.log("Available balance: " + this.state.availableBalance);
     console.log("*****************************************");
     console.log("*****************************************");
+    
     try {
-      if(this.state.enteredWithdrawAmount === this.state.availableBalance.toString()){
+      if(this.state.enteredWithdrawAmount === this.state.availableBalance){
         this.withdrawTx = await this.wallet.sweepUnlocked({
           address: this.state.enteredWithdrawAddress,
           accountIndex: 0
         });
       } else {
-        console.log("Amount XMR converted to AU: " + BigInteger(this.state.enteredWithdrawAmount).multiply(XMR_AU_RATIO))
 	this.withdrawTx = await this.wallet.createTx({
 	  address: this.state.enteredWithdrawAddress,
-	  amount: BigInteger(this.state.enteredWithdrawAmount).multiply(XMR_AU_RATIO),
+	  amount: this.state.enteredWithdrawAmount,
 	  accountIndex: 0
 	});
       }
@@ -749,6 +749,9 @@ async generateWallet(){
     if(txCreationWasSuccessful){
       
       console.log("withdrawTx: " + this.withdrawTx.toString());
+      
+      console.log("this.withdrawTx is an object of type: " + this.withdrawTx.constructor.toString());
+      
       let newWithdrawInfo = {
 	withdrawAddress: this.state.enteredWithdrawAddress,
 	withdrawAmount: this.withdrawTx.getOutgoingAmount(),
@@ -804,7 +807,7 @@ async generateWallet(){
   // Runs when the user clicks "Send all" above the withdraw send amount field
   prepareWithdrawAllFunds() {
     this.setState({
-      enteredWithdrawAmount: this.state.availableBalance.toString(),
+      enteredWithdrawAmount: this.state.availableBalance,
       enteredWithdrawAmountText: this.withdrawAmountSendAllText
     });
   }
@@ -869,17 +872,19 @@ async generateWallet(){
   }
   
   setEnteredWithdrawAmount(amount) {
-    
-    console.log("Setting entered amount to " + amount);
-    // Validate the withdraw amount. It must be a number greater than zero and less than available balance
-    let n = Number(amount);
+    /*
     if(n != NaN && n > 0 && n <= this.state.availableBalance) {
       this.enteredWithdrawAmountIsValid = true;
     } else {
       this.enteredWithdrawAmountIsValid = false;
     }
+    */
+    
+    console.log("The XMR value the user typed (converted to number via Number()): " + Number(amount));
+    console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount));
+    
     this.setState({
-      enteredWithdrawAmount: amount,
+      enteredWithdrawAmount: XMR_Au_Converter.xmrToAtomicUnits(amount),
       enteredWithdrawAmountText: amount
     });
   }
