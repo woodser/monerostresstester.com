@@ -144,18 +144,13 @@ class App extends React.Component {
       transactionStatusMessage: "",
       currentSitePage: "/",
       withdrawTx: null,
-      currentWithdrawInfo: {
-	withdrawAddress: null,
-	withdrawAmount: null,
-	withdrawHash: null,
-	withdrawFee: null,
-	withdrawTxKey: null
-      },
+      currentWithdrawInfo: [],
       enteredWithdrawAddress: null,
       enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
       enteredWithdrawAmount: null,
       enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
       enteredWithdrawAmount: null,
+      withdrawTxIsCompleted: false,
       withdrawTxStatus: "", //POssible values: "", "creating", "relaying",
       overrideWithdrawAmountText: null
     };
@@ -453,16 +448,15 @@ async generateWallet(){
     await this.wallet.addListener(new class extends MoneroWalletListener {
         
       async onBalancesChanged(newBalance, newUnlockedBalance) {
+        if (newBalance > that.state.balance){
+          that.setState({
+            isAwaitingDeposit: false,
+            availableBalance: newUnlockedBalance,
+            balance: newBalance
+          });
+        }
         await that.refreshMainState();
       }
-      
-      async onOutputReceived(output){
-	    if (!output.getTx().isConfirmed()) {
-	      that.setState({
-	        isAwaitingDeposit: false
-	      });
-	    }
-      };
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
@@ -523,16 +517,11 @@ async generateWallet(){
       transactionStatusMessage: "",
       currentSitePage: "/",
       withdrawTx: null,
-      currentWithdrawInfo: {
-	withdrawAddress: null,
-	withdrawAmount: null,
-	withdrawHash: null,
-	withdrawFee: null,
-	withdrawTxKey: null
-      },
+      currentWithdrawInfo: [],
       enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
       enteredWithdrawAmount: null,
       enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
+      withdrawTxIsCompleted: false,
       isCreatingWithdrawTx: true
     });
     this.txGenerator = null;
@@ -717,26 +706,30 @@ async generateWallet(){
     console.log("Creating tx with address: " + this.state.enteredWithdrawAddress + " and amount: " + this.state.enteredWithdrawAmount);
      
     let txCreationWasSuccessful = true;
-
-    console.log("*****************************************");
-    console.log("*****************************************");
-    console.log("Entered withdraw amount: " + this.state.enteredWithdrawAmount);
-    console.log("Available balance: " + this.state.availableBalance);
-    console.log("*****************************************");
-    console.log("*****************************************");
     
     try {
-      if(this.state.enteredWithdrawAmount === this.state.availableBalance){
+      if(this.state.enteredWithdrawAmount === this.state.availableBalance) {
+        console.log("Attempting to send full balance");
         this.withdrawTx = await this.wallet.sweepUnlocked({
           address: this.state.enteredWithdrawAddress,
           accountIndex: 0
         });
       } else {
-	this.withdrawTx = await this.wallet.createTx({
+	
+	console.log("Attempting to send partial balance");
+	/* withdrawTx will always be an array of length 1 if the user did not press the "send all" button
+	 * However, use an array just the same for consistency with a full balance withdraw
+	 * as sweepUnlocked returns an array of Txs
+	 * 
+	 * Later code will then need not distinguish between a withdrawTx created by createTx vs sweepUnlocked
+	 */
+	this.withdrawTx = new Array(1);
+	this.withdrawTx[0] = await this.wallet.createTx({
 	  address: this.state.enteredWithdrawAddress,
 	  amount: this.state.enteredWithdrawAmount,
 	  accountIndex: 0
 	});
+
       }
     } catch(e) {
       console.log("Error creating tx: " + e);
@@ -751,14 +744,21 @@ async generateWallet(){
       console.log("withdrawTx: " + this.withdrawTx.toString());
       
       console.log("this.withdrawTx is an object of type: " + this.withdrawTx.constructor.toString());
-      
-      let newWithdrawInfo = {
-	withdrawAddress: this.state.enteredWithdrawAddress,
-	withdrawAmount: this.withdrawTx.getOutgoingAmount(),
-	withdrawFee: this.withdrawTx.getFee(),
-	withdrawHash: null,
-	withdrawKey: this.withdrawTx.getKey()
-      };
+      console.log("LLKJSLKFJSLKFJSLKFSLKFSKLJDF");
+      console.log("");
+      console.log("The withdraw fee is " + this.withdrawTx[0].getFee());
+      console.log("");
+      console.log("lkajsf;lkajsdf;ljsdlkfjas;lkfjsa;lkfjs;alkjsdaf");
+      let newWithdrawInfo = new Array(this.withdrawTx.length);
+      for(let i = 0; i < newWithdrawInfo.length; i++){
+        newWithdrawInfo[i] = {
+          withdrawAddress: this.state.enteredWithdrawAddress,
+          withdrawAmount: XMR_Au_Converter.atomicUnitsToXmr(this.withdrawTx[i].getOutgoingAmount()),
+          withdrawFee: XMR_Au_Converter.atomicUnitsToXmr(BigInteger(this.withdrawTx[i].getFee().toString())),
+          withdrawHash: this.withdrawTx[i].getHash(),
+          withdrawKey: this.withdrawTx[i].getKey()
+        };
+      }
       console.log("Successfully created Tx! : " + JSON.stringify(newWithdrawInfo));
       this.setState({
         currentWithdrawInfo: newWithdrawInfo,
@@ -774,25 +774,21 @@ async generateWallet(){
     });
     
     let relayTxWasSuccessful = true;
+    let newWithdrawInfo = [...this.state.currentWithdrawInfo];
     
-    let hash = await this.wallet.relayTx(this.withdrawTx).catch(
-      function(e) {
-        relayTxWasSuccessful = false;
-        console.log("Error relaying Tx: " + e);
-      }
-    );
+    for (let i = 0; i < newWithdrawInfo.length; i++){
+      await this.wallet.relayTx(this.withdrawTx[i]).catch (
+        function(e) {
+          relayTxWasSuccessful = false;
+          console.log("Error relaying Tx: " + e);
+        }
+      );
+    }  
     
     if (relayTxWasSuccessful) {
-      let newWithdrawInfo = {
-        withdrawAddress: this.state.currentWithdrawInfo.withdrawAddress,
-        withdrawAmount: this.state.currentWithdrawInfo.withdrawAmount,
-        withdrawFee: this.state.currentWithdrawInfo.withdrawFee,
-        withdrawHash: hash,
-        withdrawKey: this.state.currentWithdrawInfo.withdrawKey
-      }
+      console.log("Transaction was successfully relayed!");
       this.withdrawTx = null;
       this.setState({
-	currentWithdrawInfo: newWithdrawInfo,
 	withdrawTxStatus: "",
 	enteredWithdrawAddressIsValid: true,
 	enteredWithdrawAmountIsValid: true,
@@ -800,12 +796,15 @@ async generateWallet(){
 	enteredWithdrawAddressText: "Enter destination wallet address..",
 	enteredWithdrawAmount: null,
 	enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
+	withdrawTxIsCompleted: true
       });
     }
   }
   
   // Runs when the user clicks "Send all" above the withdraw send amount field
   prepareWithdrawAllFunds() {
+    
+    console.log("Balance available for this withdraw: " + this.state.availableBalance);
     this.setState({
       enteredWithdrawAmount: this.state.availableBalance,
       enteredWithdrawAmountText: this.withdrawAmountSendAllText
@@ -815,16 +814,11 @@ async generateWallet(){
   resetWithdrawPage() {
     this.setState({
       withdrawTx: null,
-      currentWithdrawInfo: {
-	withdrawAddress: null,
-	withdrawAmount: null,
-	withdrawHash: null,
-	withdrawFee: null,
-	withdrawTxKey: null
-      },
+      currentWithdrawInfo: [],
       enteredWithdrawAddress: null,
       enteredWithdrawAddressText: "Enter destination wallet address..",
       enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
+      withdrawTxIsCompleted: false,
       enteredWithdrawAmount: null,
       withdrawTxStatus: ""
     });
@@ -872,19 +866,23 @@ async generateWallet(){
   }
   
   setEnteredWithdrawAmount(amount) {
-    /*
-    if(n != NaN && n > 0 && n <= this.state.availableBalance) {
-      this.enteredWithdrawAmountIsValid = true;
-    } else {
-      this.enteredWithdrawAmountIsValid = false;
-    }
-    */
     
     console.log("The XMR value the user typed (converted to number via Number()): " + Number(amount));
     console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount));
     
+    
+    //Re-add checking for invalid values (non-numbers, <1AU or >availBal, etc
+    
+    
+    let convertedAmount = 0;
+    try {
+      convertedAmount = XMR_Au_Converter.xmrToAtomicUnits(amount);
+    } catch(e){
+      console.log("Error converting entered amountt oatmoic units: " + e);
+      return;
+    }
     this.setState({
-      enteredWithdrawAmount: XMR_Au_Converter.xmrToAtomicUnits(amount),
+      enteredWithdrawAmount: convertedAmount,
       enteredWithdrawAmountText: amount
     });
   }
@@ -996,6 +994,7 @@ async generateWallet(){
                 clearEnteredAddressText = {this.clearEnteredAddressText.bind(this)}
                 enteredWithdrawAmount = {this.state.enteredWithdrawAmountText}
                 enteredWithdrawAddress = {this.state.enteredWithdrawAddressText}
+                withdrawTxIsCompleted = {this.state.withdrawTxIsCompleted}
               />} />
               <Route component={default_page} />
             </Switch>

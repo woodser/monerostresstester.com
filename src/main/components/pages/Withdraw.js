@@ -1,6 +1,11 @@
 import React, {useState} from 'react';
 import {Page_Box, Page_Box_Margin, Page_Box_Line_Field, Main_Content, Header, Page_Text_Entry} from "../Widgets.js";
 import {UI_Button_Link, UI_Text_Link, Text_Box_Top_Right_Link_Button} from "../Buttons.js";
+import XMR_Au_Converter from '../../XMR_Au_Converter.js';
+
+const monerojs = require("monero-javascript");
+const BigInteger = monerojs.BigInteger;
+
 
 /*
  * --- TODO ---
@@ -11,8 +16,6 @@ import {UI_Button_Link, UI_Text_Link, Text_Box_Top_Right_Link_Button} from "../B
  * 
  * The work below represents only #3.
  */
-
-const XMR_AU_RATIO = 0.000000000001;
 
 export default function Withdraw(props){  
   
@@ -35,7 +38,7 @@ export default function Withdraw(props){
   let withdrawPageBox = null;
   let buttonIsActive = props.enteredWithdrawAddressIsValid && props.enteredWithdrawAmountIsValid;
   
-  if(props.withdrawInfo.withdrawAddress == null) {
+  if(props.withdrawInfo.length < 1) {
     // User has not yet entered TX details. Show TX detail entry page
     
     // The strings/values to be inserted into the text fields by App.js (as these fields are parent-controlled)
@@ -63,12 +66,12 @@ export default function Withdraw(props){
         <div className="lines_page_container">
           <Page_Box_Line_Field 
             label = "Available balance" 
-            value={props.availableBalance * XMR_AU_RATIO + " XMR"}
+            value={XMR_Au_Converter.atomicUnitsToXmr(BigInteger(props.availableBalance)) + " XMR"}
             field_style = "horizontal" 
           />
           <Page_Box_Line_Field 
             label = "Total balance" 
-            value = {props.totalBalance * XMR_AU_RATIO + " XMR"} 
+            value = {XMR_Au_Converter.atomicUnitsToXmr(BigInteger(props.totalBalance)) + " XMR"} 
             field_style = "horizontal"
           />
           <Page_Box_Margin />
@@ -115,8 +118,8 @@ export default function Withdraw(props){
         </Main_Content>
       </Page_Box>
     );
-  } else if (props.withdrawInfo.withdrawHash == null) {
-    console.log("Address defined but withdraw hash NOT defined; showing withdraw confirmation page...");
+  } else if (!props.withdrawTxIsCompleted) {
+    console.log("The user has entered withdraw info and the TX was created, however it has not been relayed yet");
     withdrawPageBox = (
       <Page_Box>
         <Main_Content>
@@ -127,17 +130,17 @@ export default function Withdraw(props){
           <div className="lines_page_container">
             <Page_Box_Line_Field 
               label = "Address" 
-              value={props.withdrawInfo.withdrawAddress}
+              value={props.withdrawInfo[0].withdrawAddress}
               field_style = "vertical" 
             />
             <Page_Box_Line_Field 
               label = "Amount" 
-              value = {props.withdrawInfo.withdrawAmount * XMR_AU_RATIO + " XMR"} 
+              value = {props.withdrawInfo[0].withdrawAmount + " XMR"} 
               field_style = "vertical"
             />
             <Page_Box_Line_Field 
               label = "Fee" 
-              value = {props.withdrawInfo.withdrawFee * XMR_AU_RATIO + " XMR"} 
+              value = {props.withdrawInfo[0].withdrawFee + " XMR"} 
               field_style = "vertical"
             />
             <Page_Box_Margin />
@@ -161,27 +164,27 @@ export default function Withdraw(props){
         <div className="lines_page_container">
           <Page_Box_Line_Field 
             label = "Address" 
-            value={props.withdrawInfo.withdrawAddress}
+            value={props.withdrawInfo[0].withdrawAddress}
             field_style = "vertical" 
           />
           <Page_Box_Line_Field 
             label = "Amount" 
-            value = {props.withdrawInfo.withdrawAmount * XMR_AU_RATIO + " XMR"} 
+            value = {props.withdrawInfo[0].withdrawAmount + " XMR"} 
             field_style = "vertical"
           />
           <Page_Box_Line_Field
             label = "Fee"
-            value = {props.withdrawInfo.withdrawFee * XMR_AU_RATIO + " XMR"} 
+            value = {props.withdrawInfo[0].withdrawFee + " XMR"} 
             field_style = "vertical"
           />
           <Page_Box_Line_Field
             label = "Transaction Hash"
-            value={props.withdrawInfo.withdrawHash}
+            value={props.withdrawInfo[0].withdrawHash}
             field_style = "vertical"
           />
           <Page_Box_Line_Field
             label = "Transaction Key"
-            value={props.withdrawInfo.withdrawKey + " XMR"} 
+            value={props.withdrawInfo[0].withdrawKey + " XMR"} 
             field_style = "vertical"
           />
           <Page_Box_Margin />
