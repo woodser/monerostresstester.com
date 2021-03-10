@@ -124,7 +124,7 @@ class MoneroTxGenerator {
     if (new BigInteger(0).compare(await this.wallet.getUnlockedBalance()) === 0) this._refreshNumBlocksToUnlock();
 
     // get available outputs
-    let outputs = await this.wallet.getOutputs({isLocked: false, isSpent: false});
+    let outputs = await this.wallet.getOutputs({txQuery: {isLocked: false}, isSpent: false});
     console.log("Wallet has " + outputs.length + " available outputs");
     
     // avoid exponential growth of wallet's outputs by maximizing creation of new outputs until enough to stay busy, then sweeping individually
