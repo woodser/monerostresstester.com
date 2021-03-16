@@ -6,9 +6,11 @@ import loadingAnimation from '../img/loadingAnimation.gif';
 import { BrowserRouter as Link, NavLink } from "react-router-dom";
 
 export function Progress_Bar(props) {
+  
   const progressStyle = {
     width: `${props.progress}%`
   }
+  
   return(
     <div className="progress_bar_container">
       <div className="progress_bar" style={progressStyle}></div>
@@ -99,14 +101,13 @@ export function Deposit_Address_Text_Box(props) {
 /*
  * props.isDefault: Denotes whether the box contains the intial, unedited text;
  *   if so, set a css class to use gray text instead of black.
- * props.value:
+ * props.overrideValue:
  */
 export class Page_Text_Entry extends React.Component {
   constructor(props) {
     super(props);
     this.state={
-      displayedText: "",
-      showPlaceholderText: true
+      value: null
     }
     this.isDefault = true;
     this.setText.bind(this);
@@ -119,15 +120,25 @@ export class Page_Text_Entry extends React.Component {
   }
 
   handleChange(e){
-    this.setText(e.target.value);
+    this.setState({
+      value: e.target.value
+    });
     if (e.target.value === "") 
       this.isDefault = true;
     else
       this.isDefault = false;
-    this.props.handleTextChange(e.target.value);
+    if(this.props.handleTextChange != undefined){
+      this.props.handleTextChange(e.target.value);
+    }
   }
   
   handleClick(){
+    if(this.state.value === null || (this.props.overrideValue != null && this.props.overrideValue != undefined)){
+      this.setState({
+        value: ''
+      });
+    }
+    
     if(this.props.handleClick != undefined && this.props.handleClick != null){
       this.props.handleClick();
     }
@@ -141,7 +152,22 @@ export class Page_Text_Entry extends React.Component {
       ((this.props.isValid ? " active_border" : " inactive_border"));
     
     let element = null;
-
+    let newValue = null;
+    
+    if(this.state.value === null && (this.props.overrideValue === null || this.props.overrideValue === undefined)){
+      console.log("The user has not yet entered text in this page_text_entry. Using default: " + this.props.defaultValue);
+      newValue = this.props.defaultValue;
+    } else {
+      console.log("The user HAS ENTERED TEXT!");
+      if(this.props.overrideValue === null || this.props.overrideValue === undefined){
+	console.log("     No override value submitted. Using state.value");
+        newValue = this.state.value;
+      } else {
+	console.log("     An override value was supplied. Value is: " + this.props.overrideValue);
+        newValue = this.props.overrideValue;
+      }
+    }
+    
     if (this.props.isSingleLineEntry){
       className = className + " single_line_text_entry";
       element = (
@@ -150,7 +176,7 @@ export class Page_Text_Entry extends React.Component {
           className={className}
           onChange={this.handleChange.bind(this)}
           disabled={!this.props.isactive}
-          value = {this.props.value}
+          value = {newValue}
           onClick = {this.handleClick.bind(this)}
           style = {this.props.style}
         />
@@ -161,7 +187,7 @@ export class Page_Text_Entry extends React.Component {
           className={className}
           onChange={this.handleChange.bind(this)} 
           disabled={!this.props.isactive}
-          value = {this.props.value}
+          value = {newValue}
           onClick = {this.handleClick.bind(this)}
           style = {this.props.style}
         />

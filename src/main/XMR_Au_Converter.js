@@ -2,6 +2,7 @@ const monerojs = require("monero-javascript");
 const BigInteger = monerojs.BigInteger;
 
 const MoneroError = monerojs.MoneroError;
+const MoneroUtils = monerojs.MoneroUtils;
 
 class XMR_Au_Converter {
   /**

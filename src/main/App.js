@@ -80,11 +80,6 @@ class App extends React.Component {
     this.restoreHeight = 0;
     this.lastHomePage = "";
     this.animationIsLoaded = false;
-    this.enteredWithdrawAmountIsValid = true;
-    this.enteredWithdrawAddressIsValid = true;
-    
-    // Function binding
-    this.createWithdrawTx = this.createWithdrawTx.bind(this);
  
     // In order to pass "this" into the nested functions...
     let that = this;
@@ -142,23 +137,8 @@ class App extends React.Component {
       depositQrCode: null,
       isAwaitingDeposit: false,
       transactionStatusMessage: "",
-      currentSitePage: "/",
-      withdrawTx: null,
-      currentWithdrawInfo: [],
-      enteredWithdrawAddress: null,
-      enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
-      enteredWithdrawAmount: null,
-      enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
-      enteredWithdrawAmount: null,
-      withdrawTxIsCompleted: false,
-      withdrawTxStatus: "", //POssible values: "", "creating", "relaying",
-      overrideWithdrawAmountText: null
+      currentSitePage: "/"
     };
-    
-    // Bind functions
-    this.setEnteredWithdrawAddress.bind(this);
-    this.setEnteredWithdrawAmount.bind(this);
-    this.setWithdrawAddressAndAmount.bind(this);
   }
   
   createDateConversionWallet(){
@@ -516,13 +496,6 @@ async generateWallet(){
       isAwaitingDeposit: false,
       transactionStatusMessage: "",
       currentSitePage: "/",
-      withdrawTx: null,
-      currentWithdrawInfo: [],
-      enteredWithdrawAddressText: this.withdrawAddressTextPrompt,
-      enteredWithdrawAmount: null,
-      enteredWithdrawAmountText: this.withdrawAmountTextPrompt,
-      withdrawTxIsCompleted: false,
-      isCreatingWithdrawTx: true
     });
     this.txGenerator = null;
     this.walletUpdater = null;
@@ -691,212 +664,6 @@ async generateWallet(){
     this.setCurrentSitePage("/deposit");
   }
   
-  // ***** Withdraw page functions *****
-  
-  async createWithdrawTx() {
-    
-    // someFunctionToSetWithdrawPageButtonToSpinnyWheel()
-    
-    let withdraw = null;
-    
-    this.setState({
-      withdrawTxStatus: "creating"
-    });
-    
-    console.log("Creating tx with address: " + this.state.enteredWithdrawAddress + " and amount: " + this.state.enteredWithdrawAmount);
-     
-    let txCreationWasSuccessful = true;
-    
-    try {
-      if(this.state.enteredWithdrawAmount === this.state.availableBalance) {
-        console.log("Attempting to send full balance");
-        this.withdrawTx = await this.wallet.sweepUnlocked({
-          address: this.state.enteredWithdrawAddress,
-          accountIndex: 0
-        });
-      } else {
-	
-	console.log("Attempting to send partial balance");
-	/* withdrawTx will always be an array of length 1 if the user did not press the "send all" button
-	 * However, use an array just the same for consistency with a full balance withdraw
-	 * as sweepUnlocked returns an array of Txs
-	 * 
-	 * Later code will then need not distinguish between a withdrawTx created by createTx vs sweepUnlocked
-	 */
-	this.withdrawTx = new Array(1);
-	this.withdrawTx[0] = await this.wallet.createTx({
-	  address: this.state.enteredWithdrawAddress,
-	  amount: this.state.enteredWithdrawAmount,
-	  accountIndex: 0
-	});
-
-      }
-    } catch(e) {
-      console.log("Error creating tx: " + e);
-      this.setState({
-	withdrawTxStatus: ""
-      });
-      txCreationWasSuccessful = false;  
-    }
-    
-    if(txCreationWasSuccessful){
-      
-      console.log("withdrawTx: " + this.withdrawTx.toString());
-      
-      console.log("this.withdrawTx is an object of type: " + this.withdrawTx.constructor.toString());
-      console.log("LLKJSLKFJSLKFJSLKFSLKFSKLJDF");
-      console.log("");
-      console.log("The withdraw fee is " + this.withdrawTx[0].getFee());
-      console.log("");
-      console.log("lkajsf;lkajsdf;ljsdlkfjas;lkfjsa;lkfjs;alkjsdaf");
-      let newWithdrawInfo = new Array(this.withdrawTx.length);
-      for(let i = 0; i < newWithdrawInfo.length; i++){
-        newWithdrawInfo[i] = {
-          withdrawAddress: this.state.enteredWithdrawAddress,
-          withdrawAmount: XMR_Au_Converter.atomicUnitsToXmr(this.withdrawTx[i].getOutgoingAmount()),
-          withdrawFee: XMR_Au_Converter.atomicUnitsToXmr(BigInteger(this.withdrawTx[i].getFee().toString())),
-          withdrawHash: this.withdrawTx[i].getHash(),
-          withdrawKey: this.withdrawTx[i].getKey()
-        };
-      }
-      console.log("Successfully created Tx! : " + JSON.stringify(newWithdrawInfo));
-      this.setState({
-        currentWithdrawInfo: newWithdrawInfo,
-        withdrawTxStatus: ""
-      });
-      
-    }
-  }
-  
-  async relayWithdrawTx(){
-    this.setState({
-      withdrawTxStatus: "relaying"
-    });
-    
-    let relayTxWasSuccessful = true;
-    let newWithdrawInfo = [...this.state.currentWithdrawInfo];
-    
-    for (let i = 0; i < newWithdrawInfo.length; i++){
-      await this.wallet.relayTx(this.withdrawTx[i]).catch (
-        function(e) {
-          relayTxWasSuccessful = false;
-          console.log("Error relaying Tx: " + e);
-        }
-      );
-    }  
-    
-    if (relayTxWasSuccessful) {
-      console.log("Transaction was successfully relayed!");
-      this.withdrawTx = null;
-      this.setState({
-	withdrawTxStatus: "",
-	enteredWithdrawAddressIsValid: true,
-	enteredWithdrawAmountIsValid: true,
-	enteredWithdrawAddress: null,
-	enteredWithdrawAddressText: "Enter destination wallet address..",
-	enteredWithdrawAmount: null,
-	enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
-	withdrawTxIsCompleted: true
-      });
-    }
-  }
-  
-  // Runs when the user clicks "Send all" above the withdraw send amount field
-  prepareWithdrawAllFunds() {
-    
-    console.log("Balance available for this withdraw: " + this.state.availableBalance);
-    this.setState({
-      enteredWithdrawAmount: this.state.availableBalance,
-      enteredWithdrawAmountText: this.withdrawAmountSendAllText
-    });
-  }
-  
-  resetWithdrawPage() {
-    this.setState({
-      withdrawTx: null,
-      currentWithdrawInfo: [],
-      enteredWithdrawAddress: null,
-      enteredWithdrawAddressText: "Enter destination wallet address..",
-      enteredWithdrawAmountText: 'Enter amount or click "send all" to send all funds',
-      withdrawTxIsCompleted: false,
-      enteredWithdrawAmount: null,
-      withdrawTxStatus: ""
-    });
-    
-    this.enteredWithdrawAmountIsValid = true;
-    this.enteredWithdrawAddressIsValid = true;
-  }
-  
-  setEnteredWithdrawAddress(address) {
-    
-    // Validate the address
-    if(address.match(/[45][0-9AB][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{93}/)){
-      this.enteredWithdrawAddressIsValid = true;
-    } else {
-      this.enteredWithdrawAddressIsValid = false;
-    }
-    
-    console.log("Entered address: " + address);
-    console.log("Entered address is valid? " + this.enteredWithdrawAddressIsValid);
-    
-    this.setState({
-      enteredWithdrawAddress: address,
-      enteredWithdrawAddressText: address
-    });
-  }
-  
-  clearEnteredAmountText(){
-    if(
-      this.state.enteredWithdrawAmountText === this.withdrawAmountTextPrompt || 
-      this.state.enteredWithdrawAmountText == this.withdrawAmountSendAllText
-    ) { // Only clear on click if field is default or "send all" value
-      console.log("Clearing entered amount text");
-      this.setState({
-        enteredWithdrawAmount: null,
-        enteredWithdrawAmountText: ""
-      });
-    }
-  }
-  
-  clearEnteredAddressText(){
-    this.setState({
-      enteredWithdrawAddress: null,
-      enteredWithdrawAddressText: ""
-    });
-  }
-  
-  setEnteredWithdrawAmount(amount) {
-    
-    console.log("The XMR value the user typed (converted to number via Number()): " + Number(amount));
-    console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount));
-    
-    
-    //Re-add checking for invalid values (non-numbers, <1AU or >availBal, etc
-    
-    
-    let convertedAmount = 0;
-    try {
-      convertedAmount = XMR_Au_Converter.xmrToAtomicUnits(amount);
-    } catch(e){
-      console.log("Error converting entered amountt oatmoic units: " + e);
-      return;
-    }
-    this.setState({
-      enteredWithdrawAmount: convertedAmount,
-      enteredWithdrawAmountText: amount
-    });
-  }
-  
-  setWithdrawAddressAndAmount() {
-    let newWithdrawInfo = {};
-    newWithdrawInfo = Object.assign(newWithdrawInfo, this.state.currentWithdrawInfo);
-    newWithdrawInfo.withdrawAddress = this.state.enteredWithdrawAddress;
-    newWithdrawInfo.withdrawAmount = this.state.enteredWithdrawAmount;
-    this.setState({
-      currentWithdrawInfo: newWithdrawInfo
-    });
-  }
-  
   render(){
     let notificationBar = null;
     
@@ -975,26 +742,12 @@ async generateWallet(){
                 {...props}
               />} />
               <Route path="/withdraw" render={(props) => <Withdraw 
-        	submitWithdrawInfo = {this.setWithdrawAddressAndAmount.bind(this)}
-                resetWithdrawPage = {this.resetWithdrawPage.bind(this)}
-                withdrawInfo = {this.state.currentWithdrawInfo}
+        	//submitWithdrawInfo = {this.setWithdrawAddressAndAmount.bind(this)}
+                //resetWithdrawPage = {this.resetWithdrawPage.bind(this)}
+                //withdrawInfo = {this.state.currentWithdrawInfo}
                 availableBalance = {this.state.availableBalance}
                 totalBalance = {this.state.balance}
-                handleAddressChange = {this.setEnteredWithdrawAddress.bind(this)}
-                handleAmountChange = {this.setEnteredWithdrawAmount.bind(this)}
-                enteredWithdrawAddressIsValid = {this.enteredWithdrawAddressIsValid}
-                enteredWithdrawAmountIsValid = {this.enteredWithdrawAmountIsValid}
-                submitWithdrawInfo = {this.createWithdrawTx.bind(this)}
-                confirmWithdraw = {this.relayWithdrawTx.bind(this)}
-                withdrawTxStatus = {this.state.withdrawTxStatus}
-                sendAllFunds = {this.prepareWithdrawAllFunds.bind(this)}
-                overrideWithdrawAmountText = {this.state.overrideWithdrawAmountText}
-                textEntryIsActive = {this.state.withdrawTxStatus === ""}
-                clearEnteredAmountText = {this.clearEnteredAmountText.bind(this)}
-                clearEnteredAddressText = {this.clearEnteredAddressText.bind(this)}
-                enteredWithdrawAmount = {this.state.enteredWithdrawAmountText}
-                enteredWithdrawAddress = {this.state.enteredWithdrawAddressText}
-                withdrawTxIsCompleted = {this.state.withdrawTxIsCompleted}
+                wallet = {this.state.wallet}
               />} />
               <Route component={default_page} />
             </Switch>
