@@ -18,7 +18,7 @@ class XMR_Au_Converter {
     console.log("********");
     console.log("amount submitted to function: " + amountXmr);
     if (typeof amountXmr === "number") amountXmr = "" + amountXmr;
-    else if (typeof amountXmr !== "string") throw new MoneroUtils.MoneroError("Must provide XMR amount as a string or js number to convert to atomic units");
+    else if (typeof amountXmr !== "string") throw new MoneroError("Must provide XMR amount as a string or js number to convert to atomic units");
     let decimalDivisor = 1;
     let decimalIdx = amountXmr.indexOf('.');
     

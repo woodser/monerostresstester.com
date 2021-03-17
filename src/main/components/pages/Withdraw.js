@@ -82,7 +82,7 @@ export default function Withdraw(props){
   const changeWithdrawAmountWithText = function(amount, text) {
     
     console.log("The XMR value the user typed (converted to number via Number()): " + Number(amount));
-    console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount));
+    console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount.toString()));
     
     //Re-add checking for invalid values (non-numbers, <1AU or >availBal, etc
     let convertedAmount = 0;
@@ -114,7 +114,7 @@ export default function Withdraw(props){
     let txCreationWasSuccessful = true;
     
     try {
-      if(enteredWithdrawAmount === props.availableBalance) {
+      if(usingAllFunds) {
         withdrawTx = await props.wallet.sweepUnlocked({
           address: enteredWithdrawAddress,
           accountIndex: 0
