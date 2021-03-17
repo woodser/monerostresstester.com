@@ -5,6 +5,7 @@ withdrawal
 sign out
 
 UI LOW PRIORITY
+home does not load until stress_tester.dist.js (6.9 mbs) and keys wasm loads
 Save your backup phrase screen while loading should be fixed size, continue button should be disabled to prevent advancing
 ui tweaks (restore height spacing, background coloring, max page height, etc)
 enter key invokes continue buttons
