@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import "./app.css";
 
-import XMR_Au_Converter from './XMR_Au_Converter.js';
-
 import Banner from "./components/Banner.js";
 import Home from "./components/pages/Home.js";
 import Deposit from "./components/pages/Deposit.js";
@@ -453,6 +451,7 @@ async generateWallet(){
     
     // build new state
     let state = {};
+    state.wallet = this.wallet;
     state.balance = await this.wallet.getBalance();
     state.availableBalance = await this.wallet.getUnlockedBalance();
     state.transactionsGenerated = this.txGenerator.getNumTxsGenerated();
