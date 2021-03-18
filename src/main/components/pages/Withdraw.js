@@ -1,21 +1,10 @@
 import React, {useState} from 'react';
 import {Page_Box, Page_Box_Margin, Page_Box_Line_Field, Main_Content, Header, Page_Text_Entry} from "../Widgets.js";
 import {UI_Button_Link, UI_Text_Link, Text_Box_Top_Right_Link_Button} from "../Buttons.js";
-import XMR_Au_Converter from '../../XMR_Au_Converter.js';
 
 const monerojs = require("monero-javascript");
 const BigInteger = monerojs.BigInteger;
-
-
-/*
- * --- TODO ---
- * This component needs to be divided into three separate "pages" (in the same way that Home is divided into pages)
- * 1. Specify withdraw information
- * 2. Confirm withdraw information
- * 3. completed transaction info display
- * 
- * The work below represents only #3.
- */
+const MoneroUtils = monerojs.MoneroUtils
 
 export default function Withdraw(props){  
   
@@ -52,10 +41,6 @@ export default function Withdraw(props){
       } else {
         setEnteredWithdrawAddressIsValid(false);
       }
-      
-      console.log("Entered address: " + address);
-      console.log("Entered address is valid? " + enteredWithdrawAddressIsValid);
-      
       setEnteredWithdrawAddress(address);
       setEnteredWithdrawAddressText(address);
 
@@ -63,36 +48,14 @@ export default function Withdraw(props){
   
   const changeWithdrawAmount = function(amount) {
     
-    console.log("The XMR value the user typed (converted to number via Number()): " + Number(amount));
-    console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount));
-    
     //Re-add checking for invalid values (non-numbers, <1AU or >availBal, etc
-    let convertedAmount = 0;
-    try {
-      convertedAmount = XMR_Au_Converter.xmrToAtomicUnits(amount);
-    } catch(e){
-      console.log("Error converting entered amount to atomic units: " + e);
-      return;
-    }
-    setEnteredWithdrawAmount(convertedAmount),
-    setEnteredWithdrawAmountText(amount)
+    setEnteredWithdrawAmount(amount);
+    setEnteredWithdrawAmountText(amount);
 
   }
   
   const changeWithdrawAmountWithText = function(amount, text) {
-    
-    console.log("The XMR value the user typed (converted to number via Number()): " + Number(amount));
-    console.log("The value converted by XMR_Au_Converter: " + XMR_Au_Converter.xmrToAtomicUnits(amount.toString()));
-    
-    //Re-add checking for invalid values (non-numbers, <1AU or >availBal, etc
-    let convertedAmount = 0;
-    try {
-      convertedAmount = XMR_Au_Converter.xmrToAtomicUnits(amount);
-    } catch(e){
-      console.log("Error converting entered amount to atomic units: " + e);
-      return;
-    }
-    setEnteredWithdrawAmount(convertedAmount),
+    setEnteredWithdrawAmount(amount),
     setEnteredWithdrawAmountText(text)
 
   }
@@ -101,7 +64,6 @@ export default function Withdraw(props){
   const prepareToSendAllFunds = function() {
     changeWithdrawAmountWithText(props.availableBalance, withdrawAmountSendAllText);
     setUsingAllFunds(true);
-    console.log("setUsingAllFunds to true");
   }
   
   const createWithdrawTx = async function() {
@@ -116,12 +78,10 @@ export default function Withdraw(props){
     try {
       if(usingAllFunds) {
         withdrawTx = await props.wallet.sweepUnlocked({
-          address: enteredWithdrawAddress,
-          accountIndex: 0
+          address: enteredWithdrawAddress
         });
       } else {
 	
-	console.log("Attempting to send partial balance");
 	/* withdrawTx will always be an array of length 1 if the user did not press the "send all" button
 	 * However, use an array just the same for consistency with a full balance withdraw
 	 * as sweepUnlocked returns an array of Txs
@@ -144,26 +104,17 @@ export default function Withdraw(props){
     
     if(txCreationWasSuccessful){
       
-      console.log("withdrawTx: " + this.withdrawTx.toString());
-      
-      console.log("this.withdrawTx is an object of type: " + this.withdrawTx.constructor.toString());
-      console.log("LLKJSLKFJSLKFJSLKFSLKFSKLJDF");
-      console.log("");
-      console.log("The withdraw fee is " + this.withdrawTx[0].getFee());
-      console.log("");
-      console.log("lkajsf;lkajsdf;ljsdlkfjas;lkfjsa;lkfjs;alkjsdaf");
-      let newWithdrawInfo = new Array(this.withdrawTx.length);
+      let newWithdrawInfo = new Array(withdrawTx.length);
       for(let i = 0; i < newWithdrawInfo.length; i++){
         newWithdrawInfo[i] = {
           withdrawAddress: enteredWithdrawAddress,
-          withdrawAmount: XMR_Au_Converter.atomicUnitsToXmr(withdrawTx[i].getOutgoingAmount()),
-          withdrawFee: XMR_Au_Converter.atomicUnitsToXmr(BigInteger(withdrawTx[i].getFee().toString())),
+          withdrawAmount: MoneroUtils.atomicUnitsToXmr(withdrawTx[i].getOutgoingAmount()),
+          withdrawFee: MoneroUtils.atomicUnitsToXmr(BigInteger(withdrawTx[i].getFee().toString())),
           withdrawHash: withdrawTx[i].getHash(),
           withdrawKey: withdrawTx[i].getKey()
         };
       }
-      console.log("Successfully created Tx! : " + JSON.stringify(newWithdrawInfo));
-      setwithdrawInfo(newWithdrawInfo);
+      setWithdrawInfo(newWithdrawInfo);
       setWithdrawTxStatus("");
     }
   }
@@ -175,7 +126,7 @@ export default function Withdraw(props){
     let newWithdrawInfo = [...withdrawInfo];
     
     for (let i = 0; i < newWithdrawInfo.length; i++){
-      await this.wallet.relayTx(this.withdrawTx[i]).catch (
+      await props.wallet.relayTx(withdrawTx[i]).catch (
         function(e) {
           relayTxWasSuccessful = false;
           console.log("Error relaying Tx: " + e);
@@ -184,7 +135,6 @@ export default function Withdraw(props){
     }  
     
     if (relayTxWasSuccessful) {
-      console.log("Transaction was successfully relayed!");
       setWithdrawTx(null);
       setWithdrawTxStatus("");
       setEnteredWithdrawAddressIsValid(true);
@@ -223,11 +173,9 @@ export default function Withdraw(props){
       enteredWithdrawAmountText === withdrawAmountTextPrompt || 
       usingAllFunds
     ) { // Only clear on click if field is default or "send all" value
-      console.log("Clearing entered amount text");
       setEnteredWithdrawAmount("");
       setEnteredWithdrawAmountText("");
       setUsingAllFunds(false);
-      console.log("set usingAllFunds to false due to amountfield click");
     }
   }
   
@@ -278,12 +226,12 @@ export default function Withdraw(props){
         <div className="lines_page_container">
           <Page_Box_Line_Field 
             label = "Available balance" 
-            value={XMR_Au_Converter.atomicUnitsToXmr(BigInteger(props.availableBalance)) + " XMR"}
+            value={MoneroUtils.atomicUnitsToXmr(BigInteger(props.availableBalance)) + " XMR"}
             field_style = "horizontal" 
           />
           <Page_Box_Line_Field 
             label = "Total balance" 
-            value = {XMR_Au_Converter.atomicUnitsToXmr(BigInteger(props.totalBalance)) + " XMR"} 
+            value = {MoneroUtils.atomicUnitsToXmr(BigInteger(props.totalBalance)) + " XMR"} 
             field_style = "horizontal"
           />
           <Page_Box_Margin />
@@ -331,7 +279,6 @@ export default function Withdraw(props){
       </Page_Box>
     );
   } else if (!withdrawTxIsCompleted) {
-    console.log("The user has entered withdraw info and the TX was created, however it has not been relayed yet");
     withdrawPageBox = (
       <Page_Box>
         <Main_Content>
@@ -368,7 +315,6 @@ export default function Withdraw(props){
       </Page_Box>
     );
   } else {
-    console.log("All withdraw info defined. Showing TX details");
     withdrawPageBox = (
       <Page_Box>
         <Main_Content>
