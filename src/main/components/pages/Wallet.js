@@ -12,7 +12,7 @@
  */
 
 import React, {useState} from 'react';
-import {Page_Box} from "../Widgets.js";
+import {Page_Box, Page_Box_Margin, Page_Box_Line_Field} from "../Widgets.js";
 import "./wallet.css";
 import {UI_Button_Link} from "../Buttons.js";
 
@@ -149,11 +149,15 @@ export default function Wallet(props){
   
   return(
     <Page_Box className="wallet_page_box">
-      <div className="wallet_page_sections_container">
-        <Wallet_Page_Section label = "Balance" value={props.balance * XMR_AU_RATIO + " XMR"} />
-        <Wallet_Page_Section label = "Available balance" value={props.availableBalance * XMR_AU_RATIO + " XMR"} />
-        <Wallet_Page_Section label = "Transactions generated" value={props.transactionsGenerated} />
-        <Wallet_Page_Section label = "Total fees" value={props.totalFees * XMR_AU_RATIO + " XMR"} />
+      <div 
+        className="lines_page_container" 
+        style = {{width: "80%"}} 
+      >
+        <Page_Box_Line_Field label = "Balance" value={props.balance * XMR_AU_RATIO + " XMR"} />
+        <Page_Box_Line_Field label = "Available balance" value={props.availableBalance * XMR_AU_RATIO + " XMR"} />
+        <Page_Box_Line_Field label = "Transactions generated" value={props.transactionsGenerated} />
+        <Page_Box_Line_Field label = "Total fees" value={props.totalFees * XMR_AU_RATIO + " XMR"} />
+        <Page_Box_Margin />
         <div className="wallet_page_button_container">
           <UI_Button_Link 
             handleClick = {buttonHandleContinue}
@@ -186,21 +190,5 @@ export default function Wallet(props){
         </div>
       </div>
     </Page_Box>
-  );
-}
-
-function Wallet_Page_Section(props) {
-  return(
-    <div className="wallet_page_section">
-      <div className="wallet_page_section_label wallet_page_text">
-        {props.label}
-      </div>
-      <div className="wallet_page_section_value wallet_page_text">
-        {props.value}
-      </div>
-      <div className="horizontal_rule">
-        <hr />
-      </div>
-    </div>
   );
 }

@@ -12,7 +12,7 @@ export default function Enter_Phrase_Page(props) {
       	<Page_Text_Entry 
       	  isDefault={true} 
       	  className="enter_phrase_box "
-	  placeholder="Enter backup phrase..." 
+	  defaultValue="Enter backup phrase..." 
 	  handleTextChange={props.handleTextChange}
       	  isactive={props.textEntryIsActive === undefined ? true : props.textEntryIsActive}
       	  isValid={props.isValid}

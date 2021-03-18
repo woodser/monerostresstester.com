@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import "./app.css";
 
+import XMR_Au_Converter from './XMR_Au_Converter.js';
+
 import Banner from "./components/Banner.js";
 import Home from "./components/pages/Home.js";
 import Deposit from "./components/pages/Deposit.js";
@@ -28,13 +30,14 @@ const LibraryUtils = monerojs.LibraryUtils;
 const MoneroWalletListener = monerojs.MoneroWalletListener;
 const MoneroWallet = monerojs.MoneroWallet;
 const MoneroRpcConnection = monerojs.MoneroRpcConnection;
+const MoneroUtils = monerojs.MoneroUtils;
+const BigInteger = monerojs.BigInteger;
 
 /* 
  * A wallet must contain at least this many atomic units to be considered "funded" 
  * and thus allowed to generate transactions
  */
-const FUNDED_WALLET_MINIMUM_BALANCE = 0.0000001;
-
+const FUNDED_WALLET_MINIMUM_BALANCE = 0.000000000001;
 /*
  * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
  * in order to create a new, random keys-only wallet
@@ -51,8 +54,13 @@ const WALLET_INFO = {
 }
 
 class App extends React.Component {
+  
   constructor(props) {
     super(props);
+    
+    this.withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
+    this.withdrawAmountSendAllText = "All available funds";
+    this.withdrawAddressTextPrompt = "Enter destination wallet address..";
     
     // Force the loading animation to preload
     const img = new Image();
@@ -68,7 +76,7 @@ class App extends React.Component {
     this.txGenerator = null;
     this.walletAddress = "empty";
     this.wallet = null;
-    this.enteredPhrase = "";
+    this.enteredText = "";
     this.restoreHeight = 0;
     this.lastHomePage = "";
     this.animationIsLoaded = false;
@@ -217,8 +225,8 @@ class App extends React.Component {
       try {
         var dateParts = this.convertStringToRestoreDate(this.restoreHeight);
     
-       // Attempt to convert date into a monero blockchain height:
-       let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
+        // Attempt to convert date into a monero blockchain height:
+        let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
         height = await dateRestoreHeightWallet.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
         console.log("Converted the date " + dateParts[0] + "-" + dateParts[1] + "-" + dateParts[2] + " to the height " + height)
       } catch(e) {
@@ -317,7 +325,7 @@ setCurrentSyncProgress(percentDone){
 }
   
 setEnteredPhrase(mnemonic){
-  this.enteredPhrase = mnemonic;
+  this.enteredText = mnemonic;
   this.setState({
     enteredMnemonicIsValid: true
   });
@@ -420,16 +428,15 @@ async generateWallet(){
     await this.wallet.addListener(new class extends MoneroWalletListener {
         
       async onBalancesChanged(newBalance, newUnlockedBalance) {
+        if (newBalance > that.state.balance){
+          that.setState({
+            isAwaitingDeposit: false,
+            availableBalance: newUnlockedBalance,
+            balance: newBalance
+          });
+        }
         await that.refreshMainState();
       }
-      
-      async onOutputReceived(output){
-	    if (!output.getTx().isConfirmed()) {
-	      that.setState({
-	        isAwaitingDeposit: false
-	      });
-	    }
-      };
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
@@ -488,20 +495,23 @@ async generateWallet(){
       depositQrCode: null,
       isAwaitingDeposit: false,
       transactionStatusMessage: "",
-      currentSitePage: "/"
+      currentSitePage: "/",
     });
     this.txGenerator = null;
     this.walletUpdater = null;
     this.wallet = null;
     this.restoreHeight = 0;
     this.lastHomePage = "";
+    this.enteredWithdrawAmountIsValid = true;
+    this.enteredWithdrawAddressIsValid = true;
+    this.withdrawTransaction = null;
   }
   
   delimitEnteredWalletPhrase(){
     // Remove any extra whitespaces
-    let enteredPhraseCopy = this.enteredPhrase;
-    enteredPhraseCopy = enteredPhraseCopy.replace(/ +(?= )/g,'').trim();
-    return(enteredPhraseCopy);
+    let enteredTextCopy = this.enteredText;
+    enteredTextCopy = enteredTextCopy.replace(/ +(?= )/g,'').trim();
+    return(enteredTextCopy);
   }
   
   async confirmWallet() {
@@ -732,7 +742,12 @@ async generateWallet(){
                 {...props}
               />} />
               <Route path="/withdraw" render={(props) => <Withdraw 
-                {...props}
+        	//submitWithdrawInfo = {this.setWithdrawAddressAndAmount.bind(this)}
+                //resetWithdrawPage = {this.resetWithdrawPage.bind(this)}
+                //withdrawInfo = {this.state.currentWithdrawInfo}
+                availableBalance = {this.state.availableBalance}
+                totalBalance = {this.state.balance}
+                wallet = {this.state.wallet}
               />} />
               <Route component={default_page} />
             </Switch>
@@ -753,7 +768,7 @@ function default_page(){
   return <h1>ERROR - invalid url path!</h1>
 }
             
-/**
+/*
  * Print sync progress every X blocks.
  */
 class walletListener extends MoneroWalletListener {
