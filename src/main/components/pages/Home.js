@@ -87,8 +87,7 @@ function Home(props) {
           <Page_Text_Entry 
             isDefault={true} 
             isSingleLineEntry={true}
-            className="enter_restore_height_box"
-            placeholder="Enter restore height or date (YYYY-MM-DD)" 
+            defaultValue="Enter restore height or date (YYYY-MM-DD)" 
             handleTextChange={props.setRestoreHeight}
             isactive={!props.importPageForceWait}
             isValid={props.enteredHeightIsValid}

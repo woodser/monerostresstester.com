@@ -18,6 +18,7 @@
 .page_box {
   margin: 0 auto;
   width: var(--page-box-width);
+  background-color: var(--app-content-bg-color);
 }
 
 .header {
@@ -81,10 +82,6 @@
   grid-area: animation;
 }
 
-.page_box_defaults {
-
-}
-
 .new_value {
   color: black;
 }
@@ -93,7 +90,7 @@
   background-color: var(--text-entry-background-color);
 }
 
-.enter_restore_height_box {
+.single_line_text_entry {
   background-color: var(--text-entry-background-color);
   height: 56px;
 }
@@ -158,3 +155,24 @@ textarea {
   cursor: pointer;
 }
 
+.page_box_line_field {
+  display: flex;
+  font-size: 16px;
+}
+
+.page_box_line_field_text {
+	word-break: break-word;
+}
+
+.lines_page_container {
+  padding-top: 38px;
+}
+
+.horizontal_rule {
+  width: 100%;
+}
+
+.page_box_line_field_text_container {
+  font-size: 24px;
+  display: inline-block;
+}

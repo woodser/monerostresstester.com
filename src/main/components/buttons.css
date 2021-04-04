@@ -1,7 +1,7 @@
 :root {
   --button-border-width: 4px;
   --button-width: 100%;
-  --button-height: 88px;
+  --button-height: 56px;
   
   --wallet-button-active-color: #56c1ff;
   --wallet-button-hover-color: #78e3ff;
@@ -113,4 +113,11 @@ a.ui_text_link:hover {
 
 .ui_text_link:hover {
   text-decoration: underline;
+}
+
+.text_box_top_right_button {
+  font-size: 22px;
+  cursor: pointer;
+  float: right;
+  margin-right: 20px;
 }

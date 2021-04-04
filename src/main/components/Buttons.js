@@ -47,11 +47,15 @@ export function UI_Button_Link(props) {
 }
 
 export function UI_Text_Link(props) {
+  if(props.overrideStyle){
+    console.log("props.overrideStyle: " + JSON.stringify(props.overrideStyle));
+  }
   return(
     <div className="ui_link_text_container">
       &nbsp;
       <a 
-        className="ui_text_link" 
+        className="ui_text_link"
+        style = {props.overrideStyle}
 	onClick={function () {
 	  if(props.handleClick) {
 	    props.handleClick();
@@ -67,4 +71,10 @@ export function UI_Text_Link(props) {
       </a>
     </div>
   )
+}
+
+export function Text_Box_Top_Right_Link_Button(props) {
+  return(
+      <a className="text_box_top_right_button" onClick={props.handleClick}>{props.text}</a>
+  );
 }

@@ -3222,7 +3222,7 @@ function getLens (b64) {
     throw new Error('Invalid string. Length must be a multiple of 4')
   }
 
-  // Trim off extra bytes after placeholder bytes are found
+  // Trim off extra bytes after defaultValue bytes are found
   // See: https://github.com/beatgammit/base64-js/issues/42
   var validLen = b64.indexOf('=')
   if (validLen === -1) validLen = len
@@ -3256,7 +3256,7 @@ function toByteArray (b64) {
 
   var curByte = 0
 
-  // if there are placeholders, only get up to the last complete 4 chars
+  // if there are defaultValues, only get up to the last complete 4 chars
   var len = placeHoldersLen > 0
     ? validLen - 4
     : validLen
