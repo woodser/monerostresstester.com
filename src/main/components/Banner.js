@@ -12,7 +12,7 @@ function convertLinkNameToUrl(name){
 }
 
 export default function Banner(props) {
-  let links = [
+  let linkDisplayValues = [
     "Home",
     "Backup",
     "Deposit",
@@ -20,29 +20,35 @@ export default function Banner(props) {
     "Sign Out",
   ];
   
+  // convert link names to functional URLs
+  let linkUrlValues = linkDisplayValues.map(
+    linkDisplayValue => linkDisplayValue === "Home" ? "/" : convertLinkNameToUrl(linkDisplayValue)
+  );
+  
   /*
-   * Store banner links in an array and style as actual links or dead links
+   * Store banner linkDisplayValues in an array and style as actual linkDisplayValues or dead linkDisplayValues
    * based on props.className
    */
-  if (props.walletIsSynced){ // Nav links are now active
-    links = links.map(
-      link => <NavLink 
-        key={link}
-        exact
-        to={convertLinkNameToUrl(link)} 
-        className="link nav_link" 
-        activeClassName="current_nav"
-        onClick={link==="Deposit" ? props.notifyIntentToDeposit : () => props.setCurrentSitePage(link)}>
-          {link + (link==="Sign Out" ? "" : "   ")}
-      </NavLink>);
+  if (props.walletIsSynced){ // Nav linkDisplayValues are now active
+    linkDisplayValues = linkDisplayValues.map((link, index) => {return (<NavLink 
+      key={link}
+      exact
+      to={convertLinkNameToUrl(link)} 
+      className="link nav_link" 
+      activeClassName="current_nav"
+      onClick={link==="Deposit" ? props.notifyIntentToDeposit : () => props.setCurrentSitePage(linkUrlValues[index])}>
+        {link + (link==="Sign Out" ? "" : "   ")}
+    </NavLink>)});
   } else {
-    links = links.map(
+    linkDisplayValues = linkDisplayValues.map(
       link => <span 
         key={link}  
         className={"link " + (link==="Home" ? "current_nav" : "inactive_nav_link")}>
           {link + (link==="Sign Out" ? "" : "   ")}
       </span>);
   }
+  
+  console.log("linkDisplayValues: " + linkDisplayValues.toString());
   
   return(
     <div id="banner_container">
@@ -61,7 +67,7 @@ export default function Banner(props) {
       </div>
       <div id="nav_container" className="vertically_centered_item_container">
         <div id="nav" className="vertical_center">
-          {links}
+          {linkDisplayValues}
         </div>
       </div>
     </div>

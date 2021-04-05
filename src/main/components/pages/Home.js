@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ReactDOM from 'react-dom';
 
 // Import home sub-pages
@@ -14,6 +14,11 @@ import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Con
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
 function Home(props) {
+  
+  useEffect(() => {
+    props.setCurrentSitePage("/");
+  }, []);  
+
   let renderItem = null;
   let buttonContents = null;
   switch(props.currentHomePage){
