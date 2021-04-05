@@ -41,7 +41,7 @@ export default function Save_Phrase_Page(props) {
       <div className="home_button_links">
         <UI_Button_Link
           destination={props.continueDestination} 
-          setCurrentHomePage = {props.setCurrentHomePage}
+          setCurrentPage = {props.setCurrentHomePage}
           isActive = {props.text ? true : false}
         >
           <>
@@ -52,7 +52,7 @@ export default function Save_Phrase_Page(props) {
           link_text="Or Go Back" 
           destination={props.backDestination} 
           handleClick={props.handleBack} 
-          setCurrentHomePage = {props.setCurrentHomePage}/>
+          setCurrentPage = {props.setCurrentHomePage}/>
       </div>
     );
   }

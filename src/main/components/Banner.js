@@ -48,8 +48,6 @@ export default function Banner(props) {
       </span>);
   }
   
-  console.log("linkDisplayValues: " + linkDisplayValues.toString());
-  
   return(
     <div id="banner_container">
       <div id="header_link_container" className="vertically_centered_item_container">

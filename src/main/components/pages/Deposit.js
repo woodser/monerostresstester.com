@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Link} from 'react-router-dom';
+import {UI_Button_Link} from '../Buttons.js';
 import "./deposit.css";
 
 import {Page_Box, Header, Deposit_Address_Text_Box} from "../Widgets.js";
@@ -29,15 +30,13 @@ export default function Deposit(props){
         <div className="status_message">Deposit Received!</div>
       </div>
     button = 
-        <Router_UI_Button_Link
-          className="return_home_from_deposit_button"
-          destination="/"
-          setCurrentPage={props.setCurrentPage}
+        <UI_Button_Link
+          className = "return_home_from_deposit_button"
+          destination = "/"
+          setCurrentPage = {props.setCurrentSitePage}
         >
           Return to Home
-        </Router_UI_Button_Link>
-
-    
+        </UI_Button_Link>
   }
   
   return(

@@ -26,7 +26,7 @@ export default function Welcome(props) {
       	<UI_Button_Link
       	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
-      	  setCurrentHomePage={props.setCurrentHomePage}
+      	  setCurrentPage={props.setCurrentHomePage}
       	>
       	  {button}
       	</UI_Button_Link>
@@ -34,7 +34,7 @@ export default function Welcome(props) {
       	  link_text="Or Import Existing Wallet"
       	  destination={props.backDestination}
       	  handleClick={props.handleBack}
-      	  setCurrentHomePage={props.setCurrentHomePage}
+      	  setCurrentPage={props.setCurrentHomePage}
       	/>
       </div>
     </Page_Box>
