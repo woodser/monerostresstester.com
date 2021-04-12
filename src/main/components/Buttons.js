@@ -18,8 +18,8 @@ export function UI_Button_Link(props) {
           if(props.handleClick){
             props.handleClick();
           }
-          if(props.destination && props.setCurrentHomePage){
-            props.setCurrentHomePage(props.destination);
+          if(props.destination && props.setCurrentPage){
+            props.setCurrentPage(props.destination);
           }
         }}
         onMouseEnter={props.onMouseEnter}
@@ -47,9 +47,6 @@ export function UI_Button_Link(props) {
 }
 
 export function UI_Text_Link(props) {
-  if(props.overrideStyle){
-    console.log("props.overrideStyle: " + JSON.stringify(props.overrideStyle));
-  }
   return(
     <div className="ui_link_text_container">
       &nbsp;
@@ -60,8 +57,8 @@ export function UI_Text_Link(props) {
 	  if(props.handleClick) {
 	    props.handleClick();
 	  }
-	  if(props.setCurrentHomePage){
-	    props.setCurrentHomePage(props.destination);
+	  if(props.setCurrentPage){
+	    props.setCurrentPage(props.destination);
 	  }
 	}}
       >

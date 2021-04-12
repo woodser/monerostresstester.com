@@ -226,7 +226,6 @@ class App extends React.Component {
         // Attempt to convert date into a monero blockchain height:
         let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
         height = await dateRestoreHeightWallet.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
-        console.log("Converted the date " + dateParts[0] + "-" + dateParts[1] + "-" + dateParts[2] + " to the height " + height)
       } catch(e) {
         alertMessage = e;
       }
@@ -250,11 +249,6 @@ class App extends React.Component {
       fullWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
       fullWalletInfo.restoreHeight = height;
       walletFull = await monerojs.createWalletFull(fullWalletInfo);
-      
-      //DEBUGGING
-      let outputs = await walletFull.getOutputs();
-      console.log("The wallet has " + outputs.length + " outputs");
-      // END DEBUGGING
       
     } catch(e) {
       console.log("Error: " + e);
@@ -410,7 +404,6 @@ async generateWallet(){
     await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
       
       async onMessage(msg) {
-        console.log("MoneroTxGeneratorListener.onMessage(): " + msg);
         that.setState({
           transactionStatusMessage: msg
         });
@@ -444,8 +437,6 @@ async generateWallet(){
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
-    console.log("Wallet mnemonic: " + await this.wallet.getMnemonic());
-    console.log("Wallet address: " + await this.wallet.getPrimaryAddress());
     await this.wallet.startSyncing(5000);
   }
   
@@ -467,7 +458,6 @@ async generateWallet(){
     if (armPump) this.playMuscleAnimation();
 
     // TODO: update balance with time to last unlock if > 0
-    console.log("Num blocks to next unlock: " + this.txGenerator.getNumBlocksToNextUnlock() + "; Num blocks to last unlock: " + this.txGenerator.getNumBlocksToLastUnlock());
     this.setState(state);
     this._refreshingMainState = false;
   }
@@ -520,13 +510,11 @@ async generateWallet(){
   
   async confirmWallet() {
     
-    console.log("Running confirmWallet");
     this.setState({
       isAwaitingWalletVerification: true
     });
-    console.log("Awaiting walletPhrase");
+
     let walletPhrase = await this.state.walletPhrase;
-    console.log("walletPhrase awaited");
     
     if (this.delimitEnteredWalletPhrase() === walletPhrase) {
       
@@ -535,15 +523,11 @@ async generateWallet(){
       this.walletUpdater.setWalletIsSynchronized(true);
       
       // initialize main page with listening, background sync, etc
-      console.log("Awaiting initmain");
       await this._initMain();
-      console.log("initmain finished");
       
       // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
       // and do NOT proceed to wallet page
       if(this.userCancelledWalletConfirmation){
-	
-        console.log("User cancelled wallet creation. abandoning");
 	this.userCancelledWalletConfirmation = false;
 	this.setState({
 	  isAwaitingWalletVerification: false
@@ -567,15 +551,11 @@ async generateWallet(){
           });
         }
       );
-      
-      console.log("Wallet successfully verified!");
-      
     } else {
       this.setState({
         enteredMnemonicIsValid: false,
 	isAwaitingWalletVerification: false
       });
-      console.log("Entered mnemonic is invalid!");
     }
   }
   
@@ -661,7 +641,6 @@ async generateWallet(){
   }
   
   notifyIntentToDeposit() {
-    console.log("Notified of deposit intent");
     this.setState({
       isAwaitingDeposit: true
     });
