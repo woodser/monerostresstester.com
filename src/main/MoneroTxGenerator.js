@@ -91,7 +91,6 @@ class MoneroTxGenerator {
       let that = this;   
       await this.wallet.addListener(new class extends monerojs.MoneroWalletListener {
         async onNewBlock(height) { that._refreshNumBlocksToUnlock(); }
-        async onBalancesChanged(newBalance, newUnlockedBalance) { that._refreshNumBlocksToUnlock(); }
       });
     }
     
@@ -212,7 +211,7 @@ class MoneroTxGenerator {
     if (this._refreshingNumBlocksToUnlock) return;
     this._refreshingNumBlocksToUnlock = true;
     
-    // compute numb locks to unlock
+    // compute num locks to unlock
     let numBlocksToUnlock = await this.wallet.getNumBlocksToUnlock();
     
     // announce updated blocks to unlock
@@ -238,9 +237,10 @@ class MoneroTxGenerator {
   }
   
   async _onTransaction(tx) {
-    if (new BigInteger(0).compare(await this.wallet.getUnlockedBalance()) === 0) this._refreshNumBlocksToUnlock();
+    this.numBlocksToLastUnlock = 10;
     for (let i = 0; i < this.listeners.length; i++) {
       this.listeners[i].onTransaction(tx, this.numTxsGenerated, this.totalFees, this.numSplitOutputs);
+      this.listeners[i].onNumBlocksToUnlock(this.numBlocksToNextUnlock, this.numBlocksToLastUnlock);
     }
   }
 }
