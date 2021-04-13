@@ -117,7 +117,7 @@ class App extends React.Component {
      * lastHomePage
      */
     
-    this.state = {
+    this.initialState = {
       walletPhrase: "",
       phraseIsConfirmed: false,
       walletSyncProgress: 0,
@@ -137,6 +137,8 @@ class App extends React.Component {
       transactionStatusMessage: "",
       currentSitePage: "/"
     };
+	    
+    this.state = this.initialState;
   }
   
   createDateConversionWallet(){
@@ -472,25 +474,7 @@ async generateWallet(){
 
   logout() {
 
-    this.setState ({
-      currentHomePage: "Welcome",
-      walletPhrase: "",
-      phraseIsConfirmed: false,
-      walletSyncProgress: 0,
-      walletIsSynced: false,
-      balance: 0,
-      availableBalance: 0,
-      isGeneratingTxs: false,
-      transactionsGenerated: 0,
-      totalFees: 0,
-      enteredMnemonicIsValid: true,
-      enteredHeightIsValid: true,
-      isAwaitingWalletVerification: false,
-      depositQrCode: null,
-      isAwaitingDeposit: false,
-      transactionStatusMessage: "",
-      currentSitePage: "/",
-    });
+    this.setState (this.initialState);
     this.txGenerator = null;
     this.walletUpdater = null;
     this.wallet = null;
@@ -602,9 +586,18 @@ async generateWallet(){
   }
   
   setCurrentSitePage(pageName) {
-    this.setState({
-      currentSitePage: pageName
-    });
+    if(pageName === "/sign_out"){
+      let userConfirmedSignout = confirm("Are you sure you want to sign out of this wallet? If you did not record the seed phrase, you will permanently lose access to the wallet and any funds contained therin! Click 'Ok' to continue");
+      if(userConfirmedSignout){
+        this.logout();
+        console.log("Pagename == 'Sign Out'. Logging out.");
+      }
+    } else {
+      console.log("Setting currentSitePage to " + pageName);
+      this.setState({
+        currentSitePage: pageName
+      });
+    }
   }
   
   confirmAnimationLoaded(){

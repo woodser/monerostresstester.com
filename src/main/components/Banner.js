@@ -29,7 +29,7 @@ export default function Banner(props) {
    * Store banner linkDisplayValues in an array and style as actual linkDisplayValues or dead linkDisplayValues
    * based on props.className
    */
-  if (props.walletIsSynced){ // Nav linkDisplayValues are now active
+  if (props.walletIsSynced){ // Nav links are now active
     linkDisplayValues = linkDisplayValues.map((link, index) => {return (<NavLink 
       key={link}
       exact
