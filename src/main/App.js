@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import "./app.css";
 
@@ -13,7 +13,8 @@ import {Notification_Bar, Loading_Animation, getLoadingAnimationFile} from "./co
 import QR_Code from "./components/QR_Code.js";
 import qrcode from './qrcode.js';
 
-import {HashRouter as Router, Link, Route, Switch, Redirect} from 'react-router-dom';
+import {Router, Link, Route, Switch, Redirect} from 'react-router';
+import { createBrowserHistory } from 'history';
 //import { BrowserRouter as Link, NavLink } from "react-router-dom";
 import MoneroTxGenerator from './MoneroTxGenerator.js';
 import MoneroTxGeneratorListener from './MoneroTxGeneratorListener.js';
@@ -36,6 +37,7 @@ const BigInteger = monerojs.BigInteger;
  * and thus allowed to generate transactions
  */
 const FUNDED_WALLET_MINIMUM_BALANCE = 0.000000000001;
+
 /*
  * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
  * in order to create a new, random keys-only wallet
@@ -51,102 +53,104 @@ const WALLET_INFO = {
     serverPassword: "abctesting123"
 }
 
-class App extends React.Component {
+export default function App(props) {
   
-  constructor(props) {
-    super(props);
-    
-    this.withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
-    this.withdrawAmountSendAllText = "All available funds";
-    this.withdrawAddressTextPrompt = "Enter destination wallet address..";
-    
-    // Force the loading animation to preload
-    const img = new Image();
-    img.src = getLoadingAnimationFile();
-    
-    
-    // print current version of monero-javascript
-    
-    /*
-     * Member Variables
-     * No need to store these in state since no components need to re-render when their values are set
-     */
-    this.txGenerator = null;
-    this.walletAddress = "empty";
-    this.wallet = null;
-    this.enteredText = "";
-    this.restoreHeight = 0;
-    this.lastHomePage = "";
-    this.animationIsLoaded = false;
- 
-    // In order to pass "this" into the nested functions...
-    let that = this;
-    
-    //Start loading the Keys-only and full wallet modules
-    
-    //First, load the keys-only wallet module  
-    LibraryUtils.loadKeysModule().then(
-      function() {
-	that.setState({
-	  keysModuleLoaded: true
-	});
+  //Create a custom browser history;
+  const customHistory = createBrowserHistory();
+  /*
+   * There are essentially two separate histories for the app:
+   * 1. The standard url/based history (/, /deposit, etc).
+   * 2. History that includes navigation within sub-pages (for instance restoring wallet
+   *   at "/" vs generating new wallet vs welcome page etc.
+   * The browser only knows how to handle the first type of history when back/forward buttons are pressed
+   * Therefore, it is necessary to manage the app/subpage history manually in order for the back/forward buttons
+   * to work properly
+   */
+  let appHistory = [];
+  let siteHistory = [];
+  
+  let withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
+  let withdrawAmountSendAllText = "All available funds";
+  let withdrawAddressTextPrompt = "Enter destination wallet address..";
+  
+  // Force the loading animation to preload
+  const img = new Image();
+  img.src = getLoadingAnimationFile();
+  
+  
+  // print current version of monero-javascript
+  
+  /*
+   * Member Variables
+   * No need to store these in state since no components need to re-render when their values are set
+   */
+  let txGenerator = useRef(null);
+  let walletAddress = useRef("empty");
+  let wallet = useRef(null);
+  let enteredText = useRef("");
+  let restoreHeight = useRef(0);
+  let lastHomePage = useRef("");
+  let userCancelledWalletConfirmation = useRef(false);
+  let userCancelledWalletSync = useRef(false);
+  let userCancelledWalletImport = useRef(false);
+  let dateRestoreWalletPromise = useRef(null);
+  let walletUpdater = useRef(null);
+  let _refreshingMainState = useRef(false);
+  
+  //Start loading the Keys-only and full wallet modules
+  
+  //First, load the keys-only wallet module  
+  LibraryUtils.loadKeysModule().then(
+    function() {
+      setKeysModuleLoaded(true);
 
-	// Load the full module
-	LibraryUtils.loadFullModule().then(
-	  function() {
-	    that.setState({
-	      coreModuleLoaded: true
-	    })
-	  }
-	).catch(
-	  function(error) {
-	    console.log("Failed to load full wallet module!");
-	    console.log("Error: " + error);
-	  } 
-	);
-      }
-    ).catch(
-      function(error) {
-	console.log("Failed to load keys-only wallet module!");
-	console.log("Error: " + error);
-      } 
-    );
+      // Load the full module
+      LibraryUtils.loadFullModule().then(
+        function() {
+          setCoreModuleLoaded(true);
+        }
+      ).catch(
+        function(error) {
+          console.log("Failed to load full wallet module!");
+          console.log("Error: " + error);
+        } 
+      );
+    }
+  ).catch(
+    function(error) {
+      console.log("Failed to load keys-only wallet module!");
+      console.log("Error: " + error);
+    } 
+  );
     
-    /*
-     * VARS TO EXTRACT FROM STATE:
-     * lastHomePage
-     */
-    
-    this.initialState = {
-      walletPhrase: "",
-      phraseIsConfirmed: false,
-      walletSyncProgress: 0,
-      walletIsSynced: false,
-      balance: 0,
-      availableBalance: 0,
-      currentHomePage: "Welcome",
-      isGeneratingTxs: false,
-      transactionsGenerated: 0,
-      totalFees: 0,
-      enteredMnemonicIsValid: true,
-      enteredHeightIsValid: true,
-      isAwaitingWalletVerification: false,
-      flexLogo: relaxingLogo,
-      depositQrCode: null,
-      isAwaitingDeposit: false,
-      transactionStatusMessage: "",
-      currentSitePage: "/"
-    };
-	    
-    this.state = this.initialState;
-  }
+  const [walletPhrase, setWalletPhrase] = useState("");
+  const [phraseIsConfirmed, setPhraseIsConfirmed] = useState(false);
+  const [walletSyncProgress, setWalletSyncProgress] = useState(0);
+  const [walletIsSynced, setWalletIsSynced] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [availableBalance, setAvailableBalance] = useState(0);
+  const [currentHomePage, setCurrentHomePage] = useState("Welcome");
+  const [isGeneratingTxs, setIsGeneratingTxs] = useState(false);
+  const [transactionsGenerated, setTransactionsGenerated] = useState(0);
+  const [totalFees, setTotalFees] = useState(0);
+  const [enteredMnemonicIsValid, setEnteredMnemonicIsValid] = useState(true);
+  const [enteredHeightIsValid, setEnteredHeightIsValid] = useState(true);
+  const [isAwaitingWalletVerification, setIsAwaitingWalletVerification] = useState(false);
+  const [flexLogo, setFlexLogo] = useState(relaxingLogo);
+  const [depositQrCode, setDepositQrCode] = useState(null);
+  const [isAwaitingDeposit, setIsAwaitingDeposit] = useState(false);
+  const [transactionStatusMessage, setTransactionStatusMessage] = useState("");
+  const [currentSitePage, setCurrentSitePage] = useState("/");
+  const [keysModuleLoaded, setKeysModuleLoaded] = useState(false);
+  const [coreModuleLoaded, setCoreModuleLoaded] = useState(false);
+  const [animationIsLoaded, setAnimationIsLoaded] = useState(false);
   
-  createDateConversionWallet(){
+  const createDateConversionWallet = function(){
     // Create a disposable,random wallet to prepare for the possibility that the user will attempt to restore from a date
     // At present, getRestoreHeightFromDate() is (erroneously) an instance method; thus, a wallet instance is
     // required to use it.
     
-    this.dateRestoreWalletPromise = monerojs.createWalletFull({
+    dateRestoreWalletPromise = monerojs.createWalletFull({
       password: "supersecretpassword123",
       networkType: "stagenet",
       path: "",
@@ -157,7 +161,7 @@ class App extends React.Component {
 
   }
   
-  async createTxGenerator(wallet) {
+  const createTxGenerator = async function(wallet) {
     
     // create daemon with connection
     let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
@@ -167,17 +171,15 @@ class App extends React.Component {
     });
     
     // create tx generator
-    this.txGenerator = new MoneroTxGenerator(daemon, wallet);
+    txGenerator.current = new MoneroTxGenerator(daemon, wallet);
   }
   
-  setBalances(balance, availableBalance){
-    this.setState({
-      balance: balance,
-      availableBalance: availableBalance
-    });
+  const setBalances = function(balance, availableBalance){
+    setBalance(balance);
+    setAvailableBalance(availableBalance);
   }
   
-  convertStringToRestoreDate(str){
+  const convertStringToRestoreDate = function(str){
     // Make sure the string is of the format "####/##/##"
     // Does the date have the correct number of characters? (10):
     if(str.length === 10){
@@ -185,48 +187,45 @@ class App extends React.Component {
       var dateParts = str.split("-");
       // If the result yields three strings
       if (dateParts.length === 3){
-	// Attempt to convert each string to an integer
-	for (let i = 0; i < 3; i++){
-	  try {
-	    let n = Number(dateParts[i]);
-	    if (n === NaN) throw "Invalid date";
-	    // If the conversion worked, replace the string in the array with the number
-	    dateParts[i] = n;
-	  } catch(e){
-	    throw "Invalid date: " + e;
-	  }
-	}
-	return dateParts;
+        // Attempt to convert each string to an integer
+        for (let i = 0; i < 3; i++){
+          try {
+            let n = Number(dateParts[i]);
+            if (n === NaN) throw "Invalid date";
+            // If the conversion worked, replace the string in the array with the number
+            dateParts[i] = n;
+          } catch(e){
+            throw "Invalid date: " + e;
+          }
+        }
+        return dateParts;
       } else throw "Invalid date; date should contain three numbers separated by two slashes";
     }
     throw "Invalid date; date should be 10 chars long";
   }
   
-  setRestoreHeight(height){
-    this.restoreHeight = height;
-    this.setState({
-      enteredHeightIsValid: true
-    });
+  const setRestoreHeight = function(height){
+    restoreHeight.current = height;
+    setEnteredHeightIsValid(true);
   }
   
-  async restoreWallet(){
+  const restoreWallet = async function(){
     
-    this.setState({
-      isAwaitingWalletVerification: true
-    });
+    setIsAwaitingWalletVerification(true);
     
     let alertMessage = "";  
     
     // First, determine whether the user has typed a height, a date, or something else(invalid)
-    let height=Number(this.restoreHeight);
+    let height=Number(restoreHeight.current);
     // If the string is NOT a valid integer, check to see if it is a date and convert accordingly:
+    let dateRestoreHeightWallet;
     if(!(height != NaN && height%1 === 0 && height >= 0)) {
       // Attempt to convert the string to a date in the format "YYYY-MM-DD"
       try {
-        var dateParts = this.convertStringToRestoreDate(this.restoreHeight);
+        var dateParts = convertStringToRestoreDate(restoreHeight.current);
     
         // Attempt to convert date into a monero blockchain height:
-        let dateRestoreHeightWallet = await this.dateRestoreWalletPromise;
+        dateRestoreHeightWallet = await dateRestoreWalletPromise.current;
         height = await dateRestoreHeightWallet.getHeightByDate(dateParts[0], dateParts[1], dateParts[2]);
       } catch(e) {
         alertMessage = e;
@@ -237,10 +236,8 @@ class App extends React.Component {
     if (alertMessage !== "") {
       //If height was invalid:
       console.log(alertMessage);
-      this.setState({
-	enteredHeightIsValid: false,
-        isAwaitingWalletVerification: false
-      });
+      setEnteredHeightIsValid(false,)
+      setIsAwaitingWalletVerification(false);
       return;
     }
     
@@ -248,104 +245,94 @@ class App extends React.Component {
     try {
       let fullWalletInfo = Object.assign({}, WALLET_INFO);
       fullWalletInfo.path = "";
-      fullWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
+      fullWalletInfo.mnemonic = delimitEnteredWalletPhrase();
       fullWalletInfo.restoreHeight = height;
       walletFull = await monerojs.createWalletFull(fullWalletInfo);
       
     } catch(e) {
       console.log("Error: " + e);
-      this.setState({
-	enteredMnemonicIsValid: false,
-	isAwaitingWalletVerification: false
-      });
+      setEnteredMnemonicIsValid(false);
+      setIsAwaitingWalletVerification(false);
       return;
     }
     
-    if(this.userCancelledWalletImport){
+    if(userCancelledWalletImport.current){
       return;
     }
     // Both the mnemonic and restore height were valid; thus, we can remove the disposable date-conversion
     // Wallet from memory
-    this.dateRestoreHeightWallet = null;
-    this.setState({
-      isAwaitingWalletVerification: false
-    });
+    dateRestoreHeightWallet = null;
+
+    setIsAwaitingWalletVerification(false);
+
     
-    this.wallet = walletFull;
+    wallet.current = walletFull;
     
     // Get the mnemonic so we can store it in state and make it available to view on "Backup" page
     let mnemonic = await walletFull.getMnemonic();
     
-    this.lastHomePage = "Import_Wallet";
+    lastHomePage.current = "Import_Wallet";
     
-    this.setState({
-      currentHomePage: "Sync_Wallet_Page"
-    });
+
+    setCurrentHomePage("Sync_Wallet_Page");
+
     
     // Create a wallet listener to keep app.js updated on the wallet's balance etc.
-    this.walletUpdater = new walletListener(this);
-    let that=this;
-    walletFull.sync(this.walletUpdater).then(async () => {
+    walletUpdater = new walletListener(setCurrentSyncProgress, setBalances);
+    
+    walletFull.sync(walletUpdater).then(async () => {
       
-      if(!that.userCancelledWalletSync && !that.userCancelledWalletImport){
+      if(!userCancelledWalletSync.current && !userCancelledWalletImport.current){
         // This code should only run if wallet.sync finished because the wallet finished syncing
         // And not because the user cancelled the sync
-        that.walletUpdater.setWalletIsSynchronized(true);
-        await that._initMain();
+        walletUpdater.setWalletIsSynchronized(true);
+        await _initMain();
         let balance = await walletFull.getBalance();
         let availableBalance = await walletFull.getUnlockedBalance();
-        that.setState({
-          walletIsSynced: true,
-          balance: balance,
-          availableBalance: availableBalance,
-          currentHomePage: "Wallet",
-          walletPhrase: mnemonic
-        });
-        qrcode.toDataURL(that.walletAddress, function(err, url){
+        setWalletIsSynced(true);
+        setBalance(balance);
+        setAvailableBalance(availableBalance);
+        setCurrentHomePage("Wallet");
+        setWalletPhrase(mnemonic);
+        qrcode.toDataURL(walletAddress.current, function(err, url){
             let code = <QR_Code url={url} />;
-            that.setState({
-              depositQrCode: code
-            });
+
+            setDepositQrCode(code);
+
           }
         );
 
       } else {
         // Reset the wallet sync cancellation indicator variable so that any syncs
         // completed in the future are not misinterpretted as cancelled syncs by default
-        that.userCancelledWalletSync = false;
-        that.userCancelledWalletImport = false;
+        userCancelledWalletSync.current = false;
+        userCancelledWalletImport.current = false;
       }
     });
     
 
   }
 
-setCurrentSyncProgress(percentDone){
-  this.setState({walletSyncProgress: percentDone});
+const setCurrentSyncProgress = function(percentDone){
+  setWalletSyncProgress(percentDone);
 }
   
-setEnteredPhrase(mnemonic){
-  this.enteredText = mnemonic;
-  this.setState({
-    enteredMnemonicIsValid: true
-  });
+const setEnteredPhrase = function(mnemonic){
+  enteredText.current = mnemonic;
+  setEnteredMnemonicIsValid(true);
 }
 
-async startGeneratingTxs(){
-  await this.txGenerator.start();
-  this.setState({
-    isGeneratingTxs: true
-  })
+const startGeneratingTxs = async function(){
+  await txGenerator.current.start();
+  setIsGeneratingTxs(true);
 }
 
-async stopGeneratingTxs(){
-  this.txGenerator.stop();
-  this.setState({
-    isGeneratingTxs: false
-  })
+const stopGeneratingTxs = async function(){
+  txGenerator.current.stop();
+  setIsGeneratingTxs(false);
 }
 
-async generateWallet(){
+const generateWallet = async function(){
   
   let walletKeys = null
   try {
@@ -356,10 +343,10 @@ async generateWallet(){
   }
   
   let newPhrase = await walletKeys.getMnemonic();
-  this.walletAddress = await walletKeys.getAddress(0,0);
-  this.setState({
-    walletPhrase: newPhrase
-  });
+  walletAddress.current = await walletKeys.getAddress(0,0);
+  
+  setWalletPhrase(newPhrase);
+
   let fullWalletInfo = Object.assign({}, WALLET_INFO);
   fullWalletInfo.mnemonic = newPhrase;
   fullWalletInfo.path = "";
@@ -378,7 +365,8 @@ async generateWallet(){
     await wallet.sync();
   })
   
-  this.wallet = walletPromise;
+  wallet.current = walletPromise;
+
 }
 
   /**
@@ -386,185 +374,210 @@ async generateWallet(){
    *
    * Creates the tx generator, listens for event notifications, and starts background synchronization.
    */
-  async _initMain() {
+  const _initMain = async function() {
     
     // resolve wallet promise
-    this.wallet = await this.wallet;
-    
+    let awaitedWallet = await wallet.current;
+    wallet.current = awaitedWallet;
     // Keep track of the wallet's address
-    this.walletAddress = await this.wallet.getAddress(0,0);
-    
+    let awaitedWalletAddress = await wallet.current.getAddress(0,0);
+    walletAddress.current = awaitedWalletAddress;
     // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
     // and do NOT proceed to wallet page
-    if (this.userCancelledWalletConfirmation) return;
+    if (userCancelledWalletConfirmation.current) return;
         
     // create transaction generator
-    await this.createTxGenerator(this.wallet);
+    await createTxGenerator(wallet.current);
             
     // register listener to handle notifications from tx generator
-    let that = this;
-    await this.txGenerator.addListener(new class extends MoneroTxGeneratorListener {
+
+    await txGenerator.current.addListener(new class extends MoneroTxGeneratorListener {
       
       async onMessage(msg) {
-        that.setState({
-          transactionStatusMessage: msg
-        });
+
+        setTransactionStatusMessage(msg);
+
       }
       
       // handle transaction notifications
       async onTransaction(tx, numTxsGenerated, totalFees, numSplitOutputs) {
         
         // refresh main ui
-        await that.refreshMainState();
+        await refreshMainState();
       }
       
       async onNumBlocksToUnlock(numBlocksToNextUnlock, numBlocksToLastUnlock) {
-        await that.refreshMainState();
+        await refreshMainState();
       }
     });
     
     // listen for wallet updates to refresh main ui
-    await this.wallet.addListener(new class extends MoneroWalletListener {
+    await wallet.current.addListener(new class extends MoneroWalletListener {
         
       async onBalancesChanged(newBalance, newUnlockedBalance) {
-        if (newBalance > that.state.balance){
-          that.setState({
-            isAwaitingDeposit: false,
-            availableBalance: newUnlockedBalance,
-            balance: newBalance
-          });
+        if (newBalance > balance){
+
+          setIsAwaitingDeposit(false,);
+          setAvailableBalance(newUnlockedBalance,);
+          setBalance(newBalance);
+
         }
-        await that.refreshMainState();
+        await refreshMainState();
       }
     });
     
     // start syncing wallet in background if the user has not cancelled wallet creation
-    await this.wallet.startSyncing(5000);
+    await wallet.current.startSyncing(5000);
   }
   
-  async refreshMainState() {
+  const refreshMainState = async function() {
     
     // skip if already refreshing
-    if (this._refreshingMainState) return;
-    this._refreshingMainState = true;
+    if (_refreshingMainState.current) return;
+    _refreshingMainState.current = true;
     
     // build new state
     let state = {};
-    state.balance = await this.wallet.getBalance();
-    state.availableBalance = await this.wallet.getUnlockedBalance();
-    state.transactionsGenerated = this.txGenerator.getNumTxsGenerated();
-    state.totalFees = this.txGenerator.getTotalFees();
+    state.balance = await wallet.current.getBalance();
+    state.availableBalance = await wallet.current.getUnlockedBalance();
+    state.transactionsGenerated = txGenerator.current.getNumTxsGenerated();
+    state.totalFees = txGenerator.current.getTotalFees();
     
     // pump arms if new tx generated
-    let armPump = state.transactionsGenerated > this.state.transactionsGenerated;
-    if (armPump) this.playMuscleAnimation();
+    let armPump = state.transactionsGenerated > transactionsGenerated;
+    if (armPump) playMuscleAnimation();
+
+    setBalance(state.balance);
+    setAvailableBalance(state.availableBalance);
+    setTransactionsGenerated(state.transactionsGenerated);
+    setTotalFees(state.totalFees);
 
     // TODO: update balance with time to last unlock if > 0
-    this.setState(state);
-    this._refreshingMainState = false;
+    
+    _refreshingMainState.current = false;
   }
   
-  playMuscleAnimation() {
-    this.setState({flexLogo: flexingLogo});
-    let that = this;
+  const playMuscleAnimation = function() {
+    setFlexLogo(flexingLogo);
     setTimeout(function() {
-      that.setState({flexLogo: relaxingLogo});
+      setFlexLogo(relaxingLogo);
     }, 1000);
   }
 
-  logout() {
+  const logout = function() {
 
-    this.setState (this.initialState);
-    this.txGenerator = null;
-    this.walletUpdater = null;
-    this.wallet = null;
-    this.restoreHeight = 0;
-    this.lastHomePage = "";
-    this.enteredWithdrawAmountIsValid = true;
-    this.enteredWithdrawAddressIsValid = true;
-    this.withdrawTransaction = null;
+    setWalletPhrase("");
+    setPhraseIsConfirmed(false);
+    setWalletSyncProgress(0);
+    setWalletIsSynced(false);
+    setBalance(0);
+    setAvailableBalance(0);
+    setCurrentHomePage("Welcome");
+    setIsGeneratingTxs(false);
+    setTransactionsGenerated(0);
+    setTotalFees(0);
+    setEnteredMnemonicIsValid(true);
+    setEnteredHeightIsValid(true);
+    setIsAwaitingWalletVerification(false);
+    setFlexLogo(relaxingLogo);
+    setDepositQrCode(null);
+    setIsAwaitingDeposit(false);
+    setTransactionStatusMessage("");
+    setCurrentSitePage("/");
+    setWalletUpdater(null);
+    setWallet(null);
+    setRestoreHeight(0);
+    setLastHomePage("");
+    setEnteredWithdrawAmountIsValid(true);
+    setEnteredWithdrawAddressIsValid(true);
+    setWithdrawTransaction(null);
+    setKeysModuleLoaded(false);
+    setCoreModuleLoaded(false);
+    setAnimationIsLoaded(false);
+    
+    
+    txGenerator.current = null;
+    walletAddress.current = "empty";
+    wallet.current = null;
+    enteredText.current = "";
+    restoreHeight.current = 0;
+    lastHomePage.current = "";
+    userCancelledWalletConfirmation.current = false;
+    userCancelledWalletSync.current = false;
+    userCancelledWalletImport.current = false;
+    dateRestoreWalletPromise.current = null;
+    walletUpdater.current = null;
+    _refreshingMainState.current = false;
   }
   
-  delimitEnteredWalletPhrase(){
+  const delimitEnteredWalletPhrase = function(){
     // Remove any extra whitespaces
-    let enteredTextCopy = this.enteredText;
+    let enteredTextCopy = enteredText.current;
     enteredTextCopy = enteredTextCopy.replace(/ +(?= )/g,'').trim();
     return(enteredTextCopy);
   }
   
-  async confirmWallet() {
+  const confirmWallet = async function() {
     
-    this.setState({
-      isAwaitingWalletVerification: true
-    });
+    setIsAwaitingWalletVerification(true);
 
-    let walletPhrase = await this.state.walletPhrase;
+    let awaitedWalletPhrase = await walletPhrase;
     
-    if (this.delimitEnteredWalletPhrase() === walletPhrase) {
+    if (delimitEnteredWalletPhrase() === awaitedWalletPhrase) {
       
       // Create a wallet event listener
-      this.walletUpdater = new walletListener(this);
-      this.walletUpdater.setWalletIsSynchronized(true);
+      walletUpdater = new walletListener(setCurrentSyncProgress, setBalances);
+      walletUpdater.setWalletIsSynchronized(true);
       
       // initialize main page with listening, background sync, etc
-      await this._initMain();
+      await _initMain();
       
       // If the user hit "Or go back" before the wallet finished building, abandon wallet creation
       // and do NOT proceed to wallet page
-      if(this.userCancelledWalletConfirmation){
-	this.userCancelledWalletConfirmation = false;
-	this.setState({
-	  isAwaitingWalletVerification: false
-	});
-	return;
+      if(userCancelledWalletConfirmation.current){
+        userCancelledWalletConfirmation.current = false;
+        setIsAwaitingWalletVerification(false);
+        return;
       }
       
-      this.lastHomePage = "Confirm_Wallet";
+     lastHomePage.current = "Confirm_Wallet";
       
-      this.setState ({
-        phraseIsConfirmed: true,
-        walletIsSynced: true,
-        currentHomePage: "Wallet",
-        isAwaitingWalletVerification: false
-      });
-      let that = this;
-      qrcode.toDataURL(this.walletAddress, function(err, url){
+      setPhraseIsConfirmed(true,);
+      setWalletIsSynced(true,);
+      setCurrentHomePage("Wallet",);
+      setIsAwaitingWalletVerification(false);
+      
+      qrcode.toDataURL(walletAddress.current, function(err, url){
           let code = <QR_Code url={url} />;
-          that.setState({
-            depositQrCode: code
-          });
+          setDepositQrCode(code);
         }
       );
     } else {
-      this.setState({
-        enteredMnemonicIsValid: false,
-	isAwaitingWalletVerification: false
-      });
+      setEnteredMnemonicIsValid(false);
+      setIsAwaitingWalletVerification(false);
     }
   }
   
-  async confirmAbortWalletSynchronization() {
+  const confirmAbortWalletSynchronization = async function() {
     let doAbort = confirm("All synchronization will be lost. Are you sure you wish to continue?");
     
     if (doAbort){
-      
-      this.setState({
-        walletPhrase: "",
-        phraseIsConfirmed: false,
-        walletSyncProgress: 0,
-        balance: 0,
-        availableBalance: 0,
-        enteredMnemonicIsValid: true,
-        enteredHeightIsValid: true,
-        currentHomePage: "Import_Wallet"
-      });
+      setWalletPhrase("");
+      setPhraseIsConfirmed(false);
+      setWalletSyncProgress(0);
+      setBalance(0);
+      setAvailableBalance(0);
+      setEnteredMnemonicIsValid(true);
+      setEnteredHeightIsValid(true);
+      setCurrentHomePage("Import_Wallet");
+
       /*
        * First, set a class variable so that the importWallet function 
        * can know that the wallet sync function finished because it was cancelled
        * and not because the wallet actually finished syncing
        */
-      this.userCancelledWalletSync = true;      
-      await this.wallet.stopSyncing();
+     userCancelledWalletSync.current = true;      
+      await wallet.current.stopSyncing();
     }
   }
   
@@ -579,158 +592,159 @@ async generateWallet(){
    * to the other site pages besides home (since home no longer has sub pages
    * once this is the case)
    */
-  setCurrentHomePage(pageName){
-    this.setState({
-      currentHomePage: pageName
-    });
+  const gotoCurrentHomePage = function(pageName){
+    customHistory.push("/");
+    siteHistory.push("/");
+    appHistory.push(pageName);
+    setCurrentHomePage(pageName);
   }
   
-  setCurrentSitePage(pageName) {
+  const makeCurrentSitePage = function(pageName) {
     if(pageName === "/sign_out"){
       let userConfirmedSignout = confirm("Are you sure you want to sign out of this wallet? If you did not record the seed phrase, you will permanently lose access to the wallet and any funds contained therin! Click 'Ok' to continue");
       if(userConfirmedSignout){
-        this.logout();
-        console.log("Pagename == 'Sign Out'. Logging out.");
+        logout();
       }
     } else {
-      console.log("Setting currentSitePage to " + pageName);
-      this.setState({
-        currentSitePage: pageName
-      });
+      customHistory.push(pageName);
+      siteHistory.push(pageName);
+      appHistory.push(pageName);
+      setCurrentSitePage(pageName);
     }
   }
   
-  confirmAnimationLoaded(){
+  const confirmAnimationLoaded = function(){
     /*
      * For reasons I don't entirely understand, it is necessary to separate the <img>'s "onLoad" function
      * call from the change in state with a timeout delay - even if the delay is set to zero!
-     * Otherwise, the imagine will not ACTUALLY finish loading 
+     * (NOTE: further research suggests that setTimeout(0) actually delays execution by about 10ms)
+     * Otherwise, the imagie will not ACTUALLY finish loading 
      */
     setTimeout(() => {
-      this.animationIsLoaded = true;
+      setAnimationIsLoaded(true);
     }, 0);
   }
   
-  cancelImport(){
-    this.userCancelledWalletImport = true;
-    this.logout();
+  const cancelImport = function(){
+    userCancelledWalletImport.current = true;
+    logout();
   }
   
-  cancelConfirmation(){
+  const cancelConfirmation = function(){
     /*
-     * If the user cancels the wallet import by hitting "or go back", this.wallet will remain a promise
+     * If the user cancels the wallet import by hitting "or go back", wallet will remain a promise
      * to the cancelled wallet. "stopSyncing" must be run on this wallet, but cannot until the promise resolves
-     * by which point the value of this.wallet may have changed do to the user generating a new phrase or 
+     * by which point the value of wallet may have changed do to the user generating a new phrase or 
      * importing a different wallet in the meantime.
      * Thus, userCancelledWalletConfirmation allows the app to keep track of the wallet and run "stopSyncing" 
      * on it when ready.
      */
-    if(this.state.isAwaitingWalletVerification){
-      this.userCancelledWalletConfirmation = true;
-      this.setState({
-        isAwaitingWalletVerification: false
-      });
+    if(isAwaitingWalletVerification){
+      userCancelledWalletConfirmation.current = true;
+      setIsAwaitingWalletVerification(false);
     };
   }
   
-  notifyIntentToDeposit() {
-    this.setState({
-      isAwaitingDeposit: true
-    });
-    this.setCurrentSitePage("/deposit");
+  const notifyIntentToDeposit = function() {
+    setIsAwaitingDeposit(true);
+    setCurrentSitePage("/deposit");
   }
   
-  render(){
+  const default_page = function(){
+    return <h1>ERROR - invalid url path!</h1>
+  }
+  
     let notificationBar = null;
-    
-    if(this.state.walletIsSynced && !(this.state.balance > 0) && this.state.currentSitePage != "/deposit"){
+    if(walletIsSynced && !(balance > 0) && currentSitePage != "/deposit"){
       notificationBar = (
-	<Notification_Bar content = {
-	  <>
-            No funds deposited
-            &thinsp;
-            <Link 
-              onClick = {this.notifyIntentToDeposit.bind(this)}
-              to = "/deposit"	
-            >
-              click to deposit
-            </Link>
-          </>
-	} />
+        <Notification_Bar 
+          content = {
+            <>
+              No funds deposited.
+              &thinsp;
+              <Link 
+                onClick = {notifyIntentToDeposit}
+                to = "/deposit" 
+              >
+                click to deposit
+              </Link>
+            </>
+          } 
+        />
       );
     }
     
-    if(this.animationIsLoaded){
+    if(animationIsLoaded){
       return(
         <div id="app_container">
-          <Router>
+          <Router history = {customHistory}>
             <Banner 
-              walletIsSynced={this.state.walletIsSynced}
-              flexLogo = {this.state.flexLogo}
-              notifyIntentToDeposit = {this.notifyIntentToDeposit.bind(this)}
-              setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
+              walletIsSynced={walletIsSynced}
+              flexLogo = {flexLogo}
+              notifyIntentToDeposit = {notifyIntentToDeposit}
+              setCurrentSitePage = {makeCurrentSitePage}
             />
             {notificationBar}
             <Switch>
             <Route exact path="/">
-              {this.state.currentSitePage != "/" ? <Redirect to = {this.state.currentSitePage} /> : <Home
-                generateWallet={this.generateWallet.bind(this)}
-                confirmWallet={this.confirmWallet.bind(this)}
-                restoreWallet={this.restoreWallet.bind(this)}
-                setEnteredPhrase={this.setEnteredPhrase.bind(this)}
-                logout={this.logout.bind(this)}
-                walletSyncProgress = {this.state.walletSyncProgress}
-                setRestoreHeight = {this.setRestoreHeight.bind(this)}
-                walletPhrase = {this.state.walletPhrase}
-                currentHomePage = {this.state.currentHomePage}
-                balance = {this.state.balance}
-                setCurrentHomePage = {this.setCurrentHomePage.bind(this)}
-                setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
-                lastHomePage = {this.lastHomePage}
-                availableBalance = {this.state.availableBalance}
-                confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
-                coreModuleLoaded = {this.state.coreModuleLoaded}
-                keysModuleLoaded = {this.state.keysModuleLoaded}
-                isGeneratingTxs = {this.state.isGeneratingTxs}
-                startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
-                stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
-                transactionsGenerated = {this.state.transactionsGenerated}
-                totalFees = {this.state.totalFees}
-                createDateConversionWallet = {this.createDateConversionWallet.bind(this)}
-                enteredMnemonicIsValid = {this.state.enteredMnemonicIsValid}
-                enteredHeightIsValid = {this.state.enteredHeightIsValid}
-                cancelImport = {this.cancelImport.bind(this)}
-                cancelConfirmation = {this.cancelConfirmation.bind(this)}
-                forceWait = {this.state.isAwaitingWalletVerification}
-                transactionStatusMessage = {this.state.transactionStatusMessage}
+              {currentSitePage != "/" ? <Redirect to = {currentSitePage} /> : <Home
+                generateWallet={generateWallet}
+                confirmWallet={confirmWallet}
+                restoreWallet={restoreWallet}
+                setEnteredPhrase={setEnteredPhrase}
+                logout={logout}
+                walletSyncProgress = {walletSyncProgress}
+                setRestoreHeight = {setRestoreHeight}
+                walletPhrase = {walletPhrase}
+                currentHomePage = {currentHomePage}
+                balance = {balance}
+                setCurrentHomePage = {gotoCurrentHomePage}
+                setCurrentSitePage = {makeCurrentSitePage}
+                lastHomePage = {lastHomePage.current}
+                availableBalance = {availableBalance}
+                confirmAbortWalletSynchronization = {confirmAbortWalletSynchronization}
+                coreModuleLoaded = {coreModuleLoaded}
+                keysModuleLoaded = {keysModuleLoaded}
+                isGeneratingTxs = {isGeneratingTxs}
+                startGeneratingTxs = {startGeneratingTxs}
+                stopGeneratingTxs = {stopGeneratingTxs}
+                transactionsGenerated = {transactionsGenerated}
+                totalFees = {totalFees}
+                createDateConversionWallet = {createDateConversionWallet}
+                enteredMnemonicIsValid = {enteredMnemonicIsValid}
+                enteredHeightIsValid = {enteredHeightIsValid}
+                cancelImport = {cancelImport}
+                cancelConfirmation = {cancelConfirmation}
+                forceWait = {isAwaitingWalletVerification}
+                transactionStatusMessage = {transactionStatusMessage}
             />}
           </Route>
           <Route path="/backup"> 
-            {this.state.currentSitePage != "/backup" ? <Redirect to = {this.state.currentSitePage} /> : <Save_Phrase_Page 
-    	  omit_buttons = {true} 
-              text = {this.state.walletPhrase}
-              verificationUrl = {this.state.currentSitePage}
+            {currentSitePage != "/backup" ? <Redirect to = {currentSitePage} /> : <Save_Phrase_Page 
+        omit_buttons = {true} 
+              text = {walletPhrase}
+              verificationUrl = {currentSitePage}
             />}
           </Route>
           <Route path="/deposit">
-            {this.state.currentSitePage != "/deposit" ? <Redirect to = {this.state.currentSitePage} /> : <Deposit
-              depositQrCode = {this.state.depositQrCode}
-              walletAddress = {this.walletAddress}
-              xmrWasDeposited = {!this.state.isAwaitingDeposit}
-              setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
-              verificationUrl = {this.state.currentSitePage}
+            {currentSitePage != "/deposit" ? <Redirect to = {currentSitePage} /> : <Deposit
+              depositQrCode = {depositQrCode}
+              walletAddress = {walletAddress.current}
+              xmrWasDeposited = {!isAwaitingDeposit}
+              setCurrentSitePage = {makeCurrentSitePage}
+              verificationUrl = {currentSitePage}
             />}
           </Route>
           <Route path="/withdraw">
-    	    {this.state.currentSitePage != "/withdraw" ? <Redirect to = {this.state.currentSitePage} /> : <Withdraw
-              availableBalance = {this.state.availableBalance}
-              totalBalance = {this.state.balance}
-              wallet = {this.wallet}
-              isGeneratingTxs = {this.state.isGeneratingTxs}
+          {currentSitePage != "/withdraw" ? <Redirect to = {currentSitePage} /> : <Withdraw
+              availableBalance = {availableBalance}
+              totalBalance = {balance}
+              wallet = {wallet.current}
+              isGeneratingTxs = {isGeneratingTxs}
             /> }
           </Route>
           <Route>
-            <Redirect to = {this.state.currentSitePage} />
+            <Redirect to = {currentSitePage} />
           </Route>
         </Switch>
       </Router>
@@ -738,16 +752,11 @@ async generateWallet(){
       );
     } else {
       return (
-	<div id="spinner_loader">
-	  <Loading_Animation notifySpinnerLoaded = {this.confirmAnimationLoaded.bind(this)} hide={true} />
-	</div>
+        <div id="spinner_loader">
+          <Loading_Animation notifySpinnerLoaded = {confirmAnimationLoaded} hide={true} />
+        </div>
       );
     }
-  }
-}
-
-function default_page(){
-  return <h1>ERROR - invalid url path!</h1>
 }
             
 /*
@@ -755,28 +764,27 @@ function default_page(){
  */
 class walletListener extends MoneroWalletListener {
               
-  constructor(callingComponent) { // callingComponent is "App" in this case
+  constructor(setSyncProgressCallback, setBalancesCallback){
     super();
-    this.callingComponent = callingComponent;
+    this.setSyncProgressCallback = setSyncProgressCallback;
+    this.setBalancesCallback = setBalancesCallback;
     this.syncResolution = 0.05;
     this.lastIncrement = 0;
     this.walletIsSynchronized = false;
   }
               
   onSyncProgress(height, startHeight, endHeight, percentDone, message) {
-    this.callingComponent.setCurrentSyncProgress(percentDone*100); 
+    this.setSyncProgressCallback(percentDone*100); 
     if (percentDone >= this.lastIncrement + this.syncResolution) {
       this.lastIncrement += this.syncResolution;
     }
   }
   
   onBalancesChanged(newBalance, newUnlockedBalance){
-    this.callingComponent.setBalances(newBalance, newUnlockedBalance); 
+    this.setBalancesCallback(newBalance, newUnlockedBalance); 
   }
   
   setWalletIsSynchronized(value) {
     this.walletIsSynchronized = value;
   }
 }
-
-export default App;
