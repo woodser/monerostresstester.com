@@ -33,7 +33,6 @@ export function getLoadingAnimationFile(){
 }
 
 export function Loading_Animation(props) {
-  
   // Remove the "onLoad" attribute if no notification function is provided - this will avoid errors
   let className = props.hide === true ? " loading_animation hidden" : "";
   let imgElement = null;
