@@ -16,3 +16,11 @@ Initial homepage design.  See [design.pdf](design.pdf) for more mockups.
 <p align="center">
 	<img width="85%" height="auto" src="homepage.png"/><br>
 </p>
+
+## Support the developer
+
+Send Monero donations to:
+<p align="center">
+  <img src="donationQR.png" width="180" height="180"/><br>
+  <code>4735QZGCqASdjFvcFoJRkm6i8Z7fWWGAYe3PDS81hvnrjJj4J7kPoPbbYN9MBhru9xBRMPvi74TBXM19i2nRtykiFMDbG9n</code>
+</p>
