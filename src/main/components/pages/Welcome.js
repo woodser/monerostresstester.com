@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import {Page_Box, Loading_Animation} from '../Widgets.js';
 import {UI_Text_Link, UI_Button_Link} from '../Buttons.js';
 
+import {MoneroNetworkSelector} from "monero-network-selector";
 const USE_TEST_BUTTON = false;
 
 // The initial home page
@@ -22,6 +23,10 @@ export default function Welcome(props) {
       <div className="title"> Welcome to <b>MoneroStressTester.com</b></div>
       <div className="sub_title">Open-source, client-side transaction generator</div>
       <div style={{height: "120px"}}></div>
+      <MoneroNetworkSelector
+        networkTypes = {[1,0,2]}
+        onNetworkTypeChanged = {props.handleNetworkChange}
+      />
       <div className="home_button_links">
       	<UI_Button_Link
       	  destination={props.continueDestination} 

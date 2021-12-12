@@ -30,15 +30,21 @@ export default function Banner(props) {
    * based on props.className
    */
   if (props.walletIsSynced){ // Nav links are now active
-    linkDisplayValues = linkDisplayValues.map((link, index) => {return (<NavLink 
-      key={link}
-      exact
-      to={convertLinkNameToUrl(link)} 
-      className="link nav_link" 
-      activeClassName="current_nav"
-      onClick={link==="Deposit" ? props.notifyIntentToDeposit : () => props.setCurrentSitePage(linkUrlValues[index])}>
-        {link + (link==="Sign Out" ? "" : "   ")}
-    </NavLink>)});
+  
+    linkDisplayValues = linkDisplayValues.map((link, index) => {
+      let linkCopy = link.slice();
+      if(link === "Sign Out") {
+        // There is no "Sign Out" route. Return user to the home page.
+        linkCopy = "";
+      }
+      return (<NavLink 
+        key={linkCopy}
+        to={convertLinkNameToUrl(linkCopy)} 
+        className="link nav_link" 
+        activeclassname="current_nav"
+        onClick={link==="Deposit" ? props.notifyIntentToDeposit : () => props.setCurrentSitePage(linkUrlValues[index])}>
+          {link + (link==="Sign Out" ? "" : "   ")}
+      </NavLink>)});
   } else {
     linkDisplayValues = linkDisplayValues.map(
       link => <span 

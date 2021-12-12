@@ -1,6 +1,9 @@
+//Need to add "content-base" option to fix "Cannot GET /" error?
+
 const path = require("path");
 const CopyPlugin = require('copy-webpack-plugin');
-var webpack = require('webpack');
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
+const webpack = require('webpack');
 
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 
@@ -10,10 +13,12 @@ const htmlPlugin = new HtmlWebPackPlugin({
   filename: "./index.html"
 });
 
-let configBase = {
-  devServer: {
-	contentBase: './browser_build',  
-	writeToDisk: true,
+module.exports = {
+  name: "Stress Tester",
+  entry: "./src/main/index.js",
+  output: {
+    path: path.resolve(__dirname, "browser_build"),
+    filename: "stress_tester.dist.js"
   },
   module: {
     rules: [
@@ -42,7 +47,6 @@ let configBase = {
         // Preprocess your css files
         // you can add additional loaders here (e.g. sass/less etc.)
         test: /\.css$/,
-        exclude: /node_modules/,
         use: ['style-loader', 'css-loader'],
       },
       {
@@ -75,8 +79,11 @@ let configBase = {
   cache: true,
   context: __dirname,
   devServer: {
-    contentBase: './browser_build',
-    writeToDisk: true,
+    devMiddleware: {
+      publicPath: './browser_build',
+      writeToDisk: true,
+    },
+    static: './browser_build'
   },
   plugins: [
     htmlPlugin,
@@ -85,18 +92,6 @@ let configBase = {
         { from: path.resolve("node_modules/monero-javascript/dist"), to: path.resolve("browser_build") },
       ],
     }),
+    new NodePolyfillPlugin()
   ],
 };
-
-let configStressTester = Object.assign({}, configBase, {
-  name: "Stress Tester",
-  entry: "./src/main/index.js",
-  output: {
-    path: path.resolve(__dirname, "browser_build"),
-    filename: "stress_tester.dist.js"
-  }
-});
-
-module.exports = [
-  configStressTester,
-];
