@@ -14,11 +14,12 @@ import {Page_Box, Page_Text_Box, Page_Text_Entry, Header, Progress_Bar, Main_Con
 const DEFAULT_BACKUP_PHRASE_STRING = "Enter backup phrase";
 
 function Home(props) {
-  
+  /*
   useEffect(() => {
+    console.log("useEffect");
     props.setCurrentSitePage("/");
   }, []);  
-
+*/
   let renderItem = null;
   let buttonContents = null;
   switch(props.currentHomePage){
@@ -30,6 +31,7 @@ function Home(props) {
           setCurrentHomePage={props.setCurrentHomePage}
           continueDestination="Save_Phrase_Page"
           backDestination="Import_Wallet"
+          handleNetworkChange={props.handleNetworkChange}
         />;
       break;
     case "Save_Phrase_Page":

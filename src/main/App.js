@@ -5,18 +5,19 @@ import "./app.css";
 import Banner from "./components/Banner.js";
 import Home from "./components/pages/Home.js";
 import Deposit from "./components/pages/Deposit.js";
-import SignOut from "./components/pages/SignOut.js";
 import Save_Phrase_Page from "./components/pages/Save_Phrase_Page.js";
 import Withdraw from "./components/pages/Withdraw.js";
 import {Notification_Bar, Loading_Animation, getLoadingAnimationFile} from "./components/Widgets.js";
 
 import QR_Code from "./components/QR_Code.js";
-import qrcode from './qrcode.js';
+import qrcode from './tools/qrcode.js';
 
-import {HashRouter as Router, Link, Route, Switch, Redirect} from 'react-router-dom';
+import {HashRouter as Router, Link, Route, Routes} from 'react-router-dom';
+import { createBrowserHistory } from 'history';
+
 //import { BrowserRouter as Link, NavLink } from "react-router-dom";
-import MoneroTxGenerator from './MoneroTxGenerator.js';
-import MoneroTxGeneratorListener from './MoneroTxGeneratorListener.js';
+import MoneroTxGenerator from './tools/MoneroTxGenerator.js';
+import MoneroTxGeneratorListener from './tools/MoneroTxGeneratorListener.js';
 
 import flexingLogo from './img/muscleFlex.gif';
 import relaxingLogo from './img/muscleRelax.gif';
@@ -45,16 +46,44 @@ const FUNDED_WALLET_MINIMUM_BALANCE = 0.000000000001;
  */
 const WALLET_INFO = {
     password: "supersecretpassword123",
-    networkType: "stagenet",
-    serverUri: "http://localhost:38081",
     serverUsername: "superuser",
     serverPassword: "abctesting123"
 }
+
+// Temporary hard-coded nodes; will be replaced with implementation of connectionManager
+const NETWORK_SERVERS = [
+  // mainnet
+  {
+    serverUri: "127.0.0.1:18081",
+    networkType: "mainnet"
+  },
+  // stagenet
+  {
+    serverUri: "127.0.0.1:38081",
+    networkType: "stagenet"
+  },
+  {
+    serverUri: "127.0.0.1:28081",
+    networkType: "testnet"
+  }
+]
+
+// implementation in progress; will replace NETWORK_SERVERS
+const networkConfig = {
+  mainnet: [
+    
+  ]
+}
+
+
 
 class App extends React.Component {
   
   constructor(props) {
     super(props);
+    
+    this.browserHistory = createBrowserHistory();
+    // Monitor URL changes and redirect if they were initiated by manual url entry
     
     this.withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
     this.withdrawAmountSendAllText = "All available funds";
@@ -77,7 +106,7 @@ class App extends React.Component {
     this.enteredText = "";
     this.restoreHeight = 0;
     this.lastHomePage = "";
-    this.animationIsLoaded = false;
+    this.currentNetwork = 1; // Default to stagenet
  
     // In order to pass "this" into the nested functions...
     let that = this;
@@ -87,23 +116,19 @@ class App extends React.Component {
     //First, load the keys-only wallet module  
     LibraryUtils.loadKeysModule().then(
       function() {
-	that.setState({
-	  keysModuleLoaded: true
-	});
+	      that.keysModuleLoaded = true;
 
-	// Load the full module
-	LibraryUtils.loadFullModule().then(
-	  function() {
-	    that.setState({
-	      coreModuleLoaded: true
-	    })
-	  }
-	).catch(
-	  function(error) {
-	    console.log("Failed to load full wallet module!");
-	    console.log("Error: " + error);
-	  } 
-	);
+	      // Load the full module
+	      LibraryUtils.loadFullModule().then(
+	        function() {
+	          that.coreModuleLoaded = true;
+	        }
+	      ).catch(
+	        function(error) {
+	          console.log("Failed to load full wallet module!");
+	          console.log("Error: " + error);
+	        } 
+	      );
       }
     ).catch(
       function(error) {
@@ -141,6 +166,34 @@ class App extends React.Component {
     this.state = this.initialState;
   }
   
+  componentDidMount(){
+    this.browserHistory.listen( location =>  {
+      /*
+       * Parse the hash portion of the current URL to enable comparision with currentSitePage
+       * (In other words remove the leading hash)
+       */
+      let currentUrl = window.location.hash;
+      if (currentUrl.length === 0) {
+        // We are on the home page. simply ADD a "/"
+        currentUrl = "/"
+      } else {
+        // We are on a sub-page. Remove the leading "#"
+        currentUrl = currentUrl.slice(1, currentUrl.length);
+      }
+    
+      /* 
+       * Check whether the current url was navigated to by valid means 
+       * (that is by links within the app and NOT by manually entering a url)
+       */
+     
+      if(currentUrl !== this.state.currentSitePage){
+        console.log("User tried to cheat! redirect.");
+        let urlToNavigateTo = "http://localhost:8080/#" + this.state.currentSitePage;
+        this.browserHistory.replace(urlToNavigateTo);
+      }
+    });
+  }
+  
   createDateConversionWallet(){
     // Create a disposable,random wallet to prepare for the possibility that the user will attempt to restore from a date
     // At present, getRestoreHeightFromDate() is (erroneously) an instance method; thus, a wallet instance is
@@ -148,9 +201,9 @@ class App extends React.Component {
     
     this.dateRestoreWalletPromise = monerojs.createWalletFull({
       password: "supersecretpassword123",
-      networkType: "stagenet",
+      networkType: NETWORK_SERVERS[this.currentNetwork].networkType,
       path: "",
-      serverUri: "http://localhost:38081",
+      serverUri: NETWORK_SERVERS[this.currentNetwork].serverUri,
       serverUsername: "superuser",
       serverPassword: "abctesting123",
     });
@@ -160,12 +213,11 @@ class App extends React.Component {
   async createTxGenerator(wallet) {
     
     // create daemon with connection
-    let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
+    let daemonConnection = new MoneroRpcConnection("http://" + NETWORK_SERVERS[this.currentNetwork].serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
     let daemon = await monerojs.connectToDaemonRpc({
       server: daemonConnection,
       proxyToWorker: true
     });
-    
     // create tx generator
     this.txGenerator = new MoneroTxGenerator(daemon, wallet);
   }
@@ -244,12 +296,18 @@ class App extends React.Component {
       return;
     }
     
+    console.log("currentNetwork: " + this.currentNetwork);
+    console.log("Creating wallet on network " + NETWORK_SERVERS[this.currentNetwork].networkType);
+    console.log("serverUri: " + NETWORK_SERVERS[this.currentNetwork].serverUri);
+    
     let walletFull = null;
     try {
       let fullWalletInfo = Object.assign({}, WALLET_INFO);
       fullWalletInfo.path = "";
       fullWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
       fullWalletInfo.restoreHeight = height;
+      fullWalletInfo.serverUri = NETWORK_SERVERS[this.currentNetwork].serverUri;
+      fullWalletInfo.networkType = NETWORK_SERVERS[this.currentNetwork].networkType;
       walletFull = await monerojs.createWalletFull(fullWalletInfo);
       
     } catch(e) {
@@ -349,23 +407,40 @@ async generateWallet(){
   
   let walletKeys = null
   try {
-    walletKeys = await monerojs.createWalletKeys(WALLET_INFO);
+    walletKeys = await monerojs.createWalletKeys(Object.assign({}, WALLET_INFO, {
+      networkType: NETWORK_SERVERS[this.currentNetwork].networkType,
+      serverUri: NETWORK_SERVERS[this.currentNetwork].serverUri
+    }));
   } catch(error) {
     console.log("failed to create keys-only wallet with error: " + error);
     return;
   }
+  
+  console.log("Keyswallet: " + walletKeys);
   
   let newPhrase = await walletKeys.getMnemonic();
   this.walletAddress = await walletKeys.getAddress(0,0);
   this.setState({
     walletPhrase: newPhrase
   });
-  let fullWalletInfo = Object.assign({}, WALLET_INFO);
-  fullWalletInfo.mnemonic = newPhrase;
-  fullWalletInfo.path = "";
+  console.log("");
+  console.log("Attempting to generate new wallet");
+  console.log("current network: " + this.currentNetwork);
+  console.log("Network server on the current network: " + JSON.stringify(NETWORK_SERVERS[this.currentNetwork]));
+  console.log("serverUri: " + NETWORK_SERVERS[this.currentNetwork].serverUri);
+  console.log("");
+  let fullWalletInfo = Object.assign(
+    {},
+    WALLET_INFO,
+  );
+  
+     fullWalletInfo.mnemonic = newPhrase;
+     fullWalletInfo.path = "";
+     fullWalletInfo.serverUri = NETWORK_SERVERS[this.currentNetwork].serverUri;
+     fullWalletInfo.networkType = NETWORK_SERVERS[this.currentNetwork].networkType;
   
   // set restore height to daemon's current height
-  let daemonConnection = new MoneroRpcConnection(WALLET_INFO.serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);    // TODO: factor out common daemon reference so this code is not duplicated
+  let daemonConnection = new MoneroRpcConnection("http://" + NETWORK_SERVERS[this.currentNetwork].serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);    // TODO: factor out common daemon reference so this code is not duplicated
   let daemon = await monerojs.connectToDaemonRpc({
     server: daemonConnection,
     proxyToWorker: true
@@ -473,8 +548,8 @@ async generateWallet(){
   }
 
   logout() {
-
     this.setState (this.initialState);
+    this.txGenerator.stop();
     this.txGenerator = null;
     this.walletUpdater = null;
     this.wallet = null;
@@ -600,17 +675,6 @@ async generateWallet(){
     }
   }
   
-  confirmAnimationLoaded(){
-    /*
-     * For reasons I don't entirely understand, it is necessary to separate the <img>'s "onLoad" function
-     * call from the change in state with a timeout delay - even if the delay is set to zero!
-     * Otherwise, the imagine will not ACTUALLY finish loading 
-     */
-    setTimeout(() => {
-      this.animationIsLoaded = true;
-    }, 0);
-  }
-  
   cancelImport(){
     this.userCancelledWalletImport = true;
     this.logout();
@@ -640,13 +704,18 @@ async generateWallet(){
     this.setCurrentSitePage("/deposit");
   }
   
+  handleNetworkChange(network){
+    console.log("Handling network change to network: " + network);
+    this.currentNetwork = network;
+  }
+  
   render(){
     let notificationBar = null;
     
     if(this.state.walletIsSynced && !(this.state.balance > 0) && this.state.currentSitePage != "/deposit"){
       notificationBar = (
-	<Notification_Bar content = {
-	  <>
+	      <Notification_Bar content = {
+	        <>
             No funds deposited
             &thinsp;
             <Link 
@@ -656,14 +725,14 @@ async generateWallet(){
               click to deposit
             </Link>
           </>
-	} />
+	      } />
       );
     }
     
-    if(this.animationIsLoaded){
+
       return(
         <div id="app_container">
-          <Router>
+          <Router history = {this.browserHistory}>
             <Banner 
               walletIsSynced={this.state.walletIsSynced}
               flexLogo = {this.state.flexLogo}
@@ -671,9 +740,9 @@ async generateWallet(){
               setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
             />
             {notificationBar}
-            <Switch>
-            <Route exact path="/">
-              {this.state.currentSitePage != "/" ? <Redirect to = {this.state.currentSitePage} /> : <Home
+            <Routes>
+    <Route path="/" element = {
+          <Home
                 generateWallet={this.generateWallet.bind(this)}
                 confirmWallet={this.confirmWallet.bind(this)}
                 restoreWallet={this.restoreWallet.bind(this)}
@@ -689,8 +758,8 @@ async generateWallet(){
                 lastHomePage = {this.lastHomePage}
                 availableBalance = {this.state.availableBalance}
                 confirmAbortWalletSynchronization = {this.confirmAbortWalletSynchronization.bind(this)}
-                coreModuleLoaded = {this.state.coreModuleLoaded}
-                keysModuleLoaded = {this.state.keysModuleLoaded}
+                coreModuleLoaded = {this.coreModuleLoaded}
+                keysModuleLoaded = {this.keysModuleLoaded}
                 isGeneratingTxs = {this.state.isGeneratingTxs}
                 startGeneratingTxs = {this.startGeneratingTxs.bind(this)}
                 stopGeneratingTxs = {this.stopGeneratingTxs.bind(this)}
@@ -703,46 +772,37 @@ async generateWallet(){
                 cancelConfirmation = {this.cancelConfirmation.bind(this)}
                 forceWait = {this.state.isAwaitingWalletVerification}
                 transactionStatusMessage = {this.state.transactionStatusMessage}
+                handleNetworkChange = {this.handleNetworkChange.bind(this)}
             />}
-          </Route>
-          <Route path="/backup"> 
-            {this.state.currentSitePage != "/backup" ? <Redirect to = {this.state.currentSitePage} /> : <Save_Phrase_Page 
-    	  omit_buttons = {true} 
-              text = {this.state.walletPhrase}
-              verificationUrl = {this.state.currentSitePage}
-            />}
-          </Route>
-          <Route path="/deposit">
-            {this.state.currentSitePage != "/deposit" ? <Redirect to = {this.state.currentSitePage} /> : <Deposit
-              depositQrCode = {this.state.depositQrCode}
-              walletAddress = {this.walletAddress}
-              xmrWasDeposited = {!this.state.isAwaitingDeposit}
-              setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
-              verificationUrl = {this.state.currentSitePage}
-            />}
-          </Route>
-          <Route path="/withdraw">
-    	    {this.state.currentSitePage != "/withdraw" ? <Redirect to = {this.state.currentSitePage} /> : <Withdraw
-              availableBalance = {this.state.availableBalance}
-              totalBalance = {this.state.balance}
-              wallet = {this.wallet}
-              isGeneratingTxs = {this.state.isGeneratingTxs}
-            /> }
-          </Route>
-          <Route>
-            <Redirect to = {this.state.currentSitePage} />
-          </Route>
-        </Switch>
+          />
+          <Route path="/backup" element = {
+              <Save_Phrase_Page 
+                omit_buttons = {true} 
+                text = {this.state.walletPhrase}
+                verificationUrl = {this.state.currentSitePage}
+              />
+          }/>
+          <Route path="/deposit" element = {
+              <Deposit
+                depositQrCode = {this.state.depositQrCode}
+                walletAddress = {this.walletAddress}
+                xmrWasDeposited = {!this.state.isAwaitingDeposit}
+                setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
+                verificationUrl = {this.state.currentSitePage}
+              />
+          }/>
+          <Route path="/withdraw" element = {
+             <Withdraw
+               availableBalance = {this.state.availableBalance}
+               totalBalance = {this.state.balance}
+               wallet = {this.wallet}
+               isGeneratingTxs = {this.state.isGeneratingTxs}
+             />
+          }/> 
+        </Routes>
       </Router>
     </div>
       );
-    } else {
-      return (
-	<div id="spinner_loader">
-	  <Loading_Animation notifySpinnerLoaded = {this.confirmAnimationLoaded.bind(this)} hide={true} />
-	</div>
-      );
-    }
   }
 }
 
