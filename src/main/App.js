@@ -31,6 +31,8 @@ const MoneroWallet = monerojs.MoneroWallet;
 const MoneroRpcConnection = monerojs.MoneroRpcConnection;
 const MoneroUtils = monerojs.MoneroUtils;
 const BigInteger = monerojs.BigInteger;
+const MoneroConnectionManager = monerojs.MoneroConnectionManager;
+const MoneroConnectionManagerListener = monerojs.MoneroConnectionManagerListener;
 
 /* 
  * A wallet must contain at least this many atomic units to be considered "funded" 
@@ -82,19 +84,6 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     
-    this.browserHistory = createBrowserHistory();
-    // Monitor URL changes and redirect if they were initiated by manual url entry
-    
-    this.withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
-    this.withdrawAmountSendAllText = "All available funds";
-    this.withdrawAddressTextPrompt = "Enter destination wallet address..";
-    
-    // Force the loading animation to preload
-    const img = new Image();
-    img.src = getLoadingAnimationFile();
-    
-    
-    // print current version of monero-javascript
     
     /*
      * Member Variables
@@ -107,6 +96,59 @@ class App extends React.Component {
     this.restoreHeight = 0;
     this.lastHomePage = "";
     this.currentNetwork = 1; // Default to stagenet
+    this.isConnectedToDaemon = false;   
+ 
+    /*
+     * Create one connection manager for each network (for total of 3 mangers), 
+     * add all of the hardcoded nodes to them,
+     * and create a connection listener to monitor connection changes
+     */
+     
+    // There must be one connection manager for each network type 
+    this.connectionManagers = {
+      mainnet: new MoneroConnectionManager(),
+      stagenet: new MoneroConnectionManager(),
+      testnet: new MoneroConnectionManager()
+    }
+    
+    //ConnetionManagerListener is a custom class that extends MoneroConnectionManager
+    this.connectionManagerListener = new ConnectionManagerListener();
+    
+    // Add each connection to its appropriate 
+    NETWORK_SERVERS.forEach(server => {
+      let connection = new MoneroRpcConnection("http://" + server.serverUri, 
+        WALLET_INFO.serverUsername, 
+        WALLET_INFO.serverPassword
+      )
+      // Local nodes are preferred, so set this connection to the highest priority
+      connection.setPriority(99);   
+
+      this.connectionManagers[server.networkType].setConnection(connection);      
+      this.connectionManagers[server.networkType].addListener(this.connectionManagerListener);
+      
+      /*
+       * The next three lines of code make sure the connectionManager periodically checks the status of the current
+       * connection and switches to the next best available connection if the current connection is interrupted
+       */
+      this.connectionManagers[server.networkType].setAutoSwitch(true);        // switch to the best connection when checkConnection is called
+      // The next line is necessary for startCheckingConnection() to work properly due to a bug in monero-javascript
+      // this.connectionManagers[server.networkType].checkConnection();      
+    })
+
+    // The app should only keep tabs on the connection status of the connection manager for the current network
+    this.connectionManagers["stagenet"].startCheckingConnection();  // automatically run checkConnection() at regular intervals
+ 
+
+    this.browserHistory = createBrowserHistory();
+    // Monitor URL changes and redirect if they were initiated by manual url entry
+    
+    this.withdrawAmountTextPrompt = 'Enter amount to withdraw or click "Send all" to withdraw all funds';
+    this.withdrawAmountSendAllText = "All available funds";
+    this.withdrawAddressTextPrompt = "Enter destination wallet address..";
+    
+    // Force the loading animation to preload
+    const img = new Image();
+    img.src = getLoadingAnimationFile();
  
     // In order to pass "this" into the nested functions...
     let that = this;
@@ -167,6 +209,13 @@ class App extends React.Component {
   }
   
   componentDidMount(){
+    let that = this;
+    async function checkDaemonConnection(){
+      const connection = await that.connectionManagers[that.convertIntegerToNetworkType(that.currentNetwork)].checkConnection();
+      const connectionStatus = JSON.stringify(connection);
+      console.log("Checking daemon connection: " + connectionStatus);
+    }
+    checkDaemonConnection();
     this.browserHistory.listen( location =>  {
       /*
        * Parse the hash portion of the current URL to enable comparision with currentSitePage
@@ -194,16 +243,20 @@ class App extends React.Component {
     });
   }
   
-  createDateConversionWallet(){
+  async createDateConversionWallet(){
     // Create a disposable,random wallet to prepare for the possibility that the user will attempt to restore from a date
     // At present, getRestoreHeightFromDate() is (erroneously) an instance method; thus, a wallet instance is
     // required to use it.
-    
+    let server = await this.getServerFromConnectionManager();
+    // No connection is available. throw an error.
+    if(server === undefined){
+      throw new Error("No connection available");
+    }
     this.dateRestoreWalletPromise = monerojs.createWalletFull({
       password: "supersecretpassword123",
-      networkType: NETWORK_SERVERS[this.currentNetwork].networkType,
       path: "",
-      serverUri: NETWORK_SERVERS[this.currentNetwork].serverUri,
+      networkType: this.convertIntegerToNetworkType(this.currentNetwork),
+      server: server,
       serverUsername: "superuser",
       serverPassword: "abctesting123",
     });
@@ -213,9 +266,13 @@ class App extends React.Component {
   async createTxGenerator(wallet) {
     
     // create daemon with connection
-    let daemonConnection = new MoneroRpcConnection("http://" + NETWORK_SERVERS[this.currentNetwork].serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);
+    let server = await this.getServerFromConnectionManager();
+    // No connection is available. throw an error.
+    if(server === undefined){
+      throw new Error("No connection available");
+    }
     let daemon = await monerojs.connectToDaemonRpc({
-      server: daemonConnection,
+      server: server,
       proxyToWorker: true
     });
     // create tx generator
@@ -300,21 +357,30 @@ class App extends React.Component {
     console.log("Creating wallet on network " + NETWORK_SERVERS[this.currentNetwork].networkType);
     console.log("serverUri: " + NETWORK_SERVERS[this.currentNetwork].serverUri);
     
+    let server = await this.getServerFromConnectionManager();
+    // No connection is available. throw an error.
+    if(server === undefined){
+      throw new Error("No connection available");
+    }
     let walletFull = null;
     try {
-      let fullWalletInfo = Object.assign({}, WALLET_INFO);
-      fullWalletInfo.path = "";
-      fullWalletInfo.mnemonic = this.delimitEnteredWalletPhrase();
-      fullWalletInfo.restoreHeight = height;
-      fullWalletInfo.serverUri = NETWORK_SERVERS[this.currentNetwork].serverUri;
-      fullWalletInfo.networkType = NETWORK_SERVERS[this.currentNetwork].networkType;
+      let fullWalletInfo = Object.assign({}, WALLET_INFO, {
+        path: "",
+        mnemonic: this.delimitEnteredWalletPhrase(),
+        restoreHeight: height,
+        networkType: this.convertIntegerToNetworkType(this.currentNetwork),
+        serverUsername: "superuser",
+        serverPassword: "abctesting123",
+        server: server
+      });
+      console.log("FullWalletInfo: " + JSON.stringify(fullWalletInfo));
       walletFull = await monerojs.createWalletFull(fullWalletInfo);
       
     } catch(e) {
       console.log("Error: " + e);
       this.setState({
-	enteredMnemonicIsValid: false,
-	isAwaitingWalletVerification: false
+	      enteredMnemonicIsValid: false,
+	      isAwaitingWalletVerification: false
       });
       return;
     }
@@ -403,13 +469,23 @@ async stopGeneratingTxs(){
   })
 }
 
+async getServerFromConnectionManager(){
+  return await this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].getBestAvailableConnection();
+}
+
 async generateWallet(){
+  console.log("Generating keys wallet");
+  let walletKeys = null;
+  let server = await this.getServerFromConnectionManager();
+  // No connection is available. throw an error.
+  if(server === undefined){
+    throw new Error("No connection available");
+  }
   
-  let walletKeys = null
   try {
     walletKeys = await monerojs.createWalletKeys(Object.assign({}, WALLET_INFO, {
-      networkType: NETWORK_SERVERS[this.currentNetwork].networkType,
-      serverUri: NETWORK_SERVERS[this.currentNetwork].serverUri
+      server: server,
+      networkType: this.convertIntegerToNetworkType(this.currentNetwork)
     }));
   } catch(error) {
     console.log("failed to create keys-only wallet with error: " + error);
@@ -429,22 +505,24 @@ async generateWallet(){
   console.log("Network server on the current network: " + JSON.stringify(NETWORK_SERVERS[this.currentNetwork]));
   console.log("serverUri: " + NETWORK_SERVERS[this.currentNetwork].serverUri);
   console.log("");
+  console.log("The server to use: " + this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].getBestAvailableConnection());
   let fullWalletInfo = Object.assign(
     {},
     WALLET_INFO,
+    {
+      mnemonic: newPhrase,
+      path: "",
+      server: server,
+      networkType: this.convertIntegerToNetworkType(this.currentNetwork)
+    }
   );
-  
-     fullWalletInfo.mnemonic = newPhrase;
-     fullWalletInfo.path = "";
-     fullWalletInfo.serverUri = NETWORK_SERVERS[this.currentNetwork].serverUri;
-     fullWalletInfo.networkType = NETWORK_SERVERS[this.currentNetwork].networkType;
-  
+    console.log("Just a test message");
   // set restore height to daemon's current height
-  let daemonConnection = new MoneroRpcConnection("http://" + NETWORK_SERVERS[this.currentNetwork].serverUri, WALLET_INFO.serverUsername, WALLET_INFO.serverPassword);    // TODO: factor out common daemon reference so this code is not duplicated
   let daemon = await monerojs.connectToDaemonRpc({
-    server: daemonConnection,
+    server: fullWalletInfo.server,
     proxyToWorker: true
   });
+  console.log("The daemon: " + JSON.stringify(daemon));
   fullWalletInfo.restoreHeight = await daemon.getHeight();
   
   // create wallet promise which syncs when resolved
@@ -454,6 +532,9 @@ async generateWallet(){
   })
   
   this.wallet = walletPromise;
+  
+  // Only advance to the "Save phrase" page if wallet creation finished successfully!
+  this.setCurrentHomePage("Save_Phrase_Page");
 }
 
   /**
@@ -655,6 +736,7 @@ async generateWallet(){
    * once this is the case)
    */
   setCurrentHomePage(pageName){
+    console.log("Setting home page");
     this.setState({
       currentHomePage: pageName
     });
@@ -705,8 +787,24 @@ async generateWallet(){
   }
   
   handleNetworkChange(network){
-    console.log("Handling network change to network: " + network);
+    // Stop monitoring nodes on the previously selected network
+    this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].stopCheckingConnection();
+    // Start monitoring nodes on the newly selected network
+    this.connectionManagers[this.convertIntegerToNetworkType(network)].startCheckingConnection();
     this.currentNetwork = network;
+  }
+  
+  convertIntegerToNetworkType(num){
+    switch(num){
+      case 0:
+        return "mainnet";
+      case 1:
+        return "stagenet";
+      case 2:
+        return "testnet";
+      default:
+        throw new Error("Invalid network type integer: " + num);
+    }
   }
   
   render(){
@@ -836,6 +934,12 @@ class walletListener extends MoneroWalletListener {
   
   setWalletIsSynchronized(value) {
     this.walletIsSynchronized = value;
+  }
+}
+
+class ConnectionManagerListener extends MoneroConnectionManagerListener {
+  onConnectionChanged(connection){
+    console.log("Connection changed: " + connection.toString()); 
   }
 }
 

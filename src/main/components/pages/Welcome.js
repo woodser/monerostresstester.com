@@ -29,9 +29,7 @@ export default function Welcome(props) {
       />
       <div className="home_button_links">
       	<UI_Button_Link
-      	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
-      	  setCurrentPage={props.setCurrentHomePage}
       	>
       	  {button}
       	</UI_Button_Link>
