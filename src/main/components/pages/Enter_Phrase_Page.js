@@ -26,7 +26,7 @@ export default function Enter_Phrase_Page(props) {
       	  destination={props.continueDestination} 
       	  handleClick={props.handleContinue}
       	  setCurrentPage={props.setCurrentHomePage}
-      	  isactive={props.buttonsAreActive}
+      	  isactive={props.continueButtonIsActive}
       	>
       	  {props.buttonContents}
       	</UI_Button_Link>
@@ -36,7 +36,6 @@ export default function Enter_Phrase_Page(props) {
       	  destination={props.backDestination} 
       	  handleClick={props.handleBack} 
       	  setCurrentPage={props.setCurrentHomePage}
-      	  isActive={props.buttonsAreActive}
       	/>
       </div>
     </Page_Box>

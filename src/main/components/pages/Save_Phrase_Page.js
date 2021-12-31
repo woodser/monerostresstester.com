@@ -42,7 +42,7 @@ export default function Save_Phrase_Page(props) {
         <UI_Button_Link
           destination={props.continueDestination} 
           setCurrentPage = {props.setCurrentHomePage}
-          isActive = {props.text ? true : false}
+          isactive = {(props.text && props.continueButtonIsActive) ? true : false}
         >
           <>
             Continue

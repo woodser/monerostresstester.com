@@ -32,6 +32,7 @@ function Home(props) {
           continueDestination="Save_Phrase_Page"
           backDestination="Import_Wallet"
           handleNetworkChange={props.handleNetworkChange}
+          continueButtonIsActive = {props.isConnectedToDaemon}
         />;
       break;
     case "Save_Phrase_Page":
@@ -43,6 +44,7 @@ function Home(props) {
           continueDestination="Confirm_Wallet"
           backDestination="Welcome"
           setCurrentHomePage = {props.setCurrentHomePage}
+          continueButtonIsActive = {props.isConnectedToDaemon}
         />;
       break;
     case "Confirm_Wallet":
@@ -63,7 +65,7 @@ function Home(props) {
           backDestination="Save_Phrase_Page"
           handleBack={props.cancelConfirmation}
           setCurrentHomePage={props.setCurrentHomePage}
-          buttonsAreActive={props.enteredMnemonicIsValid && !props.forceWait}
+          continueButtonIsActive={props.enteredMnemonicIsValid && !props.forceWait && props.isConnectedToDaemon}
           isValid={props.enteredMnemonicIsValid}
           buttonContents = {buttonContents}
         />;
@@ -83,10 +85,9 @@ function Home(props) {
           header="Import existing wallet" 
           handleTextChange={props.setEnteredPhrase} 
           handleContinue={props.restoreWallet}
-          handleBack={props.cancelImport}
           backDestination="Welcome"
           textEntryIsActive={!props.importPageForceWait}
-          buttonsAreActive={!props.forceWait && props.enteredMnemonicIsValid && props.enteredHeightIsValid}
+          continueButtonIsActive={!props.forceWait && props.enteredMnemonicIsValid && props.enteredHeightIsValid && props.isConnectedToDaemon}
           isValid={props.enteredMnemonicIsValid}
           setCurrentHomePage = {props.setCurrentHomePage}
           buttonContents={buttonContents}

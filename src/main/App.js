@@ -21,6 +21,7 @@ import MoneroTxGeneratorListener from './tools/MoneroTxGeneratorListener.js';
 
 import flexingLogo from './img/muscleFlex.gif';
 import relaxingLogo from './img/muscleRelax.gif';
+import { UI_Button_Link } from './components/Buttons';
 
 const DEBUG = true;
 
@@ -34,11 +35,8 @@ const BigInteger = monerojs.BigInteger;
 const MoneroConnectionManager = monerojs.MoneroConnectionManager;
 const MoneroConnectionManagerListener = monerojs.MoneroConnectionManagerListener;
 
-/* 
- * A wallet must contain at least this many atomic units to be considered "funded" 
- * and thus allowed to generate transactions
- */
-const FUNDED_WALLET_MINIMUM_BALANCE = 0.000000000001;
+const DEFAULT_NETWORK = "stagenet";
+
 /*
  * WALLET_INFO is a the basic configuration object ot pass to the walletKeys.createWallet() method
  * in order to create a new, random keys-only wallet
@@ -84,22 +82,39 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     
+    this.initializeMemberVariables();
+    
+    this.initialState = { // Used to set initial state both at first run AND when app is reset
+      walletPhrase: "",
+      phraseIsConfirmed: false,
+      walletSyncProgress: 0,
+      walletIsSynced: false,
+      balance: 0,
+      availableBalance: 0,
+      currentHomePage: "Welcome",
+      isGeneratingTxs: false,
+      transactionsGenerated: 0,
+      totalFees: 0,
+      enteredMnemonicIsValid: true,
+      enteredHeightIsValid: true,
+      isAwaitingWalletVerification: false,
+      flexLogo: relaxingLogo,
+      depositQrCode: null,
+      isAwaitingDeposit: false,
+      transactionStatusMessage: "",
+      currentSitePage: "/"
+    };
     
     /*
      * Member Variables
      * No need to store these in state since no components need to re-render when their values are set
      */
-    this.txGenerator = null;
-    this.walletAddress = "empty";
-    this.wallet = null;
-    this.enteredText = "";
-    this.restoreHeight = 0;
-    this.lastHomePage = "";
+
     this.currentNetwork = 1; // Default to stagenet
-    this.isConnectedToDaemon = false;   
- 
+    this.isInitialRender = true;
+    
     /*
-     * Create one connection manager for each network (for total of 3 mangers), 
+     * Create one connection manager for each network (for total of 3 managers), 
      * add all of the hardcoded nodes to them,
      * and create a connection listener to monitor connection changes
      */
@@ -112,7 +127,7 @@ class App extends React.Component {
     }
     
     //ConnetionManagerListener is a custom class that extends MoneroConnectionManager
-    this.connectionManagerListener = new ConnectionManagerListener();
+    this.connectionManagerListener = new ConnectionManagerListener(this.checkIfConnected.bind(this));
     
     // Add each connection to its appropriate 
     NETWORK_SERVERS.forEach(server => {
@@ -136,8 +151,12 @@ class App extends React.Component {
     })
 
     // The app should only keep tabs on the connection status of the connection manager for the current network
-    this.connectionManagers["stagenet"].startCheckingConnection();  // automatically run checkConnection() at regular intervals
- 
+    this.connectionManagers[DEFAULT_NETWORK].startCheckingConnection();  // automatically run checkConnection() at regular intervals
+    // Check the connection NOW to make sure this.state.isConnectedToDaemon is INITIALLY true if the connection is up
+    let isConnected = this.connectionManagers["stagenet"].isConnected();
+    this.state = {
+      isConnectedToDaemon: isConnected
+    }  
 
     this.browserHistory = createBrowserHistory();
     // Monitor URL changes and redirect if they were initiated by manual url entry
@@ -179,43 +198,24 @@ class App extends React.Component {
       } 
     );
     
-    /*
-     * VARS TO EXTRACT FROM STATE:
-     * lastHomePage
-     */
+    this.state = Object.assign(this.state, this.initialState);
     
-    this.initialState = {
-      walletPhrase: "",
-      phraseIsConfirmed: false,
-      walletSyncProgress: 0,
-      walletIsSynced: false,
-      balance: 0,
-      availableBalance: 0,
-      currentHomePage: "Welcome",
-      isGeneratingTxs: false,
-      transactionsGenerated: 0,
-      totalFees: 0,
-      enteredMnemonicIsValid: true,
-      enteredHeightIsValid: true,
-      isAwaitingWalletVerification: false,
-      flexLogo: relaxingLogo,
-      depositQrCode: null,
-      isAwaitingDeposit: false,
-      transactionStatusMessage: "",
-      currentSitePage: "/"
-    };
-	    
-    this.state = this.initialState;
   }
   
+  setIsConnectedToDaemon(isConnected){
+    this.setState({isConnectedToDaemon: isConnected});
+  }
+  
+  /*
+   checkDaemonConnection = async function(){
+     const connection = await that.connectionManagers[that.convertIntegerToNetworkType(that.currentNetwork)].checkConnection();
+     const connectionStatus = JSON.stringify(connection);
+     console.log("Checking daemon connection: " + connectionStatus);
+   }
+   */
+   
   componentDidMount(){
     let that = this;
-    async function checkDaemonConnection(){
-      const connection = await that.connectionManagers[that.convertIntegerToNetworkType(that.currentNetwork)].checkConnection();
-      const connectionStatus = JSON.stringify(connection);
-      console.log("Checking daemon connection: " + connectionStatus);
-    }
-    checkDaemonConnection();
     this.browserHistory.listen( location =>  {
       /*
        * Parse the hash portion of the current URL to enable comparision with currentSitePage
@@ -353,10 +353,6 @@ class App extends React.Component {
       return;
     }
     
-    console.log("currentNetwork: " + this.currentNetwork);
-    console.log("Creating wallet on network " + NETWORK_SERVERS[this.currentNetwork].networkType);
-    console.log("serverUri: " + NETWORK_SERVERS[this.currentNetwork].serverUri);
-    
     let server = await this.getServerFromConnectionManager();
     // No connection is available. throw an error.
     if(server === undefined){
@@ -373,7 +369,6 @@ class App extends React.Component {
         serverPassword: "abctesting123",
         server: server
       });
-      console.log("FullWalletInfo: " + JSON.stringify(fullWalletInfo));
       walletFull = await monerojs.createWalletFull(fullWalletInfo);
       
     } catch(e) {
@@ -386,6 +381,7 @@ class App extends React.Component {
     }
     
     if(this.userCancelledWalletImport){
+      console.log("User cancelled import! digressing...");
       return;
     }
     // Both the mnemonic and restore height were valid; thus, we can remove the disposable date-conversion
@@ -474,67 +470,60 @@ async getServerFromConnectionManager(){
 }
 
 async generateWallet(){
-  console.log("Generating keys wallet");
-  let walletKeys = null;
-  let server = await this.getServerFromConnectionManager();
-  // No connection is available. throw an error.
-  if(server === undefined){
-    throw new Error("No connection available");
-  }
-  
-  try {
-    walletKeys = await monerojs.createWalletKeys(Object.assign({}, WALLET_INFO, {
-      server: server,
-      networkType: this.convertIntegerToNetworkType(this.currentNetwork)
-    }));
-  } catch(error) {
-    console.log("failed to create keys-only wallet with error: " + error);
-    return;
-  }
-  
-  console.log("Keyswallet: " + walletKeys);
-  
-  let newPhrase = await walletKeys.getMnemonic();
-  this.walletAddress = await walletKeys.getAddress(0,0);
-  this.setState({
-    walletPhrase: newPhrase
-  });
-  console.log("");
-  console.log("Attempting to generate new wallet");
-  console.log("current network: " + this.currentNetwork);
-  console.log("Network server on the current network: " + JSON.stringify(NETWORK_SERVERS[this.currentNetwork]));
-  console.log("serverUri: " + NETWORK_SERVERS[this.currentNetwork].serverUri);
-  console.log("");
-  console.log("The server to use: " + this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].getBestAvailableConnection());
-  let fullWalletInfo = Object.assign(
-    {},
-    WALLET_INFO,
-    {
-      mnemonic: newPhrase,
-      path: "",
-      server: server,
-      networkType: this.convertIntegerToNetworkType(this.currentNetwork)
+  console.log("Generating wallet");
+  // Make sure the daemon connection is active and prevent the app from proceeding if it is not
+  let isConnected = await this.checkIfConnected();
+if(isConnected) {
+    let walletKeys = null;
+    let server = await this.getServerFromConnectionManager();
+    // No connection is available. throw an error.
+    if(server === undefined){
+      throw new Error("No connection available");
     }
-  );
-    console.log("Just a test message");
-  // set restore height to daemon's current height
-  let daemon = await monerojs.connectToDaemonRpc({
-    server: fullWalletInfo.server,
-    proxyToWorker: true
-  });
-  console.log("The daemon: " + JSON.stringify(daemon));
-  fullWalletInfo.restoreHeight = await daemon.getHeight();
-  
-  // create wallet promise which syncs when resolved
-  let walletPromise = monerojs.createWalletFull(fullWalletInfo);
-  walletPromise.then(async function(wallet) {
-    await wallet.sync();
-  })
-  
-  this.wallet = walletPromise;
-  
-  // Only advance to the "Save phrase" page if wallet creation finished successfully!
-  this.setCurrentHomePage("Save_Phrase_Page");
+    
+    try {
+      walletKeys = await monerojs.createWalletKeys(Object.assign({}, WALLET_INFO, {
+        server: server,
+        networkType: this.convertIntegerToNetworkType(this.currentNetwork)
+      }));
+    } catch(error) {
+      console.log("failed to create keys-only wallet with error: " + error);
+      return;
+    }
+    
+    let newPhrase = await walletKeys.getMnemonic();
+    this.walletAddress = await walletKeys.getAddress(0,0);
+    this.setState({
+      walletPhrase: newPhrase
+    });
+    let fullWalletInfo = Object.assign(
+      {},
+      WALLET_INFO,
+      {
+        mnemonic: newPhrase,
+        path: "",
+        server: server,
+        networkType: this.convertIntegerToNetworkType(this.currentNetwork)
+      }
+    );
+    // set restore height to daemon's current height
+    let daemon = await monerojs.connectToDaemonRpc({
+      server: fullWalletInfo.server,
+      proxyToWorker: true
+    });
+    fullWalletInfo.restoreHeight = await daemon.getHeight();
+    
+    // create wallet promise which syncs when resolved
+    let walletPromise = monerojs.createWalletFull(fullWalletInfo);
+    walletPromise.then(async function(wallet) {
+      await wallet.sync();
+    })
+    
+    this.wallet = walletPromise;
+    
+    // Only advance to the "Save phrase" page if wallet creation finished successfully!
+    this.setCurrentHomePage("Save_Phrase_Page");
+  }
 }
 
   /**
@@ -627,11 +616,10 @@ async generateWallet(){
       that.setState({flexLogo: relaxingLogo});
     }, 1000);
   }
-
-  logout() {
-    this.setState (this.initialState);
-    this.txGenerator.stop();
-    this.txGenerator = null;
+  
+  initializeMemberVariables(){
+    this.enteredText = "";
+    this.walletAddress = "empty";
     this.walletUpdater = null;
     this.wallet = null;
     this.restoreHeight = 0;
@@ -639,6 +627,27 @@ async generateWallet(){
     this.enteredWithdrawAmountIsValid = true;
     this.enteredWithdrawAddressIsValid = true;
     this.withdrawTransaction = null;
+    this.isInitialRender = true;   
+  }
+
+  logout(resetNetworkConnection) {
+    let wasConnectedToDaemon = this.state.isConnectedToDaemon;
+    if(this.txGenerator !== undefined) {
+      this.txGenerator.stop();
+      this.txGenerator = undefined;
+    }
+    if(resetNetworkConnection){
+      this.currentNetwork = 1; // Default to stagenet
+      // this.isInitialRender = true;
+
+    }
+    this.initializeMemberVariables();
+    this.setState(Object.assign(
+      this.initialState, 
+      {
+        isConnectedToDaemon: wasConnectedToDaemon
+      }
+    ))
   }
   
   delimitEnteredWalletPhrase(){
@@ -735,31 +744,32 @@ async generateWallet(){
    * to the other site pages besides home (since home no longer has sub pages
    * once this is the case)
    */
-  setCurrentHomePage(pageName){
-    console.log("Setting home page");
-    this.setState({
-      currentHomePage: pageName
-    });
-  }
-  
-  setCurrentSitePage(pageName) {
-    if(pageName === "/sign_out"){
-      let userConfirmedSignout = confirm("Are you sure you want to sign out of this wallet? If you did not record the seed phrase, you will permanently lose access to the wallet and any funds contained therin! Click 'Ok' to continue");
-      if(userConfirmedSignout){
-        this.logout();
-        console.log("Pagename == 'Sign Out'. Logging out.");
-      }
-    } else {
-      console.log("Setting currentSitePage to " + pageName);
+  async setCurrentHomePage(pageName){
+    // Make sure the daemon connection is working first
+    let isConnected = await this.checkIfConnected();
+if(isConnected) {
       this.setState({
-        currentSitePage: pageName
+        currentHomePage: pageName
       });
     }
   }
   
+  //No longer used?
+  async setCurrentSitePage(pageName) {
+
+      // Make sure the daemon is connected and prevent user from proceeding if not
+      let isConnected = await this.checkIfConnected();
+      if(isConnected) {
+        this.setState({
+          currentSitePage: pageName
+        });
+      }
+    
+  }
+  
   cancelImport(){
     this.userCancelledWalletImport = true;
-    this.logout();
+    this.logout(false);
   }
   
   cancelConfirmation(){
@@ -786,12 +796,26 @@ async generateWallet(){
     this.setCurrentSitePage("/deposit");
   }
   
+  //Determine whether the current connection is able to communicate with the daemon
+  async checkIfConnected(){
+    //Update connection status
+    await this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].checkConnection();
+    let isConnected = this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].isConnected();
+    this.setState({isConnectedToDaemon: isConnected});
+    return isConnected;
+  }
+  
   handleNetworkChange(network){
     // Stop monitoring nodes on the previously selected network
     this.connectionManagers[this.convertIntegerToNetworkType(this.currentNetwork)].stopCheckingConnection();
     // Start monitoring nodes on the newly selected network
     this.connectionManagers[this.convertIntegerToNetworkType(network)].startCheckingConnection();
+ 
     this.currentNetwork = network;
+    
+     // Update the status bar immediately (in case the last selected network was disconnected and this one is connected)
+    this.checkIfConnected();
+ 
   }
   
   convertIntegerToNetworkType(num){
@@ -808,25 +832,64 @@ async generateWallet(){
   }
   
   render(){
-    let notificationBar = null;
     
-    if(this.state.walletIsSynced && !(this.state.balance > 0) && this.state.currentSitePage != "/deposit"){
-      notificationBar = (
-	      <Notification_Bar content = {
-	        <>
-            No funds deposited
-            &thinsp;
-            <Link 
+    let messages = []; //An array of JSX elements containing warning messages
+    
+    let showFundedNotice = false;
+    if(!this.isInitialRender) {
+      if(!this.state.isConnectedToDaemon) {
+        messages.push(
+          <React.Fragment key={1}>
+            Can't connect to daemon!
+          </React.Fragment>
+        )
+      }
+      if(this.state.walletIsSynced && !(this.state.balance > 0) && this.state.currentSitePage != "/deposit"){
+        messages.push(
+          <React.Fragment key={0}>
+           No funds deposited
+           &thinsp;
+           <Link 
               onClick = {this.notifyIntentToDeposit.bind(this)}
-              to = "/deposit"	
+              to = "/deposit" 
             >
               click to deposit
             </Link>
-          </>
-	      } />
-      );
+          </React.Fragment>
+       )
+        showFundedNotice = true;
+      }
+
+    } else {
+      this.isInitialRender = false;
     }
-    
+      
+    let notificationBars = messages.map((message,index) => {
+      let className;
+      
+      
+      if(index === 0){
+        // This could be either the network or funding warning JSX. Need to find out which to apply appropriate color
+        if(messages.length === 1){
+          // There is only one element in the list. We still can't deduce which notice/warning it is.
+          if(!showFundedNotice){
+            // It is definitely the network connection warning. Make it red.
+            className = "strong_warning";
+          }
+        } else {
+          // The warning always comes first when there are two messages
+          className = "strong_warning";
+        }
+      }
+      
+      return(
+        <Notification_Bar 
+          content = {message}
+          className = {className}
+          key = {index} 
+        />
+      )
+    })
 
       return(
         <div id="app_container">
@@ -836,8 +899,9 @@ async generateWallet(){
               flexLogo = {this.state.flexLogo}
               notifyIntentToDeposit = {this.notifyIntentToDeposit.bind(this)}
               setCurrentSitePage = {this.setCurrentSitePage.bind(this)}
+              logout = {this.logout.bind(this)}
             />
-            {notificationBar}
+            {notificationBars}
             <Routes>
     <Route path="/" element = {
           <Home
@@ -871,6 +935,7 @@ async generateWallet(){
                 forceWait = {this.state.isAwaitingWalletVerification}
                 transactionStatusMessage = {this.state.transactionStatusMessage}
                 handleNetworkChange = {this.handleNetworkChange.bind(this)}
+                isConnectedToDaemon = {this.state.isConnectedToDaemon}
             />}
           />
           <Route path="/backup" element = {
@@ -895,6 +960,7 @@ async generateWallet(){
                totalBalance = {this.state.balance}
                wallet = {this.wallet}
                isGeneratingTxs = {this.state.isGeneratingTxs}
+               isConnectedToDaemon = {this.state.isConnectedToDaemon}
              />
           }/> 
         </Routes>
@@ -938,8 +1004,20 @@ class walletListener extends MoneroWalletListener {
 }
 
 class ConnectionManagerListener extends MoneroConnectionManagerListener {
+  
+  constructor(checkIfConnected){
+    super();
+    this.checkIfConnected = checkIfConnected;
+  }
+  
   onConnectionChanged(connection){
-    console.log("Connection changed: " + connection.toString()); 
+    /*
+     * You can not check the connection status of a MoneroRpcConnection (which is the type of the parameter "connection")
+     * Therefore, we need to use the current connectionManager's "isConnected()" method to determine if onConnectionChanged
+     * was called becaus a connection was either lost or established
+     * This checking is handled entirely in the App component's "checkIfConnected" method.
+     */ 
+    this.checkIfConnected();
   }
 }
 

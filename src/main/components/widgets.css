@@ -138,6 +138,10 @@ textarea {
 	position: relative;
 }
 
+.notification_bar.strong_warning{
+	background-color: red;
+}
+
 .notification_bar_contents {
 	margin: 0;
 	position: absolute;

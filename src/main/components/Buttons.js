@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {Link} from 'react-router-dom';
 import './buttons.css';
 
 // Component for the common "button link" used in the bottom of the page_box home pages
@@ -10,6 +11,26 @@ export function UI_Button_Link(props) {
   }
   
   if(props.isactive || props.isactive == null) {
+    
+    
+    if(!(props.setCurrentPage || props.handleClick) && props.destination){
+      // Only a destination was supplied; in order to navigate to it on clicking, we need to use a router "Link" component.
+      return(
+        <Link
+          className={"ui_link_container ui_button_link " + props.className} 
+          style={props.style}
+          onMouseEnter={props.onMouseEnter}
+          onMouseLeave={props.onMouseLeave}
+          onMouseDown={props.onMouseDown}
+          onMouseUp={props.onMouseUp}
+          to={props.destination}
+        >
+          <div className="button_contents_container">
+            {props.children}
+          </div>
+        </Link>
+      );
+    }
     return(
       <a
         className={"ui_link_container ui_button_link " + props.className} 

@@ -30,6 +30,7 @@ export default function Welcome(props) {
       <div className="home_button_links">
       	<UI_Button_Link
       	  handleClick={props.handleContinue}
+          isactive={props.continueButtonIsActive}
       	>
       	  {button}
       	</UI_Button_Link>
