@@ -243,7 +243,8 @@ export default function Withdraw(props){
     enteredWithdrawAddressIsValid && 
     enteredWithdrawAmountIsValid &&
     !props.isGeneratingTxs &&
-    !(withdrawTxsStatus === "creating");
+    !(withdrawTxsStatus === "creating") &&
+    props.isConnectedToDaemon;
   
   let totalWithdrawAmount = BigInteger();
   let totalWithdrawFee = BigInteger();

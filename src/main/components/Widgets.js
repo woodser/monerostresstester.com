@@ -65,7 +65,7 @@ export function Page_Box_Margin(props){
 
 export function Notification_Bar(props){
   return(
-    <div className = "notification_bar">
+    <div className = {"notification_bar " + props.className}>
       <span className = "notification_bar_contents">
         {props.content}
       </span>

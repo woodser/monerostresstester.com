@@ -1,8 +1,7 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import "./banner.css";
 import "../app.css";
-import { BrowserRouter as Link, NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function convertLinkNameToUrl(name){
   if (name=="Home")
@@ -12,6 +11,9 @@ function convertLinkNameToUrl(name){
 }
 
 export default function Banner(props) {
+  
+  const navigate = useNavigate();
+  
   let linkDisplayValues = [
     "Home",
     "Backup",
@@ -33,16 +35,30 @@ export default function Banner(props) {
   
     linkDisplayValues = linkDisplayValues.map((link, index) => {
       let linkCopy = link.slice();
+      let onClickFunction;
+      
       if(link === "Sign Out") {
         // There is no "Sign Out" route. Return user to the home page.
         linkCopy = "";
+        onClickFunction = () => {
+          let userConfirmedSignout = confirm("Are you sure you want to sign out of this wallet? If you did not record the seed phrase, you will permanently lose access to the wallet and any funds contained therin! Click 'Ok' to continue");
+          if(userConfirmedSignout){
+            navigate("/");
+            props.logout(true);
+          }
+        }
+
+      } else if(link === "Deposit"){
+        onClickFunction = props.notifyIntentToDeposit;
+      } else {
+        onClickFunction = () => props.setCurrentSitePage(linkUrlValues[index]);
       }
       return (<NavLink 
         key={linkCopy}
         to={convertLinkNameToUrl(linkCopy)} 
         className="link nav_link" 
         activeclassname="current_nav"
-        onClick={link==="Deposit" ? props.notifyIntentToDeposit : () => props.setCurrentSitePage(linkUrlValues[index])}>
+        onClick={onClickFunction}>
           {link + (link==="Sign Out" ? "" : "   ")}
       </NavLink>)});
   } else {

@@ -33,7 +33,6 @@ export default function Deposit(props){
         <UI_Button_Link
           className = "return_home_from_deposit_button"
           destination = "/"
-          setCurrentPage = {props.setCurrentSitePage}
         >
           Return to Home
         </UI_Button_Link>
